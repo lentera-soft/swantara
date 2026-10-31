@@ -13,22 +13,28 @@ import (
 )
 
 type Service struct {
-	dao        OrganizationDAO
-	currencies CurrencyDAO
-	countries  CountryDAO
-	members    MemberProvisioner
-	seeder     Seeder
-	enqueuer   queue.TaskEnqueuer
+	organizations OrganizationDAO
+	currencies    CurrencyDAO
+	countries     CountryDAO
+	members       MemberProvisioner
+	seeder        Seeder
+	enqueuer      queue.TaskEnqueuer
 }
 
 func NewOrganizationService(
-	dao OrganizationDAO,
-	currencies dao.Base[reference.Currency],
-	countries dao.Base[reference.Country],
+	organizations OrganizationDAO,
+	currencies CurrencyDAO,
+	countries CountryDAO,
 	members MemberProvisioner,
 	seeder Seeder,
 ) Service {
-	return Service{dao: dao, currencies: currencies, countries: countries, members: members, seeder: seeder}
+	return Service{
+		organizations: organizations,
+		currencies:    currencies,
+		countries:     countries,
+		members:       members,
+		seeder:        seeder,
+	}
 }
 
 func (s Service) WithProvisionEnqueuer(enqueuer queue.TaskEnqueuer) Service {
@@ -69,7 +75,7 @@ func (s Service) QuickCreate(ctx context.Context, name string, countryCode strin
 		TaxYearStartMonth: 1,
 	}
 
-	created, err := s.dao.Create(ctx, org)
+	created, err := s.organizations.Create(ctx, org)
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +132,7 @@ func (s Service) Create(ctx context.Context, org *reference.Organization, ownerU
 		org.TaxYearStartMonth = 1
 	}
 
-	created, err := s.dao.Create(ctx, org)
+	created, err := s.organizations.Create(ctx, org)
 	if err != nil {
 		return nil, err
 	}
@@ -140,21 +146,24 @@ func (s Service) Create(ctx context.Context, org *reference.Organization, ownerU
 }
 
 func (s Service) Update(ctx context.Context, orgID uint64, org *reference.Organization) (*reference.Organization, error) {
-	existing, err := s.dao.Find(ctx, orgID)
+	existing, err := s.organizations.Find(ctx, orgID)
+
 	if err != nil {
 		return nil, dao.NotFound(err, ErrOrganizationNotFound)
 	}
+
 	if existing == nil {
 		return nil, ErrOrganizationNotFound
 	}
 
-	if strings.TrimSpace(org.Name) != "" {
+	if strings.TrimSpace(org.Name) == "" {
 		return nil, ErrNameRequired
 	}
 
 	if err := s.validateParent(ctx, orgID, org.ParentID); err != nil {
 		return nil, err
 	}
+
 	if org.BaseCurrency != "" {
 		if err := s.validateBaseCurrency(ctx, org.BaseCurrency); err != nil {
 			return nil, err
@@ -174,7 +183,7 @@ func (s Service) Update(ctx context.Context, orgID uint64, org *reference.Organi
 		existing.TaxYearStartMonth = org.TaxYearStartMonth
 	}
 
-	return s.dao.Update(ctx, existing)
+	return s.organizations.Update(ctx, existing)
 }
 
 func (s Service) validateBaseCurrency(ctx context.Context, code string) error {
@@ -196,7 +205,7 @@ func (s Service) validateParent(ctx context.Context, orgID uint64, parentID *uin
 		return ErrParentCycle
 	}
 
-	parent, err := s.dao.Find(ctx, *parentID)
+	parent, err := s.organizations.Find(ctx, *parentID)
 	if err != nil {
 		return dao.NotFound(err, ErrParentNotFound)
 	}
@@ -209,7 +218,7 @@ func (s Service) validateParent(ctx context.Context, orgID uint64, parentID *uin
 		if *current.ParentID == orgID {
 			return ErrParentCycle
 		}
-		next, err := s.dao.Find(ctx, *current.ParentID)
+		next, err := s.organizations.Find(ctx, *current.ParentID)
 		if err != nil {
 			return dao.NotFound(err, ErrParentNotFound)
 		}
