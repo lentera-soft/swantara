@@ -1,0 +1,130 @@
+import { screen, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
+import { HttpResponse, http } from "msw";
+import { beforeEach, describe, expect, it } from "vitest";
+import { renderWithProviders, server } from "@/lib/tests";
+import { SuppliersTable } from "../suppliers-table-section";
+
+const STAMP = "2026-01-05T12:00:00Z";
+
+const contacts = [
+  {
+    id: 1,
+    organization_id: 1,
+    name: "Acme",
+    display_name: "Acme Corp",
+    email: "buy@acme.test",
+    industry: "manufacturing",
+    active: true,
+    is_customer: false,
+    is_supplier: true,
+    created_at: STAMP,
+    updated_at: STAMP,
+  },
+  {
+    id: 2,
+    organization_id: 1,
+    name: "Globex",
+    display_name: null,
+    email: null,
+    industry: null,
+    active: false,
+    is_customer: false,
+    is_supplier: true,
+    created_at: STAMP,
+    updated_at: STAMP,
+  },
+  {
+    id: 3,
+    organization_id: 1,
+    name: "Customer Only",
+    display_name: "Customer Only",
+    email: null,
+    industry: null,
+    active: true,
+    is_customer: true,
+    is_supplier: false,
+    created_at: STAMP,
+    updated_at: STAMP,
+  },
+];
+
+beforeEach(() => {
+  server.use(
+    http.get("*/api/v1/organizations/:organizationId/contacts", () =>
+      HttpResponse.json({ success: true, message: "OK.", data: { contacts } }),
+    ),
+  );
+});
+
+describe("SuppliersTable", () => {
+  it("renders seeded suppliers with mapped statuses", async () => {
+    renderWithProviders(<SuppliersTable />);
+
+    expect(await screen.findByText("Acme Corp")).toBeInTheDocument();
+    expect(screen.getByText("buy@acme.test")).toBeInTheDocument();
+    expect(screen.getByText("Globex")).toBeInTheDocument();
+    expect(screen.getByText("Aktif")).toBeInTheDocument();
+    expect(screen.getByText("Nonaktif")).toBeInTheDocument();
+  });
+
+  it("excludes contacts that are only customers", async () => {
+    renderWithProviders(<SuppliersTable />);
+
+    await screen.findByText("Acme Corp");
+    expect(screen.queryByText("Customer Only")).not.toBeInTheDocument();
+  });
+
+  it("filters suppliers by search", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<SuppliersTable />);
+
+    await screen.findByText("Acme Corp");
+    await user.type(screen.getByPlaceholderText("Cari pemasok…"), "globex");
+
+    expect(await screen.findByText("Globex")).toBeInTheDocument();
+    await waitFor(() => expect(screen.queryByText("Acme Corp")).not.toBeInTheDocument());
+  });
+
+  it("opens the create contact dialog from the add button", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<SuppliersTable />);
+
+    await screen.findByText("Acme Corp");
+    await user.click(screen.getByRole("button", { name: /Tambah Pemasok/ }));
+
+    expect(await screen.findByText("Kontak baru")).toBeInTheDocument();
+  });
+
+  it("shows the empty state when there are no suppliers", async () => {
+    server.use(
+      http.get("*/api/v1/organizations/:organizationId/contacts", () =>
+        HttpResponse.json({ success: true, message: "OK.", data: { contacts: [] } }),
+      ),
+    );
+    renderWithProviders(<SuppliersTable />);
+
+    expect(await screen.findByText("Tidak ada hasil")).toBeInTheDocument();
+  });
+
+  it("shows the error state with retry and refetches", async () => {
+    let calls = 0;
+    server.use(
+      http.get("*/api/v1/organizations/:organizationId/contacts", () => {
+        calls += 1;
+        if (calls === 1) {
+          return HttpResponse.json({ success: false, message: "supplier boom" }, { status: 500 });
+        }
+        return HttpResponse.json({ success: true, message: "OK.", data: { contacts } });
+      }),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<SuppliersTable />);
+
+    expect(await screen.findByText("supplier boom")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Coba lagi" }));
+
+    expect(await screen.findByText("Acme Corp")).toBeInTheDocument();
+    expect(calls).toBe(2);
+  });
+});

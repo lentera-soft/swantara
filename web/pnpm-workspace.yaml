@@ -1,0 +1,9 @@
+packages:
+  - '.'
+allowBuilds:
+  '@parcel/watcher': false
+  '@swc/core': false
+  clientjs: false
+  esbuild: false
+  msw: false
+  sharp: false

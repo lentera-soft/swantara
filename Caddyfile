@@ -1,0 +1,15 @@
+{
+	admin off
+}
+
+{$DOMAIN} {
+	encode gzip zstd
+
+	reverse_proxy web:3000 {
+		lb_try_duration 30s
+		lb_try_interval 2s
+		health_uri /
+		health_interval 30s
+		health_timeout 5s
+	}
+}

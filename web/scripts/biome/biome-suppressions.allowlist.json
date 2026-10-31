@@ -1,0 +1,65 @@
+{
+  "$comment": "Justifications for every biome-ignore suppression in the repo. A suppression may only exist here, with a reason, if it genuinely cannot be avoided or Biome lacks support. Add a new entry + reason BEFORE introducing a suppression; the guard fails otherwise.",
+  "entries": [
+    {
+      "path": "app/(org)/_components/org-brand.tsx",
+      "rules": ["lint/performance/noImgElement"],
+      "why": "The org logo is a raw API URL or a dicebear data URI; it can be cross-origin or runtime-generated, so next/image cannot safely optimize it."
+    },
+    {
+      "path": "app/(org)/pos/register/[sessionId]/_components/pos-receipt.tsx",
+      "rules": ["lint/suspicious/noArrayIndexKey"],
+      "why": "The payments prop is a plain wire array ({method, amount}) that may contain identical rows; it is rendered read-only once the order is submitted, so there is no stable id available."
+    },
+    {
+      "path": "components/carousel.tsx",
+      "rules": ["lint/a11y/useSemanticElements"],
+      "why": "The ARIA carousel region and slide-group patterns require aria-roledescription which is only valid on generic elements; no native element fits (fieldset would impose form styling)."
+    },
+    {
+      "path": "components/filter-bar.tsx",
+      "rules": ["lint/a11y/useSemanticElements"],
+      "why": "Active filters group uses a div for layout; there is no native element for a non-form group, so role=group keeps the grouping announceable."
+    },
+    {
+      "path": "components/input-group.tsx",
+      "rules": ["lint/a11y/useSemanticElements"],
+      "why": "Visual grouping wrappers around inputs; there is no native element for a non-form group, so role=group is applied to divs to keep grouping semantics."
+    },
+    {
+      "path": "components/input-group.tsx",
+      "rules": ["lint/a11y/useKeyWithClickEvents"],
+      "why": "Click-to-focus convenience on an inert addon wrapper; the focusable input inside is the true control and remains directly keyboard reachable."
+    },
+    {
+      "path": "components/kanban-board.tsx",
+      "rules": ["lint/a11y/useSemanticElements"],
+      "why": "Scrollable board region; grouping semantics come from role=group on a generic container while native DnD attributes carry card dragging."
+    },
+    {
+      "path": "components/kanban-board.tsx",
+      "rules": ["lint/a11y/noStaticElementInteractions"],
+      "why": "Column sections are native pointer DnD drop targets; the interaction is drag-based and cards remain keyboard-navigable."
+    },
+    {
+      "path": "components/label.tsx",
+      "rules": ["lint/a11y/noLabelWithoutControl"],
+      "why": "Generic label primitive; consumers pass htmlFor or wrap a control so the association is established at the call site, not inside the primitive."
+    },
+    {
+      "path": "components/route-loading.tsx",
+      "rules": ["lint/suspicious/noArrayIndexKey"],
+      "why": "Synthetic skeleton placeholder rows have no data identity; they never reorder or update in place and are replaced by content once loaded."
+    },
+    {
+      "path": "components/slider.tsx",
+      "rules": ["lint/suspicious/noArrayIndexKey"],
+      "why": "base-ui Slider identifies thumbs positionally through its component API; the array is synthetic and thumbs cannot exchange positions mid-render."
+    },
+    {
+      "path": "components/workflow-steps.tsx",
+      "rules": ["lint/suspicious/noArrayIndexKey"],
+      "why": "Step identity is positional by design: done/active derive from index math and onStepClick receives the index; duplicate labels are allowed by the type."
+    }
+  ]
+}

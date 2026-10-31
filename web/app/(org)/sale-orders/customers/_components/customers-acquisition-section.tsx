@@ -1,0 +1,101 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+import { BarChart } from "@/components/bar-chart";
+import { Button } from "@/components/button";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/card";
+import { useOrgListQuery } from "@/lib/hooks/use-org-query";
+import type { Contact } from "@/lib/services/swantara";
+import { getSwantaraService } from "@/lib/services/swantara";
+
+const MONTH_NAMES = [
+  "Jan",
+  "Feb",
+  "Mar",
+  "Apr",
+  "May",
+  "Jun",
+  "Jul",
+  "Aug",
+  "Sep",
+  "Oct",
+  "Nov",
+  "Dec",
+];
+
+function computeAcquisitionTrend(contacts: Contact[]) {
+  const now = new Date();
+  const months: Array<{ label: string; value: number }> = [];
+
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
+    const year = d.getFullYear();
+    const month = d.getMonth();
+    const count = contacts.filter((p) => {
+      if (!p.createdAt) return false;
+      const created = new Date(p.createdAt);
+      return created.getFullYear() === year && created.getMonth() === month;
+    }).length;
+    months.push({ label: MONTH_NAMES[month]!, value: count });
+  }
+
+  return months;
+}
+
+export function CustomersAcquisition() {
+  const t = useTranslations("Sales");
+  const tCommon = useTranslations("Common");
+  const query = useOrgListQuery<{ contacts: Contact[] }, { size: number }>(
+    "contacts",
+    (organizationId, params) => getSwantaraService().contacts.list(organizationId, params),
+    { size: 100 },
+  );
+
+  const contacts = (query.data?.contacts ?? []).filter((contact) => contact.isCustomer);
+  const acquisitionTrend = computeAcquisitionTrend(contacts);
+  const total = acquisitionTrend.reduce((sum, month) => sum + month.value, 0);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>{t("customerAcquisition")}</CardTitle>
+        <CardDescription>{t("acquisitionDescription")}</CardDescription>
+      </CardHeader>
+      <CardContent className="flex flex-col gap-3">
+        {query.isLoading ? (
+          <output
+            className="flex h-44 items-end gap-2"
+            aria-busy="true"
+            aria-label={t("customerAcquisition")}
+          >
+            {acquisitionTrend.map((month) => (
+              <div
+                key={month.label}
+                className="h-full flex-1 animate-pulse rounded-md bg-muted"
+                aria-hidden
+              />
+            ))}
+          </output>
+        ) : query.isError ? (
+          <div className="flex flex-col items-start gap-2 py-4">
+            <p className="text-sm text-muted-foreground">{t("loadFailed")}</p>
+            <Button variant="outline" size="sm" onClick={() => void query.refetch()}>
+              {tCommon("retry")}
+            </Button>
+          </div>
+        ) : (
+          <>
+            <BarChart
+              data={acquisitionTrend}
+              ariaLabel={t("customerAcquisition")}
+              valueFormatter={(value) => String(value)}
+            />
+            {total === 0 ? (
+              <p className="text-sm text-muted-foreground">{t("emptyCustomersDescription")}</p>
+            ) : null}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}

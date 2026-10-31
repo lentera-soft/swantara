@@ -1,0 +1,45 @@
+"use client";
+
+import { useTranslations } from "next-intl";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/tabs";
+import { CarriersSection } from "./carriers-section";
+import { CurrenciesSection } from "./currencies-section";
+import { DimensionsSection } from "./dimensions-section";
+import { FxRatesSection } from "./fx-rates-section";
+import { LocalizationSection } from "./localization-section";
+import { PaymentTermsSection } from "./payment-terms-section";
+import { UnitsSection } from "./units-section";
+
+const tabs = [
+  { id: "currencies", component: CurrenciesSection },
+  { id: "fxRates", component: FxRatesSection },
+  { id: "units", component: UnitsSection },
+  { id: "dimensions", component: DimensionsSection },
+  { id: "paymentTerms", component: PaymentTermsSection },
+  { id: "carriers", component: CarriersSection },
+  { id: "localization", component: LocalizationSection },
+] as const;
+
+export function ReferenceDataTabs({ orgId }: { orgId: string }) {
+  const t = useTranslations("Reference");
+  const tabLabel = (id: string) => (t as unknown as (k: string) => string)(`tab_${id}`);
+  return (
+    <Tabs defaultValue="currencies">
+      <TabsList variant="line">
+        {tabs.map((tab) => (
+          <TabsTrigger key={tab.id} value={tab.id}>
+            {tabLabel(tab.id)}
+          </TabsTrigger>
+        ))}
+      </TabsList>
+      {tabs.map((tab) => {
+        const Section = tab.component;
+        return (
+          <TabsContent key={tab.id} value={tab.id} className="pt-4">
+            <Section orgId={orgId} />
+          </TabsContent>
+        );
+      })}
+    </Tabs>
+  );
+}

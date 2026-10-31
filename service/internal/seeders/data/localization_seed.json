@@ -1,0 +1,54 @@
+{
+  "profiles": [
+    {
+      "name": "Indonesia",
+      "country_code": "ID",
+      "currency_code": "IDR",
+      "locale": "id-ID",
+      "timezone": "Asia/Jakarta",
+      "date_format": "DD/MM/YYYY",
+      "tax_year_start_month": 1,
+      "tax_template_lines": [
+        {"name": "PPN 11%", "kind": "sale", "rate": 11, "price_include": false, "sequence": 1},
+        {"name": "PPN 11% (Purchase)", "kind": "purchase", "rate": 11, "price_include": false, "sequence": 2}
+      ]
+    },
+    {
+      "name": "United States",
+      "country_code": "US",
+      "currency_code": "USD",
+      "locale": "en-US",
+      "timezone": "America/New_York",
+      "date_format": "MM/DD/YYYY",
+      "tax_year_start_month": 1,
+      "tax_template_lines": [
+        {"name": "Sales Tax 8%", "kind": "sale", "rate": 8, "price_include": false, "sequence": 1}
+      ]
+    },
+    {
+      "name": "Singapore",
+      "country_code": "SG",
+      "currency_code": "SGD",
+      "locale": "en-SG",
+      "timezone": "Asia/Singapore",
+      "date_format": "DD/MM/YYYY",
+      "tax_year_start_month": 1,
+      "tax_template_lines": [
+        {"name": "GST 9%", "kind": "sale", "rate": 9, "price_include": false, "sequence": 1},
+        {"name": "GST 9% (Purchase)", "kind": "purchase", "rate": 9, "price_include": false, "sequence": 2}
+      ]
+    },
+    {
+      "name": "Malaysia",
+      "country_code": "MY",
+      "currency_code": "MYR",
+      "locale": "ms-MY",
+      "timezone": "Asia/Kuala_Lumpur",
+      "date_format": "DD/MM/YYYY",
+      "tax_year_start_month": 1,
+      "tax_template_lines": [
+        {"name": "SST 8%", "kind": "sale", "rate": 8, "price_include": false, "sequence": 1}
+      ]
+    }
+  ]
+}

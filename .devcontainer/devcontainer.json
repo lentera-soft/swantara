@@ -1,0 +1,47 @@
+{
+  "name": "Swantara",
+  "dockerComposeFile": [
+    "devcontainer-compose.yml"
+  ],
+  "service": "dev",
+  "workspaceFolder": "/workspace",
+  "useWorkingDir": true,
+  "runServices": [
+    "postgres",
+    "valkey"
+  ],
+  "remoteUser": "appuser",
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "golang.go",
+        "dbaeumer.vscode-eslint",
+        "biomejs.biome",
+        "ms-vscode.vscode-typescript-next",
+        "ms-vscode.vscode-tailwindcss",
+        "ms-vscode.vscode-json",
+        "ms-vscode.vscode-docker",
+        "github.vscode-pull-request-github"
+      ],
+      "settings": {
+        "go.gopath": "/home/appuser/go",
+        "go.useLanguageServer": true,
+        "go.lintTool": "golangci-lint",
+        "go.lintFlags": ["--fast"],
+        "editor.formatOnSave": true,
+        "editor.defaultFormatter": "biomejs.biome",
+        "[go]": {
+          "editor.defaultFormatter": "golang.go"
+        },
+        "[typescript][typescriptreact]": {
+          "editor.defaultFormatter": "biomejs.biome"
+        },
+        "[json][jsonc]": {
+          "editor.defaultFormatter": "ms-vscode.vscode-json"
+        }
+      }
+    }
+  },
+  "postCreateCommand": "just doctor",
+  "features": {}
+}

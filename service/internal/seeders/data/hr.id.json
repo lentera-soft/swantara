@@ -1,0 +1,38 @@
+{
+  "departments": [
+    "Manajemen Umum",
+    "Operasional",
+    "Penjualan & Pemasaran",
+    "Keuangan",
+    "Sumber Daya Manusia",
+    "Teknologi Informasi",
+    "Layanan Pelanggan",
+    "Pengadaan",
+    "Hukum",
+    "Penelitian & Pengembangan",
+    "Penjaminan Mutu",
+    "Logistik",
+    "Administrasi"
+  ],
+  "job_positions": [
+    {"name": "Direktur Utama", "department": "Manajemen Umum"},
+    {"name": "Direktur Keuangan", "department": "Keuangan"},
+    {"name": "Manajer Penjualan", "department": "Penjualan & Pemasaran"},
+    {"name": "Staf Sumber Daya Manusia", "department": "Sumber Daya Manusia"},
+    {"name": "Insinyur Perangkat Lunak", "department": "Teknologi Informasi"},
+    {"name": "Staf Gudang", "department": "Operasional"}
+  ],
+  "leave_types": [
+    {"name": "Cuti Tahunan", "paid": true, "allocation_days": 12.0},
+    {"name": "Cuti Sakit", "paid": true, "allocation_days": 14.0},
+    {"name": "Cuti Tanpa Gaji", "paid": false, "allocation_days": 0.0},
+    {"name": "Cuti Melahirkan", "paid": true, "allocation_days": 90.0},
+    {"name": "Cuti Pernikahan", "paid": true, "allocation_days": 3.0}
+  ],
+  "salary_rules": [
+    {"code": "BAS", "name": "Gaji Pokok", "category": "earning", "compute_type": "fixed", "debit_account": "6100", "credit_account": "2200"},
+    {"code": "ALL", "name": "Tunjangan", "category": "earning", "compute_type": "fixed", "amount": 1000000.0, "debit_account": "6100", "credit_account": "2200"},
+    {"code": "BON", "name": "Bonus", "category": "earning", "compute_type": "fixed", "amount": 500000.0, "debit_account": "6100", "credit_account": "2200"},
+    {"code": "TAX", "name": "Potongan PPh21", "category": "deduction", "compute_type": "percent", "amount": 5.0, "debit_account": "2200", "credit_account": "2180"}
+  ]
+}

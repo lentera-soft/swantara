@@ -1,0 +1,60 @@
+package handler
+
+import (
+	"github.com/gofiber/fiber/v3"
+	"github.com/jalusw/swantara/apps/service/internal/httpx"
+	"github.com/jalusw/swantara/apps/service/internal/payroll"
+)
+
+func writeHRError(c fiber.Ctx, err error) error {
+	return httpx.WriteMappedError(c, err, "hr write failed", "Failed to process request.",
+		httpx.NotFound(payroll.ErrEmployeeNotFound, "Resource not found."),
+		httpx.NotFound(payroll.ErrContractNotFound, "Resource not found."),
+		httpx.NotFound(payroll.ErrLeaveRequestNotFound, "Resource not found."),
+		httpx.NotFound(payroll.ErrAttendanceNotFound, "Resource not found."),
+		httpx.NotFound(payroll.ErrTimesheetNotFound, "Resource not found."),
+		httpx.NotFound(payroll.ErrLeaveTypeNotFound, "Resource not found."),
+		httpx.NotFound(payroll.ErrLeaveEmployee, "Resource not found."),
+		httpx.NotFound(payroll.ErrEmployeeUserNotFound, "Resource not found."),
+		httpx.NotFound(payroll.ErrShiftNotFound, "Resource not found."),
+		httpx.NotFound(payroll.ErrShiftAssignmentNotFound, "Resource not found."),
+		httpx.Unprocessable(payroll.ErrEmployeeNumberTaken, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrEmployeeUserTaken, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrEmployeeDepartment, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrEmployeePosition, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrEmployeeManager, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrEmployeeContact, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrEmployeeEmploymentType, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrEmployeeOrganization, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrEmployeeNumber, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrContractEmployee, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrContractWage, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrContractState, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrLeaveState, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrLeaveDateRange, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrLeaveDays, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrLeaveBalance, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrAttendanceCheckIn, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrAttendanceCheckOut, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrAttendanceEmployee, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrTimesheetEmployee, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrTimesheetHours, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrTimesheetDimension, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrAttendanceInactive, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrAttendanceOpenExists, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrAttendanceAlreadyClosed, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrAttendanceState, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrAttendanceOnLeave, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrAttendanceNotPending, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrAttendanceAlreadyApproved, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrShiftName, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrShiftTime, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrShiftTimeFormat, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrShiftOrganization, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrShiftAssignmentExists, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrShiftAssignmentEmployee, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrShiftAssignmentShift, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrAutoCheckoutHour, "Request cannot be processed."),
+		httpx.Unprocessable(payroll.ErrAutoCheckoutNotConfigured, "Request cannot be processed."),
+	)
+}

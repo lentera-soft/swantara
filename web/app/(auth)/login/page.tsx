@@ -1,0 +1,30 @@
+import type { Metadata } from "next";
+import Link from "next/link";
+import { getTranslations } from "next-intl/server";
+import AuthShell from "../_components/auth-shell";
+import LoginForm from "./_components/login-form";
+
+export const metadata: Metadata = {
+  robots: {
+    index: false,
+    follow: false,
+  },
+};
+
+export default async function LoginPage() {
+  const t = await getTranslations("Auth");
+  return (
+    <AuthShell title={t("welcomeBackTitle")} subtitle={t("welcomeBackSubtitle")}>
+      <LoginForm />
+      <p className="text-sm text-muted-foreground">
+        {t("newHere")}{" "}
+        <Link
+          className="inline-flex min-h-11 items-center rounded-md px-1 font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          href="/register"
+        >
+          {t("registerNew")}
+        </Link>
+      </p>
+    </AuthShell>
+  );
+}

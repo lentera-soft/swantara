@@ -1,0 +1,89 @@
+@utility z-raised {
+  z-index: var(--z-raised);
+}
+@utility z-header {
+  z-index: var(--z-header);
+}
+@utility z-docked {
+  z-index: var(--z-docked);
+}
+@utility z-popover {
+  z-index: var(--z-popover);
+}
+@utility z-modal {
+  z-index: var(--z-modal);
+}
+@utility z-popover-modal {
+  z-index: var(--z-popover-modal);
+}
+@utility z-tour {
+  z-index: var(--z-tour);
+}
+@utility z-skip {
+  z-index: var(--z-skip);
+}
+
+@utility bg-overlay {
+  background-color: var(--color-overlay);
+}
+@utility bg-overlay-strong {
+  background-color: var(--color-overlay-strong);
+}
+
+@utility text-headline {
+  font-size: clamp(2.5rem, 6vw, 5rem);
+  line-height: 1.05;
+  letter-spacing: -0.03em;
+  font-weight: 500;
+}
+
+@utility text-display {
+  font-size: clamp(3rem, 8vw, 7rem);
+  line-height: 0.98;
+  letter-spacing: -0.035em;
+  font-weight: 500;
+}
+
+@utility text-body-lg {
+  font-size: 1.1875rem;
+  line-height: 1.65;
+}
+
+@utility text-body {
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+@utility text-label {
+  font-size: 0.75rem;
+  line-height: 1.4;
+  letter-spacing: 0.02em;
+  font-weight: 500;
+}
+
+@utility bg-grid {
+  background-image:
+    linear-gradient(to right, var(--color-border) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--color-border) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+@utility bg-surface-warm {
+  background-color: oklch(0.975 0.008 90);
+}
+
+@utility bg-surface-sunken {
+  background-color: var(--color-surface-sunken);
+}
+
+@utility surface-cream {
+  background-color: oklch(0.99 0.005 90);
+}
+
+@utility will-change-transform {
+  will-change: transform;
+}
+
+@utility will-change-opacity {
+  will-change: opacity;
+}

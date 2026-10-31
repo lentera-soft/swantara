@@ -1,0 +1,186 @@
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
+import type { LegacyColumnDef as ColumnDef } from "@tanstack/react-table/legacy";
+import { Plus } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useState } from "react";
+import { useForm } from "react-hook-form";
+import { toast } from "sonner";
+import { z } from "zod";
+import { InteractiveEntityTable } from "@/app/(org)/_components/interactive-entity-table";
+import { Button } from "@/components/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/dialog";
+import { Form, FormField, SubmitButton } from "@/components/form";
+import { Input } from "@/components/input";
+import { Switch } from "@/components/switch";
+import { useOrgListQuery } from "@/lib/hooks/use-org-query";
+import type { PriceBook } from "@/lib/services/swantara";
+import { getSwantaraService } from "@/lib/services/swantara";
+import { activeColumn, nameColumn } from "@/lib/utils/table-columns";
+
+type TFn = (key: string, values?: Record<string, string | number>) => string;
+
+function usePriceBookFormSchema() {
+  const t = (useTranslations as unknown as (ns: string) => TFn)("Products");
+  return z.object({
+    name: z.string().min(1, t("validationPriceBookNameRequired")),
+    currencyCode: z.string(),
+    active: z.boolean(),
+  });
+}
+type PriceBookFormValues = z.infer<ReturnType<typeof usePriceBookFormSchema>>;
+
+export function PriceBooksSection({ orgId }: { orgId: string }) {
+  const t = (useTranslations as unknown as (ns: string) => TFn)("Products");
+  const tCommon = useTranslations("Common");
+  const [dialogOpen, setDialogOpen] = useState(false);
+
+  const query = useOrgListQuery<{ priceBooks: PriceBook[] }, Record<string, never>>(
+    "price_books",
+    (organizationId) => getSwantaraService().priceBooks.list(organizationId),
+  );
+
+  const currenciesQuery = useQuery({
+    queryKey: ["currencies"],
+    queryFn: () => getSwantaraService().currencies.list(),
+  });
+
+  const price_books = query.data?.priceBooks ?? [];
+  const currencyOptions = currenciesQuery.data?.currencies ?? [];
+
+  const schema = usePriceBookFormSchema();
+
+  const form = useForm<PriceBookFormValues>({
+    resolver: zodResolver(schema),
+    defaultValues: { name: "", currencyCode: "USD", active: true },
+  });
+
+  function handleCreate(values: PriceBookFormValues) {
+    return getSwantaraService()
+      .priceBooks.create(Number(orgId), {
+        name: values.name,
+        currencyCode: values.currencyCode || null,
+        organizationId: Number(orgId),
+        active: values.active,
+      })
+      .then(() => {
+        toast.success(t("toastPriceBookCreated"));
+        setDialogOpen(false);
+        form.reset();
+        void query.refetch();
+      })
+      .catch(() => {});
+  }
+
+  const columns: ColumnDef<PriceBook>[] = [
+    nameColumn<PriceBook>({
+      basePath: "price_books",
+      header: t("fieldName"),
+    }),
+    {
+      accessorKey: "currencyCode",
+      header: () => t("colCurrency"),
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">{row.original.currencyCode ?? "—"}</span>
+      ),
+    },
+    activeColumn<PriceBook>({
+      header: t("colStatus"),
+      activeLabel: t("active"),
+      inactiveLabel: t("inactive"),
+    }),
+  ];
+
+  return (
+    <div className="flex flex-col gap-4 sm:gap-6">
+      <InteractiveEntityTable
+        columns={columns}
+        data={price_books}
+        getRowId={(row) => String(row.id)}
+        searchKeys={["name"]}
+        statusKey="active"
+        statusOptions={[
+          { value: "true", label: t("active") },
+          { value: "false", label: t("inactive") },
+        ]}
+        searchPlaceholder={t("searchPriceBooks")}
+        filterLabel={t("filterByStatus")}
+        allLabel={t("filterAllStatus")}
+        ariaLabel={t("allPriceBooks")}
+        status={
+          query.isLoading
+            ? { type: "loading" }
+            : query.isError
+              ? {
+                  type: "error",
+                  message: query.error.message,
+                  onRetry: () => void query.refetch(),
+                }
+              : undefined
+        }
+        actions={
+          <Button size="sm" onClick={() => setDialogOpen(true)}>
+            <Plus />
+            <span>{t("addPriceBook")}</span>
+          </Button>
+        }
+      />
+
+      <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>{t("newPriceBook")}</DialogTitle>
+            <DialogDescription>{t("newPriceBookDescription")}</DialogDescription>
+          </DialogHeader>
+          <Form form={form} onSubmit={handleCreate}>
+            <div className="flex flex-col gap-4">
+              <FormField name="name" label={t("fieldName")}>
+                {({ field, id }) => <Input {...field} id={id} placeholder={t("fieldName")} />}
+              </FormField>
+              <FormField name="currencyCode" label={t("colCurrency")}>
+                {({ field, id }) => (
+                  <select
+                    id={id}
+                    value={field.value}
+                    onChange={field.onChange}
+                    className="rounded-md border border-input bg-background px-3 py-2 text-sm"
+                  >
+                    {currencyOptions.map((currency) => (
+                      <option key={currency.code} value={currency.code}>
+                        {currency.code}
+                      </option>
+                    ))}
+                  </select>
+                )}
+              </FormField>
+              <FormField name="active" label={t("active")}>
+                {({ field }) => (
+                  <Switch
+                    checked={field.value}
+                    onCheckedChange={(checked) => field.onChange(Boolean(checked))}
+                    aria-label={t("active")}
+                  />
+                )}
+              </FormField>
+            </div>
+            <DialogFooter>
+              <Button variant="outline" onClick={() => setDialogOpen(false)}>
+                {tCommon("cancel")}
+              </Button>
+              <SubmitButton>{tCommon("save")}</SubmitButton>
+            </DialogFooter>
+          </Form>
+        </DialogContent>
+      </Dialog>
+    </div>
+  );
+}
