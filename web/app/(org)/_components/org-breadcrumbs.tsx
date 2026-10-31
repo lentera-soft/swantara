@@ -31,7 +31,7 @@ export function OrgBreadcrumbs() {
   ];
 
   const settingsSubPageKeys = new Set(["profile"]);
-  const productsSubPageKeys = new Set(["recipes", "categories", "price-books", "supplier-catalog"]);
+  const productsSubPageKeys = new Set(["recipes", "categories", "price-books"]);
   for (let i = 1; i <= trail.length; i++) {
     const prefix = `/${trail.slice(0, i).join("/")}`;
     const match = orgNavItems.find((item) => item.href === prefix);

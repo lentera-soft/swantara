@@ -105,6 +105,7 @@
     {"resource": "consolidation_run", "actions": ["view", "create", "update"]},
     {"resource": "reporting", "actions": ["view", "create"]},
     {"resource": "carrier", "actions": ["view", "create", "update", "delete"]},
+    {"resource": "campaign", "actions": ["view", "create", "update", "delete"]},
     {"resource": "coupon", "actions": ["view", "create", "update", "delete"]},
     {"resource": "gift_card", "actions": ["view", "create", "update"]},
     {"resource": "gift_card_transaction", "actions": ["view"]},

@@ -23,6 +23,29 @@ services:
       timeout: 5s
       retries: 5
 
+  rustfs:
+    image: rustfs/rustfs:latest
+    container_name: rustfs
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    environment:
+      RUSTFS_VOLUMES: /data/rustfs0
+      RUSTFS_ADDRESS: 0.0.0.0:9000
+      RUSTFS_CONSOLE_ADDRESS: 0.0.0.0:9001
+      RUSTFS_CONSOLE_ENABLE: "true"
+      RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
+      RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin}
+    volumes:
+      - rustfs_data:/data/rustfs0
+    healthcheck:
+      test: ["CMD", "sh", "-c", "curl -f http://127.0.0.1:9000/health"]
+      interval: 10s
+      timeout: 5s
+      retries: 10
+      start_period: 20s
+
   migrate:
     build:
       context: .
@@ -56,6 +79,13 @@ services:
       QUEUE_REDIS_HOST: valkey
       QUEUE_REDIS_PORT: "6379"
       STORAGE_PATH: /app/storage
+      STORAGE_PROVIDER: rustfs
+      STORAGE_ENDPOINT: http://rustfs:9000
+      STORAGE_BUCKET: ${RUSTFS_BUCKET:-swantara}
+      STORAGE_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
+      STORAGE_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin}
+      STORAGE_REGION: us-east-1
+      STORAGE_USE_PATH_STYLE: "true"
     expose:
       - "8080"
     volumes:
@@ -64,6 +94,8 @@ services:
       postgres:
         condition: service_healthy
       valkey:
+        condition: service_healthy
+      rustfs:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
@@ -92,12 +124,21 @@ services:
       QUEUE_REDIS_HOST: valkey
       QUEUE_REDIS_PORT: "6379"
       STORAGE_PATH: /app/storage
+      STORAGE_PROVIDER: rustfs
+      STORAGE_ENDPOINT: http://rustfs:9000
+      STORAGE_BUCKET: ${RUSTFS_BUCKET:-swantara}
+      STORAGE_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-rustfsadmin}
+      STORAGE_SECRET_KEY: ${RUSTFS_SECRET_KEY:-rustfsadmin}
+      STORAGE_REGION: us-east-1
+      STORAGE_USE_PATH_STYLE: "true"
     volumes:
       - storage_data:/app/storage
     depends_on:
       postgres:
         condition: service_healthy
       valkey:
+        condition: service_healthy
+      rustfs:
         condition: service_healthy
       migrate:
         condition: service_completed_successfully
@@ -135,6 +176,7 @@ services:
 
 volumes:
   postgres_data:
+  rustfs_data:
   storage_data:
   caddy_data:
   caddy_config:

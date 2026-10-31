@@ -215,6 +215,19 @@ type Carrier struct {
 	DeliveryItemID *uint64 `json:"delivery_item_id"`
 }
 
+type Campaign struct {
+	model.Base
+	OrganizationID *uint64    `json:"organization_id"`
+	Code           *string    `json:"code"`
+	Name           string     `json:"name"`
+	Description    *string    `json:"description"`
+	Channel        *string    `json:"channel"`
+	Status         string     `gorm:"default:planned" json:"status"`
+	StartDate      *time.Time `gorm:"type:date" json:"start_date"`
+	EndDate        *time.Time `gorm:"type:date" json:"end_date"`
+	Budget         *float64   `gorm:"type:numeric(18,4)" json:"budget"`
+}
+
 type ReminderLevel struct {
 	model.Base
 	Name        string `json:"name"`

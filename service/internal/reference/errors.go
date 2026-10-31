@@ -43,5 +43,8 @@ var (
 	ErrCarrierNotFound        = errors.New("carrier not found")
 	ErrCarrierDeliveryProduct = errors.New("carrier delivery item does not exist")
 
+	ErrCampaignName     = errors.New("campaign name is required")
+	ErrCampaignNotFound = errors.New("campaign not found")
+
 	ErrRateNotFound = errors.New("fx rate not found")
 )

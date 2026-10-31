@@ -132,3 +132,13 @@ func (h CarrierHandler) RegisterOrg(api fiber.Router, guards httpx.RouteGuards) 
 	carriers.Put("/:id", guards.Guard("carrier", "update"), h.Update)
 	carriers.Delete("/:id", guards.Guard("carrier", "delete"), h.Delete)
 }
+
+func (h CampaignHandler) RegisterOrg(api fiber.Router, guards httpx.RouteGuards) {
+	campaigns := api.Group("/campaigns", guards.AuthN)
+
+	campaigns.Get("/", guards.Guard("campaign", "view"), h.List)
+	campaigns.Post("/", guards.Guard("campaign", "create"), h.Create)
+	campaigns.Get("/:id", guards.Guard("campaign", "view"), h.Get)
+	campaigns.Put("/:id", guards.Guard("campaign", "update"), h.Update)
+	campaigns.Delete("/:id", guards.Guard("campaign", "delete"), h.Delete)
+}

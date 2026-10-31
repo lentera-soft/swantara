@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v3"
+
 	"github.com/jalusw/swantara/apps/service/internal/accounting"
 	accountingHandler "github.com/jalusw/swantara/apps/service/internal/accounting/handler"
 	"github.com/jalusw/swantara/apps/service/internal/asset"
@@ -149,6 +150,7 @@ func main() {
 	crmStageDAO := dao.NewBase[reference.PipelineStage](d)
 	salesTeamDAO := dao.NewBase[reference.SalesGroup](d)
 	carrierDAO := dao.NewBase[reference.Carrier](d)
+	campaignDAO := dao.NewBase[reference.Campaign](d)
 	departmentDAO := dao.NewBase[reference.Department](d)
 	jobPositionDAO := dao.NewBase[reference.JobPosition](d)
 	workCenterDAO := dao.NewBase[reference.WorkCenter](d)
@@ -183,6 +185,7 @@ func main() {
 	journalSvc := reference.NewJournalService(journalDAO, accountDAO)
 	taxSvc := reference.NewTaxService(taxDAO, accountDAO)
 	taxYearSvc := reference.NewTaxYearService(taxYearDAO)
+	campaignSvc := reference.NewCampaignService(campaignDAO)
 
 	contactSvc := contacts.NewContactService(
 		contacts.NewContactDAO(d),
@@ -216,8 +219,11 @@ func main() {
 	)
 	authzSvc := iam.NewAuthzService(permissionDAO)
 
-	localStore := storage.NewLocalStore(cfg.StoragePath)
-	avatarSvc := iam.NewAvatarService(userDAO, localStore)
+	objectStore, err := newStorageStore(cfg)
+	if err != nil {
+		logger.Fatalf("Failed to initialize storage: %v", err)
+	}
+	avatarSvc := iam.NewAvatarService(userDAO, objectStore)
 
 	authHandler := handler.NewAuthHandler(authSvc)
 	userHandler := handler.NewUserHandler(userDAO, userSvc, authzSvc, iam.NewMemberService(memberDAO, memberRoleDAO, permissionDAO), avatarSvc)
@@ -325,7 +331,9 @@ func main() {
 	priceBookHandler := productsHandler.NewPriceBookHandler(productSvc)
 
 	carrierHandler := referenceHandler.NewCarrierHandler(reference.NewCarrierService(carrierDAO, itemVariantDAO))
+	campaignHandler := referenceHandler.NewCampaignHandler(campaignSvc)
 	carrierHandler.RegisterOrg(orgAPI, guards)
+	campaignHandler.RegisterOrg(orgAPI, guards)
 
 	supplierProductDAO := products.NewSupplierProductDAO(d)
 	supplierProductSvc := products.NewSupplierProductService(
@@ -645,7 +653,7 @@ func main() {
 
 	attachmentDAO := crosscutting.NewAttachmentDAO(d)
 	messageDAO := crosscutting.NewMessageDAO(d)
-	attachmentSvc := crosscutting.NewAttachmentService(attachmentDAO, localStore)
+	attachmentSvc := crosscutting.NewAttachmentService(attachmentDAO, objectStore)
 	messageSvc := crosscutting.NewMessageService(messageDAO)
 	attachmentHandler := crosscuttingHandler.NewAttachmentHandler(attachmentSvc)
 	messageHandler := crosscuttingHandler.NewMessageHandler(messageSvc)
@@ -1148,5 +1156,21 @@ func main() {
 
 	if limiterStorage != nil {
 		_ = limiterStorage.Close()
+	}
+}
+
+func newStorageStore(cfg *config.Config) (storage.Store, error) {
+	switch cfg.StorageProvider {
+	case "s3", "rustfs":
+		return storage.NewS3Store(context.Background(), storage.S3Config{
+			Endpoint:     cfg.StorageEndpoint,
+			Bucket:       cfg.StorageBucket,
+			AccessKey:    cfg.StorageAccessKey,
+			SecretKey:    cfg.StorageSecretKey,
+			Region:       cfg.StorageRegion,
+			UsePathStyle: cfg.StorageUsePathStyle,
+		})
+	default:
+		return storage.NewLocalStore(cfg.StoragePath), nil
 	}
 }

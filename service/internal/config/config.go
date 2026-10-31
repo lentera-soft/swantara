@@ -84,8 +84,16 @@ type Config struct {
 	AuthEmailVerifyTTLDuration   time.Duration
 	AuthPasswordResetTTLDuration time.Duration
 
-	StoragePath          string `mapstructure:"STORAGE_PATH" validate:"required"`
-	StorageMaxUploadSize int64  `mapstructure:"STORAGE_MAX_UPLOAD_SIZE" validate:"required,min=1"`
+	StorageProvider       string `mapstructure:"STORAGE_PROVIDER" validate:"omitempty,oneof=local s3 rustfs"`
+	StoragePath           string `mapstructure:"STORAGE_PATH" validate:"omitempty"`
+	StorageMaxUploadSize  int64  `mapstructure:"STORAGE_MAX_UPLOAD_SIZE" validate:"required,min=1"`
+
+	StorageEndpoint       string `mapstructure:"STORAGE_ENDPOINT"`
+	StorageBucket         string `mapstructure:"STORAGE_BUCKET"`
+	StorageAccessKey      string `mapstructure:"STORAGE_ACCESS_KEY"`
+	StorageSecretKey      string `mapstructure:"STORAGE_SECRET_KEY"`
+	StorageRegion         string `mapstructure:"STORAGE_REGION"`
+	StorageUsePathStyle   bool   `mapstructure:"STORAGE_USE_PATH_STYLE"`
 
 	RateLimiterEnabled    bool   `mapstructure:"RATE_LIMITER_ENABLED"`
 	RateLimiterMax        int    `mapstructure:"RATE_LIMITER_MAX" validate:"min=1"`
@@ -159,8 +167,12 @@ const (
 	DefaultRateLimiterRedisHost            = "localhost"
 	DefaultRateLimiterRedisPort            = 6379
 	DefaultRateLimiterRedisDb              = 0
+	DefaultStorageProvider                 = "local"
 	DefaultStoragePath                     = "./storage"
 	DefaultStorageMaxUploadSize            = 10 * 1024 * 1024
+	DefaultStorageBucket                   = "swantara"
+	DefaultStorageRegion                   = "us-east-1"
+	DefaultStorageUsePathStyle             = true
 )
 
 func ConfigPath() string {
@@ -255,8 +267,12 @@ func New(path, filename string) (*Config, error) {
 	v.SetDefault("RATE_LIMITER_REDIS_PORT", DefaultRateLimiterRedisPort)
 	v.SetDefault("RATE_LIMITER_REDIS_DB", DefaultRateLimiterRedisDb)
 
+	v.SetDefault("STORAGE_PROVIDER", DefaultStorageProvider)
 	v.SetDefault("STORAGE_PATH", DefaultStoragePath)
 	v.SetDefault("STORAGE_MAX_UPLOAD_SIZE", DefaultStorageMaxUploadSize)
+	v.SetDefault("STORAGE_BUCKET", DefaultStorageBucket)
+	v.SetDefault("STORAGE_REGION", DefaultStorageRegion)
+	v.SetDefault("STORAGE_USE_PATH_STYLE", DefaultStorageUsePathStyle)
 
 	value := reflect.ValueOf(&config).Elem()
 	typ := value.Type()
@@ -351,6 +367,21 @@ func (c *Config) Validate() error {
 
 	if err := v.Struct(c); err != nil {
 		return err
+	}
+
+	if c.StorageProvider == "s3" || c.StorageProvider == "rustfs" {
+		if c.StorageEndpoint == "" {
+			return fmt.Errorf("STORAGE_ENDPOINT is required for %s storage", c.StorageProvider)
+		}
+		if c.StorageBucket == "" {
+			return fmt.Errorf("STORAGE_BUCKET is required for %s storage", c.StorageProvider)
+		}
+		if c.StorageAccessKey == "" {
+			return fmt.Errorf("STORAGE_ACCESS_KEY is required for %s storage", c.StorageProvider)
+		}
+		if c.StorageSecretKey == "" {
+			return fmt.Errorf("STORAGE_SECRET_KEY is required for %s storage", c.StorageProvider)
+		}
 	}
 
 	for _, d := range []struct {

@@ -219,14 +219,6 @@ export const orgNavItems: OrgNavItem[] = [
     permission: "item.view",
   },
   {
-    key: "supplierCatalog",
-    group: "modules",
-    module: "products",
-    href: "/products/supplier-catalog",
-    icon: Building2,
-    permission: "item.view",
-  },
-  {
     key: "stock",
     group: "modules",
     module: "inventory",

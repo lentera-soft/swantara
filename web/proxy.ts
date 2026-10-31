@@ -12,7 +12,11 @@ export async function proxy(request: NextRequest) {
   const auth = await authMiddleware(request);
   let final: NextResponse;
   try {
-    final = auth ?? NextResponse.next();
+    final =
+      auth ??
+      NextResponse.next({
+        request: { headers: request.headers },
+      });
   } catch {
     const url = request.nextUrl.clone();
     url.pathname = "/login";

@@ -61,8 +61,8 @@ func TestIamSeedData(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(seed.permissions) != 350 {
-		t.Errorf("permissions: got %d, want 350", len(seed.permissions))
+	if len(seed.permissions) != 354 {
+		t.Errorf("permissions: got %d, want 354", len(seed.permissions))
 	}
 }
 
