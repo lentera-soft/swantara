@@ -61,7 +61,7 @@ const leadToCashFunnelQuery = `
 		WHERE o.organization_id = ? AND o.deleted_at IS NULL AND o.state <> 'cancelled'
 		  AND o.created_at >= ? AND o.created_at <= ?
 	),
-	invoices AS (
+	invoice_totals AS (
 		SELECT
 			COUNT(*) AS invoices,
 			COUNT(*) FILTER (WHERE i.payment_state = 'paid') AS paid_invoices,
@@ -83,7 +83,7 @@ const leadToCashFunnelQuery = `
 	       ord.orders, ord.ordered_value,
 	       i.invoices, i.paid_invoices, i.invoiced_value,
 	       c.collected_cash
-	FROM leads l, opportunities o, quotes q, orders ord, invoices i, cash c`
+	FROM leads l, opportunities o, quotes q, orders ord, invoice_totals i, cash c`
 
 func (d leadToCashDAO) Funnel(ctx context.Context, organizationID uint64, start, end time.Time) (LeadToCashFunnel, error) {
 	var funnel LeadToCashFunnel
