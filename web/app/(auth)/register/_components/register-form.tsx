@@ -1,8 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
-import { useId } from "react";
-import { Controller, FormProvider, useFormContext } from "react-hook-form";
+import { Controller, FormProvider } from "react-hook-form";
 import { Button } from "@/components/button";
 import { Field } from "@/components/field";
 import { FieldFeedback } from "@/components/field-feedback";
@@ -10,52 +9,8 @@ import { SubmitButton } from "@/components/form";
 import { Input } from "@/components/input";
 import { Label } from "@/components/label";
 import { Password } from "@/components/password";
-import { PhoneInput } from "@/components/phone-input";
 
-import { type RegisterFormSchema, useRegisterForm } from "../_hooks/use-register-form";
-
-function PasswordField({
-  name,
-  label,
-}: {
-  name: "password" | "passwordConfirmation";
-  label: string;
-}) {
-  const { control } = useFormContext<RegisterFormSchema>();
-  const t = useTranslations("Auth");
-  const tx = t as unknown as (key: string) => string;
-  const id = useId();
-
-  return (
-    <Controller
-      name={name}
-      control={control}
-      render={({ field, fieldState }) => {
-        return (
-          <Field>
-            <Label htmlFor={id}>{label}</Label>
-            <Password
-              id={id}
-              autoComplete="new-password"
-              aria-invalid={Boolean(fieldState.error)}
-              {...field}
-            />
-            <FieldFeedback
-              visible={Boolean(fieldState.error)}
-              intent="danger"
-              role={fieldState.error ? "alert" : undefined}
-            >
-              {fieldState.error?.message}
-            </FieldFeedback>
-            {name === "password" && (
-              <p className="text-sm text-muted-foreground">{tx("passwordMinLengthHint")}</p>
-            )}
-          </Field>
-        );
-      }}
-    />
-  );
-}
+import { useRegisterForm } from "../_hooks/use-register-form";
 
 export default function RegisterForm() {
   const { form, handleSubmit } = useRegisterForm({});
@@ -94,7 +49,28 @@ export default function RegisterForm() {
               </Field>
             )}
           />
-          <PasswordField name="password" label={t("password")} />
+        <Controller 
+         name="password"
+         control={control}
+         render={({ field, fieldState}) => (
+        <Field>
+            <Label htmlFor="password">Password</Label>
+            <Password
+              id="password"
+              autoComplete="new-password"
+              aria-invalid={Boolean(fieldState.error)}
+              {...field}
+            />
+            <FieldFeedback
+              visible={Boolean(fieldState.error)}
+              intent="danger"
+              role={fieldState.error ? "alert" : undefined}
+            >
+              {fieldState.error?.message}
+            </FieldFeedback>
+              <p className="text-sm text-muted-foreground">{tx("passwordMinLengthHint")}</p>
+          </Field>
+        )}/>
         </div>
         <div className="mt-8 flex flex-col">
           <SubmitButton variant="default" size="lg" loading={formState.isSubmitting}>

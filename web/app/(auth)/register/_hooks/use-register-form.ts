@@ -42,10 +42,8 @@ export function useRegisterForm({
   });
 
   const handleSubmit = form.handleSubmit(async (data: RegisterFormSchema) => {
-    const phone = data.phone?.trim();
-    const { passwordConfirmation: _passwordConfirmation, ...rest } = data;
     try {
-      await register({ ...rest, phone: phone ? phone : undefined });
+      await register(data);
       try {
         await login({
           email: data.email.trim(),

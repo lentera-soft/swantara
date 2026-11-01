@@ -25,10 +25,6 @@ export function useRegisterFormSchema(
 ) {
   return z
     .object({
-      firstName: z.string().min(1, {
-        message: messages.firstNameRequired,
-      }),
-      lastName: z.string(),
       email: z
         .email({
           message: messages.invalidEmail,
@@ -42,24 +38,14 @@ export function useRegisterFormSchema(
         .refine((value) => !value || /^\+[1-9]\d{1,14}$/.test(value), messages.invalidPhone),
       password: z.string().min(8, {
         message: messages.passwordMinLength,
-      }),
-      passwordConfirmation: z.string().min(8, {
-        message: messages.confirmPasswordMinLength,
-      }),
-    })
-    .refine((data) => data.password === data.passwordConfirmation, {
-      message: messages.passwordMismatch,
-      path: ["passwordConfirmation"],
+      })
     });
 }
 
 export type RegisterFormSchema = z.infer<ReturnType<typeof useRegisterFormSchema>>;
 
 export const registerFormDefaultValues: RegisterFormSchema = {
-  firstName: "",
-  lastName: "",
   email: "",
   phone: "",
   password: "",
-  passwordConfirmation: "",
 };
