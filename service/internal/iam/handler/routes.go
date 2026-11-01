@@ -22,6 +22,15 @@ func (h AuthHandler) Register(api fiber.Router, guards httpx.RouteGuards) {
 	sessions.Delete("/sessions/:id", h.RevokeSessionHandler)
 }
 
+func (h OAuthHandler) Register(api fiber.Router, guards httpx.RouteGuards) {
+	oauth := api.Group("/auth/oauth")
+
+	oauth.Get("/google", httpx.AuthRateLimitGuard(), h.GoogleRedirectHandler)
+	oauth.Get("/google/callback", httpx.AuthRateLimitGuard(), h.GoogleCallbackHandler)
+	oauth.Get("/facebook", httpx.AuthRateLimitGuard(), h.FacebookRedirectHandler)
+	oauth.Get("/facebook/callback", httpx.AuthRateLimitGuard(), h.FacebookCallbackHandler)
+}
+
 func (h UserHandler) Register(api fiber.Router, guards httpx.RouteGuards) {
 	api.Get("/me", guards.AuthN, h.GetMe)
 	api.Put("/me/avatar", guards.AuthN, h.UpdateMeAvatar)

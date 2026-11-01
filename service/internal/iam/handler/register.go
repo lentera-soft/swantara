@@ -10,7 +10,7 @@ import (
 )
 
 type RegisterRequest struct {
-	FirstName string  `json:"first_name" validate:"required"`
+	FirstName string  `json:"first_name"`
 	LastName  string  `json:"last_name"`
 	Email     string  `json:"email" validate:"required,email"`
 	Phone     *string `json:"phone"`
@@ -39,7 +39,7 @@ type RegisterResponse struct {
 func (h AuthHandler) RegisterHandler(c fiber.Ctx) error {
 	var request RegisterRequest
 
-	if !bindAndValidate(c, &request) {
+	if !httpx.BindAndValidate(c, &request) {
 		return nil
 	}
 
@@ -50,6 +50,7 @@ func (h AuthHandler) RegisterHandler(c fiber.Ctx) error {
 		Phone:     request.Phone,
 		Password:  request.Password,
 	})
+
 	if err != nil {
 		switch {
 		case errors.Is(err, iam.ErrEmailRegistered):

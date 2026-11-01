@@ -14,7 +14,6 @@ import { Label } from "@/components/label";
 import { Password } from "@/components/password";
 
 import { useLoginForm } from "../_hooks/use-login-form";
-
 export default function LoginForm() {
   const { form, handleSubmit, isPending } = useLoginForm({});
   const t = useTranslations("Auth");
@@ -86,21 +85,21 @@ export default function LoginForm() {
             }}
           />
         </div>
-        <div className="mt-2 flex items-center gap-2">
-          <Controller
-            name="rememberMe"
-            control={form.control}
-            render={({ field }) => (
-              <Checkbox
-                id={rememberMeId}
-                checked={field.value}
-                onCheckedChange={(checked) => field.onChange(Boolean(checked))}
-              />
-            )}
-          />
-          <Label htmlFor={rememberMeId}>{t("rememberMe")}</Label>
-        </div>
-        <div className="mt-2 flex justify-end">
+        <div className="mt-2 flex justify-between items-baseline">
+          <div className="mt-2 flex items-center gap-2">
+            <Controller
+              name="rememberMe"
+              control={form.control}
+              render={({ field }) => (
+                <Checkbox
+                  id={rememberMeId}
+                  checked={field.value ?? false}
+                  onCheckedChange={(checked) => field.onChange(Boolean(checked))}
+                />
+              )}
+            />
+            <Label htmlFor={rememberMeId}>{t("rememberMe")}</Label>
+          </div>
           <Link
             className="inline-flex min-h-12 items-center rounded-md px-2 text-sm text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             href="/forgot-password"
@@ -108,13 +107,19 @@ export default function LoginForm() {
             {t("forgotPassword")}
           </Link>
         </div>
-        <div className="mt-6 sm:mt-8">
+        <div className="mt-6 sm:mt-4 flex flex-col gap-y-1">
           <SubmitButton className="w-full" loading={isPending} variant="default" size="lg">
             {t("loginButton")}
           </SubmitButton>
+          <Button className="w-full" variant="outline">
+              {t("emailLink")}
+          </Button>
         </div>
-        <div className="mt-4 flex flex-col gap-2">
-          <Button type="button" variant="outline" className="w-full">
+        <div className="my-6">
+          <p className="text-center text-sm text-slate-600">Or Continue With</p>
+        </div>
+        <div className="flex gap-2 w-full">
+          <Button type="button" variant="outline" className="w-full min-w-0 flex-1">
             <svg viewBox="0 0 24 24" aria-hidden="true" className="size-5">
               <path
                 fill="#4285F4"
@@ -133,16 +138,16 @@ export default function LoginForm() {
                 d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z"
               />
             </svg>
-            Continue with Google
+            <span>Google</span>
           </Button>
-          <Button type="button" variant="outline" className="w-full">
+          <Button type="button" variant="outline" className="w-full flex-1">
             <svg viewBox="0 0 24 24" aria-hidden="true" className="size-5">
               <path
                 fill="#1877F2"
                 d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
               />
             </svg>
-            Continue with Facebook
+            <span>Facebook</span>
           </Button>
         </div>
       </form>

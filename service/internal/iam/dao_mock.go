@@ -205,6 +205,26 @@ func (m UserPasswordResetDAOMock) DeleteByUserID(ctx context.Context, userID uin
 	return nil
 }
 
+type UserOAuthIdentityDAOMock struct {
+	DAOMock[UserOAuthIdentity]
+	FindByProviderUserFunc func(ctx context.Context, provider, providerUserID string) (*UserOAuthIdentity, error)
+	ListByUserIDFunc       func(ctx context.Context, userID uint64) ([]*UserOAuthIdentity, error)
+}
+
+func (m UserOAuthIdentityDAOMock) FindByProviderUser(ctx context.Context, provider, providerUserID string) (*UserOAuthIdentity, error) {
+	if m.FindByProviderUserFunc != nil {
+		return m.FindByProviderUserFunc(ctx, provider, providerUserID)
+	}
+	return nil, nil
+}
+
+func (m UserOAuthIdentityDAOMock) ListByUserID(ctx context.Context, userID uint64) ([]*UserOAuthIdentity, error) {
+	if m.ListByUserIDFunc != nil {
+		return m.ListByUserIDFunc(ctx, userID)
+	}
+	return nil, nil
+}
+
 type PermissionDAOMock struct {
 	DAOMock[Permission]
 	FindByCodeFunc                      func(ctx context.Context, code string) (*Permission, error)

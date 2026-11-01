@@ -154,7 +154,7 @@ export default function RegisterForm() {
                 <PhoneInput
                   id={phoneId}
                   placeholder="+6281234567890"
-                  ariaInvalid={Boolean(fieldState.error)}
+                  aria-invalid={Boolean(fieldState.error)}
                   value={field.value}
                   onChange={field.onChange}
                 />

@@ -84,6 +84,18 @@ type Config struct {
 	AuthEmailVerifyTTLDuration   time.Duration
 	AuthPasswordResetTTLDuration time.Duration
 
+	OAuthStateTTL        string `mapstructure:"OAUTH_STATE_TTL" validate:"omitempty"`
+	OAuthHTTPTimeout     string `mapstructure:"OAUTH_HTTP_TIMEOUT" validate:"omitempty"`
+	OAuthSuccessRedirect string `mapstructure:"OAUTH_SUCCESS_REDIRECT" validate:"omitempty,startswith=/"`
+
+	OAuthStateTTLDuration    time.Duration
+	OAuthHTTPTimeoutDuration time.Duration
+
+	GoogleClientID     string `mapstructure:"OAUTH_GOOGLE_CLIENT_ID"`
+	GoogleClientSecret string `mapstructure:"OAUTH_GOOGLE_CLIENT_SECRET"`
+	FacebookAppID      string `mapstructure:"OAUTH_FACEBOOK_APP_ID"`
+	FacebookAppSecret  string `mapstructure:"OAUTH_FACEBOOK_APP_SECRET"`
+
 	StorageProvider      string `mapstructure:"STORAGE_PROVIDER" validate:"omitempty,oneof=local s3 rustfs"`
 	StoragePath          string `mapstructure:"STORAGE_PATH" validate:"omitempty"`
 	StorageMaxUploadSize int64  `mapstructure:"STORAGE_MAX_UPLOAD_SIZE" validate:"required,min=1"`
@@ -160,6 +172,9 @@ const (
 	DefaultMailPasswordResetRedirection    = "http://localhost:3000/password-reset"
 	DefaultAuthEmailVerifyTtl              = "24h"
 	DefaultAuthPasswordResetTtl            = "30m"
+	DefaultOAuthStateTtl                   = "10m"
+	DefaultOAuthHTTPTimeout                = "15s"
+	DefaultOAuthSuccessRedirect            = "/onboarding"
 	DefaultRateLimiterEnabled              = true
 	DefaultRateLimiterMax                  = 60
 	DefaultRateLimiterExpiration           = "1m"
@@ -258,6 +273,10 @@ func New(path, filename string) (*Config, error) {
 	v.SetDefault("AUTH_EMAIL_VERIFY_TTL", DefaultAuthEmailVerifyTtl)
 	v.SetDefault("AUTH_PASSWORD_RESET_TTL", DefaultAuthPasswordResetTtl)
 
+	v.SetDefault("OAUTH_STATE_TTL", DefaultOAuthStateTtl)
+	v.SetDefault("OAUTH_HTTP_TIMEOUT", DefaultOAuthHTTPTimeout)
+	v.SetDefault("OAUTH_SUCCESS_REDIRECT", DefaultOAuthSuccessRedirect)
+
 	v.SetDefault("RATE_LIMITER_ENABLED", DefaultRateLimiterEnabled)
 	v.SetDefault("RATE_LIMITER_MAX", DefaultRateLimiterMax)
 	v.SetDefault("RATE_LIMITER_EXPIRATION", DefaultRateLimiterExpiration)
@@ -312,6 +331,25 @@ func New(path, filename string) (*Config, error) {
 		return nil, err
 	}
 	config.AuthPasswordResetTTLDuration = passwordResetTTL
+
+	if config.OAuthStateTTL == "" {
+		config.OAuthStateTTL = DefaultOAuthStateTtl
+	}
+	if config.OAuthHTTPTimeout == "" {
+		config.OAuthHTTPTimeout = DefaultOAuthHTTPTimeout
+	}
+
+	oauthStateTTL, err := helper.ParseDuration("OAUTH_STATE_TTL", config.OAuthStateTTL)
+	if err != nil {
+		return nil, err
+	}
+	config.OAuthStateTTLDuration = oauthStateTTL
+
+	oauthHTTPTimeout, err := helper.ParseDuration("OAUTH_HTTP_TIMEOUT", config.OAuthHTTPTimeout)
+	if err != nil {
+		return nil, err
+	}
+	config.OAuthHTTPTimeoutDuration = oauthHTTPTimeout
 
 	accessTokenExpires, err := helper.ParseDuration("JWT_ACCESS_TOKEN_EXPIRES_IN", config.JWTAccessTokenExpires)
 	if err != nil {
@@ -384,6 +422,14 @@ func (c *Config) Validate() error {
 		}
 	}
 
+	if (c.GoogleClientID != "") != (c.GoogleClientSecret != "") {
+		return fmt.Errorf("OAUTH_GOOGLE_CLIENT_ID and OAUTH_GOOGLE_CLIENT_SECRET must be set together")
+	}
+
+	if (c.FacebookAppID != "") != (c.FacebookAppSecret != "") {
+		return fmt.Errorf("OAUTH_FACEBOOK_APP_ID and OAUTH_FACEBOOK_APP_SECRET must be set together")
+	}
+
 	for _, d := range []struct {
 		name  string
 		value string
@@ -391,7 +437,12 @@ func (c *Config) Validate() error {
 		{name: "RATE_LIMITER_EXPIRATION", value: c.RateLimiterExpiration},
 		{name: "AUTH_EMAIL_VERIFY_TTL", value: c.AuthEmailVerifyTTL},
 		{name: "AUTH_PASSWORD_RESET_TTL", value: c.AuthPasswordResetTTL},
+		{name: "OAUTH_STATE_TTL", value: c.OAuthStateTTL},
+		{name: "OAUTH_HTTP_TIMEOUT", value: c.OAuthHTTPTimeout},
 	} {
+		if d.value == "" {
+			continue
+		}
 		if _, err := helper.ParseDuration(d.name, d.value); err != nil {
 			return err
 		}

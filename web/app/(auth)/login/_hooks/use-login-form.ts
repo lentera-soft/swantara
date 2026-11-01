@@ -28,6 +28,7 @@ export function useLoginFormSchema(messages: LoginFormMessages = loginFormDefaul
   return z.object({
     email: z.string().min(1, { message: messages.emailRequired }),
     password: z.string().min(1, { message: messages.passwordRequired }),
+    rememberMe: z.boolean().optional(),
   });
 }
 
@@ -36,6 +37,7 @@ export type LoginFormsSchema = z.infer<ReturnType<typeof useLoginFormSchema>>;
 const loginFormDefaultValues: LoginFormsSchema = {
   email: "",
   password: "",
+  rememberMe: false,
 };
 
 export type UseLoginFormParams = {

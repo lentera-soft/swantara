@@ -145,6 +145,7 @@ func main() {
 	userSessionDAO := iam.NewUserSessionDAO(d)
 	userEmailVerificationDAO := iam.NewUserEmailVerificationDAO(d)
 	userPasswordResetDAO := iam.NewUserPasswordResetDAO(d)
+	userOAuthIdentityDAO := iam.NewUserOAuthIdentityDAO(d)
 	permissionDAO := iam.NewPermissionDAO(d)
 	memberDAO := iam.NewMemberDAO(d)
 	memberRoleDAO := iam.NewMemberRoleDAO(d)
@@ -397,6 +398,16 @@ func main() {
 	)
 	authzSvc := iam.NewAuthzService(permissionDAO)
 	avatarSvc := iam.NewAvatarService(userDAO, objectStore)
+
+	var oauthProviders []iam.OAuthProvider
+	if cfg.GoogleClientID != "" {
+		oauthProviders = append(oauthProviders, iam.NewGoogleProvider(cfg))
+	}
+	if cfg.FacebookAppID != "" {
+		oauthProviders = append(oauthProviders, iam.NewFacebookProvider(cfg))
+	}
+	oauthSvc := iam.NewOAuthService(userDAO, userSvc, userOAuthIdentityDAO, userSessionDAO, passwordSvc, tokenSvc, oauthProviders...)
+
 	contactInquirySvc := inquiry.NewContactInquiryService(contactInquiryDAO)
 	productSvc := products.NewProductService(
 		itemDAO,
@@ -842,6 +853,7 @@ func main() {
 	queueHealth := queue.NewHealthChecker(cfg)
 
 	authHandler := handler.NewAuthHandler(authSvc)
+	oauthHandler := handler.NewOAuthHandler(oauthSvc, cfg)
 	userHandler := handler.NewUserHandler(userDAO, userSvc, authzSvc, memberSvc, avatarSvc)
 	fxRateHandler := referenceHandler.NewFxRateHandler(fxRateSvc, fxRateSource)
 	unitGroupHandler := referenceHandler.NewUnitGroupHandler(uomSvc)
@@ -996,6 +1008,7 @@ func main() {
 
 	contactInquiryHandler.RegisterPublic(api)
 	authHandler.Register(api, guards)
+	oauthHandler.Register(api, guards)
 	userHandler.Register(api, guards)
 	unitGroupHandler.Register(orgAPI, guards)
 	uomHandler.Register(orgAPI, guards)

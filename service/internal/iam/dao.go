@@ -211,6 +211,39 @@ func (s userPasswordResetDAO) DeleteByUserID(ctx context.Context, userID uint64)
 	return s.db.WithContext(ctx).Unscoped().Where("user_id = ?", userID).Delete(&UserPasswordReset{}).Error
 }
 
+type UserOAuthIdentityDAO interface {
+	dao.CRUD[UserOAuthIdentity]
+	FindByProviderUser(ctx context.Context, provider, providerUserID string) (*UserOAuthIdentity, error)
+	ListByUserID(ctx context.Context, userID uint64) ([]*UserOAuthIdentity, error)
+}
+
+type userOAuthIdentityDAO struct {
+	dao.Base[UserOAuthIdentity]
+	db *gorm.DB
+}
+
+func NewUserOAuthIdentityDAO(db *gorm.DB) UserOAuthIdentityDAO {
+	return userOAuthIdentityDAO{Base: dao.NewBase[UserOAuthIdentity](db), db: db}
+}
+
+func (s userOAuthIdentityDAO) FindByProviderUser(ctx context.Context, provider, providerUserID string) (*UserOAuthIdentity, error) {
+	var entity *UserOAuthIdentity
+	if err := s.db.WithContext(ctx).
+		Where("provider = ? AND provider_user_id = ?", provider, providerUserID).
+		Find(&entity).Error; err != nil {
+		return nil, err
+	}
+	return entity, nil
+}
+
+func (s userOAuthIdentityDAO) ListByUserID(ctx context.Context, userID uint64) ([]*UserOAuthIdentity, error) {
+	var identities []*UserOAuthIdentity
+	if err := s.db.WithContext(ctx).Where("user_id = ?", userID).Find(&identities).Error; err != nil {
+		return nil, err
+	}
+	return identities, nil
+}
+
 type PermissionDAO interface {
 	dao.CRUD[Permission]
 	FindByCode(ctx context.Context, code string) (*Permission, error)

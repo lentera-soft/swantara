@@ -1,5 +1,6 @@
 "use client";
 
+import { useIsRestoring } from "@tanstack/react-query";
 import { Banknote, BarChart3, Truck, UserRound, Users } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo } from "react";
@@ -29,6 +30,7 @@ type DashboardStat = {
 
 function useDashboardStats(): DashboardStat[] {
   const { has } = usePermissions();
+  const isRestoring = useIsRestoring();
   const t = useTranslations("Dashboard");
   const financeKpi = useFinanceKpi();
   const procurementKpi = useProcurementKpi();
@@ -53,32 +55,34 @@ function useDashboardStats(): DashboardStat[] {
   const stats: DashboardStat[] = [
     {
       key: "revenue",
-      value: formatMoney(finance?.revenue ?? 0, { currency: DEFAULT_CURRENCY }),
-      trend: finance?.netMarginPct
-        ? t("trendMargin", {
-            pct: (finance.netMarginPct * 100).toFixed(0),
-          })
-        : "—",
+      value: isRestoring ? "—" : formatMoney(finance?.revenue ?? 0, { currency: DEFAULT_CURRENCY }),
+      trend: isRestoring
+        ? "—"
+        : finance?.netMarginPct
+          ? t("trendMargin", {
+              pct: (finance.netMarginPct * 100).toFixed(0),
+            })
+          : "—",
       icon: Banknote,
       permission: "journal_entry.view",
     },
     {
       key: "customers",
-      value: formatNumber(contactsCount),
+      value: isRestoring ? "—" : formatNumber(contactsCount),
       trend: t("trendFlat"),
       icon: Users,
       permission: "contact.view",
     },
     {
       key: "purchases",
-      value: formatNumber(procurement?.purchaseCount ?? 0),
+      value: isRestoring ? "—" : formatNumber(procurement?.purchaseCount ?? 0),
       trend: t("trendFlat"),
       icon: Truck,
       permission: "purchase_order.view",
     },
     {
       key: "employees",
-      value: formatNumber(employeesCount),
+      value: isRestoring ? "—" : formatNumber(employeesCount),
       trend: t("trendFlat"),
       icon: UserRound,
       permission: "employee.view",

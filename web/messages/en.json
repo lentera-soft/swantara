@@ -58,6 +58,7 @@
     "confirmPassword": "Confirm password",
     "forgotPassword": "Forgot password?",
     "loginButton": "Sign in",
+    "emailLink": "Email Link",
     "rememberMe": "Remember me",
     "registerButton": "Sign up",
     "sendResetLink": "Send reset link",

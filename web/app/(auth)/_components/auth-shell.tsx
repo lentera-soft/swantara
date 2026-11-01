@@ -17,12 +17,9 @@ export default async function AuthShell({
   className,
 }: AuthShellProps) {
   return (
-    <div data-slot="auth-shell" className="relative flex min-h-screen bg-muted/20">
-      <div className="absolute top-4 right-4">
-        <LocaleSwitcher variant="outline" />
-      </div>
+    <div data-slot="auth-shell" className="flex min-h-screen bg-muted/20">
       <div
-        className={cn("mx-auto flex w-full max-w-md flex-col justify-center p-4 sm:p-6", className)}
+        className={cn("mx-auto flex w-full max-w-lg flex-col justify-center p-4 sm:p-6", className)}
       >
         <Card>
           <CardHeader className="border-b">

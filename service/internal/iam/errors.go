@@ -27,4 +27,12 @@ var (
 	ErrSessionRevoked        = errors.New("session revoked")
 	ErrSessionExpired        = errors.New("session has expired")
 	ErrSessionNotOwnedByUser = errors.New("session does not belong to user")
+
+	ErrOAuthUnknownProvider    = errors.New("unknown oauth provider")
+	ErrOAuthProviderDisabled   = errors.New("oauth provider is not configured")
+	ErrOAuthStateMismatch      = errors.New("oauth state mismatch")
+	ErrOAuthExchangeFailed     = errors.New("oauth code exchange failed")
+	ErrOAuthProfileUnavailable = errors.New("oauth provider profile unavailable")
+	ErrOAuthEmailRequired      = errors.New("oauth account has no email")
+	ErrOAuthEmailUnverified    = errors.New("oauth email is not verified")
 )

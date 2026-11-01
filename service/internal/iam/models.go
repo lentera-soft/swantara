@@ -28,6 +28,21 @@ type User struct {
 	PhoneVerifiedAt *time.Time `json:"phone_verified_at"`
 }
 
+const (
+	OAuthProviderGoogle   = "google"
+	OAuthProviderFacebook = "facebook"
+)
+
+type UserOAuthIdentity struct {
+	model.Base
+	UserID         uint64  `json:"user_id"`
+	Provider       string  `gorm:"type:text" json:"provider"`
+	ProviderUserID string  `json:"provider_user_id"`
+	Email          *string `json:"email" audit:"redact"`
+
+	User *User `json:"user,omitempty" gorm:"foreignKey:UserID"`
+}
+
 type UserSession struct {
 	model.Base
 	DeviceName   *string    `json:"device_name"`

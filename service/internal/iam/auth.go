@@ -164,9 +164,13 @@ func (s AuthService) Register(ctx context.Context, registrationData RegisterData
 }
 
 func (s AuthService) generateUsername(ctx context.Context, email string) (string, error) {
+	return generateUniqueUsername(ctx, s.userSvc, email)
+}
+
+func generateUniqueUsername(ctx context.Context, userSvc UserService, email string) (string, error) {
 	base := usernameFromEmail(email)
 
-	taken, err := s.userSvc.IsUsernameTaken(ctx, base)
+	taken, err := userSvc.IsUsernameTaken(ctx, base)
 	if err != nil {
 		return "", err
 	}

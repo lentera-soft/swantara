@@ -151,7 +151,7 @@ export function ModulesGrid() {
                   ? "col-span-12 md:col-span-6 lg:col-span-4"
                   : index < 9
                     ? "col-span-12 md:col-span-6 lg:col-span-4"
-                    : "col-span-12 md:col-span-6 lg:col-span-3";
+                    : "col-span-12 md:col-span-6 lg:col-span-4";
             return (
               <a
                 key={mod.key}

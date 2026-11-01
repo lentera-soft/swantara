@@ -74,7 +74,7 @@ CREATE TABLE contacts (
 CREATE TABLE users(
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   username TEXT NOT NULL,
-  first_name TEXT NOT NULL,
+  first_name TEXT,
   last_name TEXT,
   email TEXT NOT NULL,
   phone TEXT,
