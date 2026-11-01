@@ -8,30 +8,14 @@ import {
   Target,
 } from "lucide-react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { getTranslations } from "next-intl/server";
 import { Button } from "@/components/button";
 import { requireActiveOrgId } from "@/lib/server/active-org";
 import { PipelineSection } from "./_components/pipeline-section";
 
-const LEGACY_TAB_REDIRECT: Record<string, string> = {
-  leads: "leads",
-  opportunities: "opportunities",
-  activities: "activities",
-};
 
-export default async function OrgCrmPage({
-  searchParams,
-}: {
-  searchParams?: Promise<{ tab?: string | string[] }>;
-}) {
+export default async function OrgCrmPage() {
   const id = String(await requireActiveOrgId());
-  const sp = searchParams ? await searchParams : {};
-  const rawTabValue = sp?.tab;
-  const rawTab = Array.isArray(rawTabValue) ? rawTabValue[0] : rawTabValue;
-  if (rawTab && LEGACY_TAB_REDIRECT[rawTab]) {
-    redirect(`/crm/${LEGACY_TAB_REDIRECT[rawTab]}`);
-  }
   const t = await getTranslations("Crm");
 
   const destinations = [
