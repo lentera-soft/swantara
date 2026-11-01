@@ -205,18 +205,25 @@ func ConfigFilename() string {
 }
 
 func New(path, filename string) (*Config, error) {
-	v := viper.New()
 	var config Config
+
+	v := viper.New()
 
 	v.SetConfigType(ConfigTypeEnv)
 	v.AutomaticEnv()
 
-	if filename != "" {
-		v.SetConfigName(filename)
-		v.AddConfigPath(path)
-		if err := v.ReadInConfig(); err != nil {
-			return nil, err
-		}
+	if filename == "" {
+		filename = ConfigFilename()
+	}
+
+	if path == "" {
+		path = ConfigPath()
+	}
+
+	v.SetConfigName(filename)
+	v.AddConfigPath(path)
+	if err := v.ReadInConfig(); err != nil {
+		return nil, err
 	}
 
 	v.SetDefault("APP_NAME", DefaultAppName)
@@ -450,5 +457,3 @@ func (c *Config) Validate() error {
 
 	return nil
 }
-
-func ConfigFilePath() string { return ConfigFilename() }
