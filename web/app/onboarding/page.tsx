@@ -3,7 +3,6 @@ import { getTranslations } from "next-intl/server";
 
 import { createServerSwantaraService } from "@/lib/server/api-client";
 import { SwantaraError } from "@/lib/services/swantara/errors";
-import AuthShell from "../(auth)/_components/auth-shell";
 import { AcceptOrganization } from "./_components/accept-organization";
 import OnboardingForm from "./_components/onboarding-form";
 
@@ -24,17 +23,10 @@ export default async function OnboardingPage() {
   const validOrganizations = (organizations ?? []).filter((org): org is NonNullable<typeof org> =>
     Boolean(org),
   );
+
   if (validOrganizations.length > 0) {
-    return (
-      <AuthShell title={t("openingDashboard")} subtitle={t("choosingOrg")}>
-        <AcceptOrganization orgId={validOrganizations[0]!.id} />
-      </AuthShell>
-    );
+    return (<AcceptOrganization orgId={validOrganizations[0]!.id} />);
   }
 
-  return (
-    <AuthShell title={t("setupCompany")} subtitle={t("setupSubtitle")}>
-      <OnboardingForm />
-    </AuthShell>
-  );
+  return (<OnboardingForm />);
 }
