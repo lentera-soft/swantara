@@ -45,7 +45,7 @@ func TestParseDuration(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got, err := ParseDuration("TEST_DURATION", tt.value)
+			got, err := ParseDuration(tt.value)
 			if AssertError(t, err, tt.wantErr, nil) {
 				return
 			}
