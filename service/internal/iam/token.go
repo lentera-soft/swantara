@@ -59,7 +59,14 @@ func (s TokenService) IssueUserRefreshToken(user *User) (string, *time.Time, err
 	return s.issue(user, 0, s.refreshTokenSecret, s.refreshTokenExpires, s.refreshTokenSignMethod, jti)
 }
 
-func (s TokenService) issue(user *User, sessionID uint64, secret string, expires time.Duration, signMethod jwt.SigningMethod, jti string) (string, *time.Time, error) {
+func (s TokenService) issue(
+	user *User,
+	sessionID uint64,
+	secret string,
+	expires time.Duration,
+	signMethod jwt.SigningMethod,
+	jti string,
+) (string, *time.Time, error) {
 	expiresAt := jwt.NewNumericDate(clock.Now().Add(expires))
 
 	claims := TokenClaims{
