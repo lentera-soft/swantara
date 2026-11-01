@@ -4,6 +4,7 @@ export type RegisterFormMessages = {
   firstNameRequired: string;
   invalidEmail: string;
   emailRequired: string;
+  invalidPhone: string;
   passwordMinLength: string;
   confirmPasswordMinLength: string;
   passwordMismatch: string;
@@ -13,6 +14,7 @@ const registerFormDefaultMessages: RegisterFormMessages = {
   firstNameRequired: "Nama depan wajib diisi",
   invalidEmail: "Masukkan alamat email yang valid.",
   emailRequired: "Email wajib diisi.",
+  invalidPhone: "Masukkan nomor telepon yang valid.",
   passwordMinLength: "Kata sandi minimal 8 karakter",
   confirmPasswordMinLength: "Konfirmasi kata sandi minimal 8 karakter",
   passwordMismatch: "Konfirmasi kata sandi tidak cocok",
@@ -34,7 +36,10 @@ export function useRegisterFormSchema(
         .min(1, {
           message: messages.emailRequired,
         }),
-      phone: z.string().optional(),
+      phone: z
+        .string()
+        .optional()
+        .refine((value) => !value || /^\+[1-9]\d{1,14}$/.test(value), messages.invalidPhone),
       password: z.string().min(8, {
         message: messages.passwordMinLength,
       }),

@@ -56,6 +56,7 @@ func (h GiftCardHandler) Refund(c fiber.Ctx) error {
 	if err != nil {
 		return writeGiftCardError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Gift card refunded successfully.", GetGiftCardResponse{
 		GiftCard: newGiftCardResponse(updated),
 	})

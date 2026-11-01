@@ -1,6 +1,7 @@
 package handler
 
 import (
+	"errors"
 	"strconv"
 
 	"github.com/gofiber/fiber/v3"
@@ -11,7 +12,7 @@ import (
 )
 
 // @Summary List UoMs
-// @Description Lists units of measure with pagination, sorting, and filtering, supporting filters such as category and UoM type; the response can be exported as JSON, XML, or CSV.
+// @Description Lists units of measure with pagination, sorting, and filtering, automatically scoping results to the caller's organization; the response can be exported as JSON, XML, or CSV.
 // @Tags UoM
 // @Accept json
 // @Produce json
@@ -21,16 +22,23 @@ import (
 // @Param filter query string false "Filters (repeatable, e.g. category_id:eq:1)"
 // @Param format query string false "Response format" Enums(json, xml, csv)
 // @Success 200 {object} ListUnitsResponseEnvelope "UoMs retrieved successfully."
+// @Failure 401 {object} httpx.ErrorResponse "Unauthorized"
 // @Failure 422 {object} httpx.ErrorResponse "Invalid query parameters"
 // @Failure 500 {object} httpx.ErrorResponse "Internal server error"
-// @Router /units [get]
+// @Security BearerAuth
+// @Router /organizations/{organization_id}/units [get]
 func (h UnitHandler) List(c fiber.Ctx) error {
 	parsedQuery, err := httpx.ParseQueryParams(c, uomQueryAllowlist)
 	if err != nil {
 		return httpx.CreateUnprocessableEntityErrorResponse(c, "Invalid query parameters.", nil)
 	}
 
-	page, err := h.svc.ListUnits(c, parsedQuery)
+	organizationID, ok := httpx.CallerOrganizationID(c)
+	if !ok {
+		return httpx.CreateUnauthorizedErrorResponse(c, "Unauthorized.", httpx.ErrMissingOrganizationInContext)
+	}
+
+	page, err := h.svc.ListUnits(c, parsedQuery, organizationID)
 	if err != nil {
 		httpx.RequestLog(c).Error("unit list failed", "error", err)
 		return httpx.CreateInternalServerErrorResponse(c, "Failed to retrieve UoMs.", err)
@@ -57,18 +65,25 @@ func (h UnitHandler) List(c fiber.Ctx) error {
 // @Produce json
 // @Param id path integer true "UoM ID"
 // @Success 200 {object} GetUnitResponseEnvelope "UoM retrieved successfully."
+// @Failure 401 {object} httpx.ErrorResponse "Unauthorized"
 // @Failure 404 {object} httpx.ErrorResponse "UoM not found"
 // @Failure 500 {object} httpx.ErrorResponse "Internal server error"
-// @Router /units/{id} [get]
+// @Security BearerAuth
+// @Router /organizations/{organization_id}/units/{id} [get]
 func (h UnitHandler) Get(c fiber.Ctx) error {
 	uomID, err := strconv.ParseUint(c.Params("id"), 10, 64)
 	if err != nil {
 		return httpx.CreateUnprocessableEntityErrorResponse(c, "Invalid unit id provided.", nil)
 	}
 
-	unit, err := h.svc.FindUnit(c, uomID)
+	organizationID, ok := httpx.CallerOrganizationID(c)
+	if !ok {
+		return httpx.CreateUnauthorizedErrorResponse(c, "Unauthorized.", httpx.ErrMissingOrganizationInContext)
+	}
+
+	unit, err := h.svc.FindUnit(c, uomID, organizationID)
 	if err != nil {
-		if dao.IsNotFound(err) {
+		if dao.IsNotFound(err) || errors.Is(err, reference.ErrUnitNotFound) {
 			return httpx.CreateNotFoundResponse(c, "UoM not found.")
 		}
 		httpx.RequestLog(c).Error("unit lookup failed", "unit_id", uomID, "error", err)
@@ -95,19 +110,25 @@ func (h UnitHandler) Get(c fiber.Ctx) error {
 // @Failure 422 {object} httpx.ErrorResponse "Validation error, unknown category, or duplicate name"
 // @Failure 500 {object} httpx.ErrorResponse "Internal server error"
 // @Security BearerAuth
-// @Router /units [post]
+// @Router /organizations/{organization_id}/units [post]
 func (h UnitHandler) Create(c fiber.Ctx) error {
 	var request CreateUnitRequest
 	if !httpx.BindAndValidate(c, &request) {
 		return nil
 	}
 
+	organizationID, ok := httpx.CallerOrganizationID(c)
+	if !ok {
+		return httpx.CreateUnauthorizedErrorResponse(c, "Unauthorized.", httpx.ErrMissingOrganizationInContext)
+	}
+
 	unit, err := h.svc.CreateUnit(c, &reference.Unit{
-		CategoryID: request.CategoryID,
-		Name:       request.Name,
-		Factor:     request.Factor,
-		UnitType:   request.UnitType,
-		Rounding:   request.Rounding,
+		OrganizationID: &organizationID,
+		CategoryID:     request.CategoryID,
+		Name:           request.Name,
+		Factor:         request.Factor,
+		UnitType:       request.UnitType,
+		Rounding:       request.Rounding,
 	})
 	if err != nil {
 		return writeUnitError(c, err)
@@ -132,7 +153,7 @@ func (h UnitHandler) Create(c fiber.Ctx) error {
 // @Failure 422 {object} httpx.ErrorResponse "Validation error or duplicate name"
 // @Failure 500 {object} httpx.ErrorResponse "Internal server error"
 // @Security BearerAuth
-// @Router /units/{id} [put]
+// @Router /organizations/{organization_id}/units/{id} [put]
 func (h UnitHandler) Update(c fiber.Ctx) error {
 	uomID, err := strconv.ParseUint(c.Params("id"), 10, 64)
 	if err != nil {
@@ -144,9 +165,14 @@ func (h UnitHandler) Update(c fiber.Ctx) error {
 		return nil
 	}
 
-	unit, err := h.svc.FindUnit(c, uomID)
+	organizationID, ok := httpx.CallerOrganizationID(c)
+	if !ok {
+		return httpx.CreateUnauthorizedErrorResponse(c, "Unauthorized.", httpx.ErrMissingOrganizationInContext)
+	}
+
+	unit, err := h.svc.FindUnit(c, uomID, organizationID)
 	if err != nil {
-		if dao.IsNotFound(err) {
+		if dao.IsNotFound(err) || errors.Is(err, reference.ErrUnitNotFound) {
 			return httpx.CreateNotFoundResponse(c, "UoM not found.")
 		}
 		httpx.RequestLog(c).Error("unit lookup failed", "unit_id", uomID, "error", err)
@@ -183,26 +209,22 @@ func (h UnitHandler) Update(c fiber.Ctx) error {
 // @Failure 404 {object} httpx.ErrorResponse "UoM not found"
 // @Failure 500 {object} httpx.ErrorResponse "Internal server error"
 // @Security BearerAuth
-// @Router /units/{id} [delete]
+// @Router /organizations/{organization_id}/units/{id} [delete]
 func (h UnitHandler) Delete(c fiber.Ctx) error {
 	uomID, err := strconv.ParseUint(c.Params("id"), 10, 64)
 	if err != nil {
 		return httpx.CreateUnprocessableEntityErrorResponse(c, "Invalid unit id provided.", nil)
 	}
 
-	unit, err := h.svc.FindUnit(c, uomID)
-	if err != nil {
-		if dao.IsNotFound(err) {
-			return httpx.CreateNotFoundResponse(c, "UoM not found.")
-		}
-		httpx.RequestLog(c).Error("unit lookup failed", "unit_id", uomID, "error", err)
-		return httpx.CreateInternalServerErrorResponse(c, "Failed to delete UoM.", err)
-	}
-	if unit == nil {
-		return httpx.CreateNotFoundResponse(c, "UoM not found.")
+	organizationID, ok := httpx.CallerOrganizationID(c)
+	if !ok {
+		return httpx.CreateUnauthorizedErrorResponse(c, "Unauthorized.", httpx.ErrMissingOrganizationInContext)
 	}
 
-	if err := h.svc.DeleteUnit(c, uomID); err != nil {
+	if err := h.svc.DeleteUnit(c, organizationID, uomID); err != nil {
+		if errors.Is(err, reference.ErrUnitNotFound) {
+			return httpx.CreateNotFoundResponse(c, "UoM not found.")
+		}
 		httpx.RequestLog(c).Error("unit deletion failed", "unit_id", uomID, "error", err)
 		return httpx.CreateInternalServerErrorResponse(c, "Failed to delete UoM.", err)
 	}

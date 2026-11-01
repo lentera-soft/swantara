@@ -185,7 +185,7 @@ const CalendarDayButton = memo(function CalendarDayButton({
         "hover:bg-muted hover:text-foreground active:bg-muted/80",
         "focus-visible:border-ring focus-visible:ring-3 ring-offset-2 ring-offset-background focus-visible:ring-ring",
         "disabled:cursor-not-allowed aria-disabled:pointer-events-none",
-        "data-[selected-single=true]:bg-primary data-[selected-single=true]:font-medium data-[selected-single=true]:text-primary-foreground data-[selected-single=true]:shadow-sm data-[selected-single=true]:hover:bg-primary/90",
+        "data-[selected-single=true]:bg-primary data-[selected-single=true]:font-medium data-[selected-single=true]:text-primary-foreground data-[selected-single=true]:hover:bg-primary/90",
         "data-[range-start=true]:data-[range-end=true]:rounded-[var(--calendar-cell-radius)]",
         "data-[range-start=true]:rounded-l-[var(--calendar-cell-radius)] data-[range-start=true]:rounded-r-none data-[range-start=true]:bg-primary data-[range-start=true]:text-primary-foreground data-[range-start=true]:hover:bg-primary/90",
         "data-[range-end=true]:rounded-r-[var(--calendar-cell-radius)] data-[range-end=true]:rounded-l-none data-[range-end=true]:bg-primary data-[range-end=true]:text-primary-foreground data-[range-end=true]:hover:bg-primary/90",

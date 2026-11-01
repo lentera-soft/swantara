@@ -149,7 +149,7 @@ export function KanbanBoard({
                 onDragStart={(event) => startDrag(event, card.id)}
                 onDragEnd={endDrag}
                 className={cn(
-                  "group/card cursor-grab rounded-md bg-background p-3 shadow-sm border border-border transition-shadow hover:shadow-md active:cursor-grabbing",
+                  "group/card cursor-grab rounded-md bg-background p-3 border border-border active:cursor-grabbing",
                   draggingId === card.id && "opacity-50",
                 )}
               >

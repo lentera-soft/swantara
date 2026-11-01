@@ -38,7 +38,7 @@ export function HomeHeroSection() {
             <p className="text-lg leading-relaxed text-muted-foreground">{tHome("subtitle")}</p>
 
             <div className="flex flex-col gap-3 sm:flex-row lg:flex-col">
-              <Button size="lg" className="w-full justify-between rounded-full px-6" asChild>
+              <Button size="lg" shape="pill" className="w-full justify-between px-6" asChild>
                 <Link href="/register">
                   <span>{tHome("primaryCta")}</span>
                   <ArrowUpRight aria-hidden="true" className="size-4" />
@@ -47,7 +47,8 @@ export function HomeHeroSection() {
               <Button
                 size="lg"
                 variant="outline"
-                className="w-full justify-between rounded-full px-6"
+                shape="pill"
+                className="w-full justify-between px-6"
                 asChild
               >
                 <Link href="/contact">
@@ -66,7 +67,7 @@ export function HomeHeroSection() {
         <HomeErpShowcase />
       </div>
 
-      <div className="border-t border-border/60">
+      <div className="border-t border-border-subtle">
         <div className="mx-auto max-w-7xl px-6 py-10 lg:px-8">
           <p className="mb-6 text-sm text-muted-foreground">{tHome("trustedBy")}</p>
           <div data-gsap="grid-stagger" className="flex flex-wrap items-center gap-x-10 gap-y-4">
@@ -83,7 +84,7 @@ export function HomeHeroSection() {
         </div>
       </div>
 
-      <div className="border-t border-border/60 bg-surface-warm">
+      <div className="border-t border-border-subtle bg-surface-warm">
         <div className="mx-auto max-w-7xl px-6 py-12 lg:px-8">
           <div data-gsap="grid-stagger" className="grid grid-cols-2 gap-8 sm:grid-cols-4">
             {PLATFORM_STAT_ITEMS.map((stat) => (

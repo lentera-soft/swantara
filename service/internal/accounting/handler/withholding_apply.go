@@ -78,6 +78,7 @@ func (h WithholdingTaxHandler) Apply(c fiber.Ctx) error {
 		return writeWithholdingTaxError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Withholding applied successfully.", WithholdResponse{
 		EntryID: entry.ID,
 	})

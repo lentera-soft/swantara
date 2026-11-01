@@ -5,6 +5,7 @@ import { useTranslations } from "next-intl";
 import { useId } from "react";
 import { Controller, FormProvider } from "react-hook-form";
 import { Button } from "@/components/button";
+import { Checkbox } from "@/components/checkbox";
 import { Field } from "@/components/field";
 import { FieldFeedback } from "@/components/field-feedback";
 import { SubmitButton } from "@/components/form";
@@ -19,6 +20,7 @@ export default function LoginForm() {
   const t = useTranslations("Auth");
   const emailId = useId();
   const passwordId = useId();
+  const rememberMeId = useId();
   const emailErrorId = `${emailId}-error`;
   const passwordErrorId = `${passwordId}-error`;
 
@@ -83,6 +85,20 @@ export default function LoginForm() {
               );
             }}
           />
+        </div>
+        <div className="mt-2 flex items-center gap-2">
+          <Controller
+            name="rememberMe"
+            control={form.control}
+            render={({ field }) => (
+              <Checkbox
+                id={rememberMeId}
+                checked={field.value}
+                onCheckedChange={(checked) => field.onChange(Boolean(checked))}
+              />
+            )}
+          />
+          <Label htmlFor={rememberMeId}>{t("rememberMe")}</Label>
         </div>
         <div className="mt-2 flex justify-end">
           <Link

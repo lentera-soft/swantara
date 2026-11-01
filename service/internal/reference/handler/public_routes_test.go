@@ -76,50 +76,6 @@ func TestCurrencyHandler_List_IsPublic(t *testing.T) {
 	query.AssertDBMockDone(t, mock)
 }
 
-func TestUnitGroupHandler_List_IsPublic(t *testing.T) {
-	db, mock := query.NewMockDB(t)
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT count(*) FROM "unit_groups"`)).
-		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "unit_groups" LIMIT $1`)).
-		WithArgs(20).
-		WillReturnRows(sqlmock.NewRows(unitGroupColumns).
-			AddRow(1, timeNow(), timeNow(), nil, "Weight"))
-	app := publicTestApp(func(api fiber.Router, guards httpx.RouteGuards) {
-		NewUnitGroupHandler(reference.NewUnitService(dao.NewBase[reference.UnitGroup](db), dao.NewBase[reference.Unit](nil))).Register(api, guards)
-	})
-
-	resp, err := doRequest(app, http.MethodGet, "/unit-groups/", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("status = %d, want 200", resp.StatusCode)
-	}
-	query.AssertDBMockDone(t, mock)
-}
-
-func TestUnitHandler_List_IsPublic(t *testing.T) {
-	db, mock := query.NewMockDB(t)
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT count(*) FROM "units"`)).
-		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "units" LIMIT $1`)).
-		WithArgs(20).
-		WillReturnRows(sqlmock.NewRows(uomColumns).
-			AddRow(1, timeNow(), timeNow(), nil, 1, "kg", 1.0, "", 0.001))
-	app := publicTestApp(func(api fiber.Router, guards httpx.RouteGuards) {
-		NewUnitHandler(reference.NewUnitService(dao.NewBase[reference.UnitGroup](nil), dao.NewBase[reference.Unit](db))).Register(api, guards)
-	})
-
-	resp, err := doRequest(app, http.MethodGet, "/units/", "")
-	if err != nil {
-		t.Fatal(err)
-	}
-	if resp.StatusCode != http.StatusOK {
-		t.Fatalf("status = %d, want 200", resp.StatusCode)
-	}
-	query.AssertDBMockDone(t, mock)
-}
-
 func TestReferenceWrites_RequireAuth(t *testing.T) {
 	tests := []struct {
 		name   string

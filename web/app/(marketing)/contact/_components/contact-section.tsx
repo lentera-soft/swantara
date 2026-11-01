@@ -41,7 +41,7 @@ export function ContactSection() {
         </div>
       </section>
 
-      <section className="border-t border-border/60">
+      <section className="border-t border-border-subtle">
         <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
             <div className="lg:col-span-7">
@@ -59,7 +59,7 @@ export function ContactSection() {
               {CONTACT_DIRECTORY_CELLS.map((cell) => (
                 <div
                   key={cell.id}
-                  className="rounded-2xl border border-border/60 bg-muted/25 p-6 transition-colors hover:bg-muted/40"
+                  className="rounded-2xl border border-border-subtle bg-muted/25 p-6 transition-colors hover:bg-muted/40"
                 >
                   <h3 className="text-sm font-medium text-muted-foreground">{t(cell.titleKey)}</h3>
                   <p className="mt-2 text-base leading-relaxed text-foreground">
@@ -82,7 +82,7 @@ export function ContactSection() {
         </div>
       </section>
 
-      <section className="border-t border-border/60 bg-surface-warm">
+      <section className="border-t border-border-subtle bg-surface-warm">
         <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
           <div
             data-gsap="section-header"
@@ -103,7 +103,7 @@ export function ContactSection() {
             </div>
 
             <div className="flex flex-col gap-3 lg:col-span-4">
-              <Button size="lg" className="w-full justify-between rounded-full px-5" asChild>
+              <Button size="lg" shape="pill" className="w-full justify-between px-5" asChild>
                 <Link href="/register">
                   <span>{t("ctaPrimary")}</span>
                   <ArrowUpRight aria-hidden="true" className="size-4" />
@@ -112,7 +112,8 @@ export function ContactSection() {
               <Button
                 size="lg"
                 variant="outline"
-                className="w-full justify-between rounded-full px-5"
+                shape="pill"
+                className="w-full justify-between px-5"
                 asChild
               >
                 <Link href="/product">

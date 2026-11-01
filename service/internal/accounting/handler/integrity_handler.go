@@ -62,5 +62,6 @@ func (h IntegrityHandler) Check(c fiber.Ctx) error {
 	for i, check := range report.Checks {
 		checks[i] = IntegrityCheckResponse{Name: check.Name, Passed: check.Passed, Detail: check.Detail}
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Integrity check completed.", IntegrityResponse{PeriodID: report.PeriodID, Passed: report.Passed, Checks: checks})
 }

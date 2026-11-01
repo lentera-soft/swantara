@@ -49,6 +49,7 @@ func (h CouponHandler) Redeem(c fiber.Ctx) error {
 	if err != nil {
 		return writeCouponError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Coupon redeemed successfully.", RedeemCouponResponse{
 		Coupon:   newCouponResponse(result.Coupon),
 		Discount: result.Discount.Float64(),

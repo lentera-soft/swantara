@@ -24,6 +24,7 @@ func (h KpiHandler) Subscription(c fiber.Ctx) error {
 	if err != nil {
 		return writeKpiError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Subscription KPI retrieved successfully.", kpi)
 }
 
@@ -46,6 +47,7 @@ func (h KpiHandler) Projects(c fiber.Ctx) error {
 	if err != nil {
 		return writeKpiError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Projects KPI retrieved successfully.", kpi)
 }
 
@@ -74,5 +76,6 @@ func (h KpiHandler) Payroll(c fiber.Ctx) error {
 	if err != nil {
 		return writeKpiError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Payroll KPI retrieved successfully.", kpi)
 }

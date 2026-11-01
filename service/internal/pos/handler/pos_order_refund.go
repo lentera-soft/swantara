@@ -52,6 +52,7 @@ func (h POSOrderHandler) Refund(c fiber.Ctx) error {
 	if err != nil {
 		return writePOSError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "POS order refunded successfully.", RefundPOSOrderResponse{
 		Order: newPOSOrderResponse(order),
 	})

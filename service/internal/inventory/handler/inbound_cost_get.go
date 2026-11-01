@@ -41,6 +41,7 @@ func (h InboundCostHandler) Get(c fiber.Ctx) error {
 		return writeInboundCostError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Inbound cost retrieved successfully.", GetInboundCostResponseEnvelope{
 		Data: newInboundCostResponse(cost),
 	})

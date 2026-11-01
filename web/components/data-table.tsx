@@ -31,7 +31,7 @@ import {
 } from "lucide-react";
 import { useMessages, useTranslations } from "next-intl";
 import type { ReactNode } from "react";
-import { useState } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 import { getColumnLabel } from "@/lib/utils/table";
 import { Button } from "./button";
@@ -143,6 +143,10 @@ function format(template: string, vars: Record<string, string | number>): string
   return result;
 }
 
+const emptySubscribe = () => () => {};
+const getClientSnapshot = () => true;
+const getServerSnapshot = () => false;
+
 export function DataTable<TData extends RowData>({
   columns,
   data,
@@ -186,6 +190,7 @@ export function DataTable<TData extends RowData>({
   const resolvedAriaLabel = ariaLabel ?? txAria("ariaLabel");
   const translatedDefaults = useDefaultLabels();
   const t = { ...translatedDefaults, ...labels };
+  const isClient = useSyncExternalStore(emptySubscribe, getClientSnapshot, getServerSnapshot);
   const [internalSorting, setInternalSorting] = useState<SortingState>(initialSorting ?? []);
   const [internalPagination, setInternalPagination] = useState<PaginationState>({
     pageIndex: 0,
@@ -329,6 +334,10 @@ export function DataTable<TData extends RowData>({
     status.type === "empty" ||
     table.getRowModel().rows.length === 0 ||
     (filteredRowCount === 0 && hasActiveFilter && status.type === "none");
+
+  if (!isClient) {
+    return <div data-slot="data-table" className={cn("space-y-2", className)} />;
+  }
 
   return (
     <div data-slot="data-table" className={cn("space-y-2", className)}>

@@ -51,6 +51,7 @@ func (h ReportHandler) TrialBalance(c fiber.Ctx) error {
 	if err != nil {
 		return writeReportError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Trial balance retrieved successfully.", trial)
 }
 
@@ -88,6 +89,7 @@ func (h ReportHandler) Aging(c fiber.Ctx) error {
 	if err != nil {
 		return writeReportError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Aging report retrieved successfully.", AgingReportResponse{
 		AsOf: asOf,
 		Rows: rows,
@@ -118,6 +120,7 @@ func (h ReportHandler) InventoryValuation(c fiber.Ctx) error {
 	if err != nil {
 		return writeReportError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Inventory valuation retrieved successfully.", InventoryValuationResponse{
 		Rows: rows,
 	})

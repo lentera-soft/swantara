@@ -68,6 +68,7 @@ func (h DropShipHandler) Receive(c fiber.Ctx) error {
 	if err != nil {
 		return writeInterorganizationError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Drop-ship order received successfully.", GetDropshipOrderResponse{
 		PurchaseOrder: newDropshipOrderResponse(order),
 	})

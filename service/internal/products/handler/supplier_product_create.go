@@ -71,6 +71,7 @@ func (h SupplierProductHandler) Create(c fiber.Ctx) error {
 		return writeSupplierProductError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Supplier item created successfully.", CreateSupplierProductResponse{
 		SupplierProduct: newSupplierProductResponse(offer),
 	})

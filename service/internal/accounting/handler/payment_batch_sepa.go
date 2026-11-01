@@ -44,6 +44,7 @@ func (h PaymentBatchHandler) GenerateSEPA(c fiber.Ctx) error {
 		return writePaymentBatchError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "SEPA file generated successfully.", GenerateSEPAResponse{
 		XML: xml,
 	})

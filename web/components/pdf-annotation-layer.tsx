@@ -115,7 +115,7 @@ function AnnotationRect({
           data-slot="pdf-annotation-delete"
           aria-label={labels.deleteAnnotation}
           onClick={onDelete}
-          className="pointer-events-auto absolute -right-3 -top-3 z-10 flex size-11 min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-full bg-background text-muted-foreground shadow-sm ring-1 ring-border-subtle hover:text-destructive"
+          className="pointer-events-auto absolute -right-3 -top-3 z-10 flex size-11 min-h-11 min-w-11 cursor-pointer items-center justify-center rounded-full bg-background text-muted-foreground ring-1 ring-border hover:text-destructive"
         >
           <XIcon aria-hidden className="size-3" />
         </button>
@@ -310,7 +310,7 @@ export function PdfAnnotationLayer({
 
       {noteTarget && (
         <div className="pointer-events-auto absolute inset-x-0 top-0 z-10 flex justify-center p-4">
-          <div className="flex min-w-64 flex-col gap-2 rounded-lg bg-background p-3 shadow-md ring-1 ring-border-subtle">
+          <div className="flex min-w-64 flex-col gap-2 rounded-lg bg-background p-3 ring-1 ring-border">
             <div className="flex items-center gap-2 text-sm">
               <StickyNoteIcon aria-hidden className="size-4 text-foreground" />
               {t.toolNote}

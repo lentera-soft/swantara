@@ -40,7 +40,7 @@ export function AboutSection() {
         </div>
       </section>
 
-      <section className="border-t border-border/60">
+      <section className="border-t border-border-subtle">
         <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
           <div data-gsap="section-header" className="grid grid-cols-1 gap-12 lg:grid-cols-12">
             <div className="lg:col-span-4">
@@ -64,7 +64,7 @@ export function AboutSection() {
         </div>
       </section>
 
-      <section className="border-t border-border/60 bg-surface-warm">
+      <section className="border-t border-border-subtle bg-surface-warm">
         <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
           <div data-gsap="section-header" className="max-w-2xl">
             <SwissIndexBadge label={t("valuesTitle")} />
@@ -92,7 +92,7 @@ export function AboutSection() {
         </div>
       </section>
 
-      <section id="careers" className="border-t border-border/60">
+      <section id="careers" className="border-t border-border-subtle">
         <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
           <div data-gsap="section-header" className="grid grid-cols-1 gap-8 lg:grid-cols-12">
             <div className="lg:col-span-6">
@@ -118,7 +118,7 @@ export function AboutSection() {
               <div
                 key={member.id}
                 data-gsap-item
-                className="rounded-2xl border border-border/60 bg-background p-6 transition-colors hover:bg-muted/30"
+                className="rounded-2xl border border-border-subtle bg-background p-6 transition-colors hover:bg-muted/30"
               >
                 <div className="flex items-center justify-between">
                   <div className="flex size-11 items-center justify-center rounded-full bg-muted/60 font-medium text-sm">
@@ -134,12 +134,12 @@ export function AboutSection() {
             ))}
           </div>
 
-          <div className="mt-12 flex flex-col items-start justify-between gap-6 rounded-2xl border border-border/60 bg-muted/30 p-6 sm:p-8 lg:flex-row lg:items-center">
+          <div className="mt-12 flex flex-col items-start justify-between gap-6 rounded-2xl border border-border-subtle bg-muted/30 p-6 sm:p-8 lg:flex-row lg:items-center">
             <div className="space-y-2">
               <h3 className="text-xl font-medium tracking-tight">{t("joinTitle")}</h3>
               <p className="text-sm text-muted-foreground sm:text-base">{t("joinDescription")}</p>
             </div>
-            <Button variant="outline" size="lg" className="rounded-full px-5" asChild>
+            <Button variant="outline" size="lg" shape="pill" className="px-5" asChild>
               <Link href="/contact">
                 <span>{t("joinCta")}</span>
                 <ArrowUpRight aria-hidden="true" className="size-4" />
@@ -149,7 +149,7 @@ export function AboutSection() {
         </div>
       </section>
 
-      <section className="border-t border-border/60 bg-surface-warm">
+      <section className="border-t border-border-subtle bg-surface-warm">
         <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
           <div
             data-gsap="section-header"
@@ -170,7 +170,7 @@ export function AboutSection() {
             </div>
 
             <div className="flex flex-col gap-3 lg:col-span-4">
-              <Button size="lg" className="w-full justify-between rounded-full px-5" asChild>
+              <Button size="lg" shape="pill" className="w-full justify-between px-5" asChild>
                 <Link href="/contact">
                   <span>{t("ctaPrimary")}</span>
                   <ArrowUpRight aria-hidden="true" className="size-4" />
@@ -179,7 +179,8 @@ export function AboutSection() {
               <Button
                 size="lg"
                 variant="outline"
-                className="w-full justify-between rounded-full px-5"
+                shape="pill"
+                className="w-full justify-between px-5"
                 asChild
               >
                 <Link href="/product">

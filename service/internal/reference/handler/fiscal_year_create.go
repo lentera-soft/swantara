@@ -57,6 +57,7 @@ func (h TaxYearHandler) Create(c fiber.Ctx) error {
 		return writeTaxYearError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Tax year created successfully.", CreateTaxYearResponse{
 		TaxYear: newTaxYearResponse(year),
 	})

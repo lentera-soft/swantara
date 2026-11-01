@@ -58,6 +58,7 @@ func (h SupplierQuoteRequestHandler) CreatePurchaseOrder(c fiber.Ctx) error {
 	if err != nil {
 		return writePurchaseOrderError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Purchase order created from supplier quote request successfully.", CreatePurchaseOrderResponse{
 		Order: newPurchaseOrderResponse(order),
 	})

@@ -66,6 +66,7 @@ func (h SupplierQuoteRequestHandler) ListLines(c fiber.Ctx) error {
 	for i, line := range lines {
 		items[i] = newSupplierQuoteRequestLineResponse(line)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Supplier Quote Request lines retrieved successfully.", ListSupplierQuoteRequestLinesResponse{
 		Lines: items,
 	})

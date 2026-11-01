@@ -43,6 +43,7 @@ func (h ProfileHandler) ListTaxTemplates(c fiber.Ctx) error {
 	for i, line := range lines {
 		items[i] = newTaxTemplateLineResponse(line)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Tax template lines retrieved successfully.", ListTaxTemplatesResponse{
 		TaxTemplateLines: items,
 	})
@@ -99,6 +100,7 @@ func (h ProfileHandler) ReplaceTaxTemplates(c fiber.Ctx) error {
 	for i, line := range replaced {
 		items[i] = newTaxTemplateLineResponse(line)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Tax template lines replaced successfully.", ReplaceTaxTemplatesResponse{
 		TaxTemplateLines: items,
 	})

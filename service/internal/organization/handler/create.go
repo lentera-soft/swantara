@@ -63,9 +63,11 @@ func (h OrganizationHandler) Create(c fiber.Ctx) error {
 		TaxYearStartMonth: request.TaxYearStartMonth,
 	}, callerID)
 	if err != nil {
+		httpx.RequestLog(c).Error("organization creation failed", "error", err)
 		return writeOrganizationError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("organization created", "organization_id", org.ID)
 	return httpx.CreateCreatedResponseWithLinks(c, "Organization created successfully.", CreateOrganizationResponse{
 		Organization: newOrganizationResponse(org),
 	}, buildOrganizationLinks(c, org.ID))
@@ -111,9 +113,11 @@ func (h OrganizationHandler) QuickCreate(c fiber.Ctx) error {
 
 	org, err := h.svc.QuickCreate(c, request.Name, request.CountryCode, callerID)
 	if err != nil {
+		httpx.RequestLog(c).Error("organization creation failed", "error", err)
 		return writeOrganizationError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("organization created", "organization_id", org.ID)
 	return httpx.CreateCreatedResponseWithLinks(c, "Organization created successfully.", QuickCreateOrganizationResponse{
 		Organization: newOrganizationResponse(org),
 	}, buildOrganizationLinks(c, org.ID))

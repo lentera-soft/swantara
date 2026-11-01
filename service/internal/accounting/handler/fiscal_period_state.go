@@ -57,6 +57,7 @@ func (h TaxPeriodHandler) Close(c fiber.Ctx) error {
 		return writeTaxPeriodError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Tax period closed successfully.", UpdateTaxPeriodResponse{
 		TaxPeriod: newTaxPeriodResponse(period),
 	})
@@ -86,6 +87,7 @@ func (h TaxPeriodHandler) Lock(c fiber.Ctx) error {
 		return writeTaxPeriodError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Tax period locked successfully.", UpdateTaxPeriodResponse{
 		TaxPeriod: newTaxPeriodResponse(period),
 	})
@@ -115,6 +117,7 @@ func (h TaxPeriodHandler) Open(c fiber.Ctx) error {
 		return writeTaxPeriodError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Tax period reopened successfully.", UpdateTaxPeriodResponse{
 		TaxPeriod: newTaxPeriodResponse(period),
 	})

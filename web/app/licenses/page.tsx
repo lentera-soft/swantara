@@ -79,7 +79,7 @@ export default async function LicensesPage() {
         <div className="divide-y divide-border/70">
           {thirdPartyNotices.licenseGroups.map((group, index) => (
             <section key={group.license} className="p-6 sm:p-10">
-              <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border/60 pb-4">
+              <div className="flex flex-wrap items-baseline justify-between gap-2 border-b border-border pb-4">
                 <h2 className="text-lg font-semibold tracking-tight sm:text-xl">
                   {t("groupTitle", {
                     license: group.license,

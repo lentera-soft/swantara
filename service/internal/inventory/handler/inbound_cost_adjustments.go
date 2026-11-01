@@ -64,6 +64,7 @@ func (h InboundCostHandler) ListAdjustments(c fiber.Ctx) error {
 		}
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Inbound cost adjustments retrieved successfully.", ListInboundCostAdjustmentsResponse{
 		Adjustments: items,
 	})

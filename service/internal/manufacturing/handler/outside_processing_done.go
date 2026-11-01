@@ -35,6 +35,7 @@ func (h OutsideProcessingHandler) Done(c fiber.Ctx) error {
 		return writeSubcontractError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Outside processing order completed successfully.", newOutsideProcessingOrderResponse(order))
 }
 
@@ -66,5 +67,6 @@ func (h OutsideProcessingHandler) Cancel(c fiber.Ctx) error {
 		return writeSubcontractError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Outside processing order cancelled successfully.", newOutsideProcessingOrderResponse(order))
 }

@@ -46,6 +46,7 @@ func (h ProductionHandler) ConfirmShopTask(c fiber.Ctx) error {
 		return writeProductionError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Shop task confirmed successfully.", GetShopTaskResponse{
 		ShopTask: newShopTaskResponse(workOrder),
 	})
@@ -90,6 +91,7 @@ func (h ProductionHandler) StartShopTask(c fiber.Ctx) error {
 		return writeProductionError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Shop task started successfully.", GetShopTaskResponse{
 		ShopTask: newShopTaskResponse(workOrder),
 	})

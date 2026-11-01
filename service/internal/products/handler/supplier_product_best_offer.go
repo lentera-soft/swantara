@@ -66,6 +66,7 @@ func (h SupplierProductHandler) BestOffer(c fiber.Ctx) error {
 		return writeSupplierProductError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Best supplier offer resolved successfully.", BestSupplierOfferResponse{
 		SupplierProduct: newSupplierProductResponse(offer),
 	})

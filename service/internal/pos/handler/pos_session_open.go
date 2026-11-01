@@ -35,6 +35,7 @@ func (h POSSessionHandler) Open(c fiber.Ctx) error {
 	if err != nil {
 		return writePOSError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "POS session opened successfully.", OpenPOSSessionResponse{
 		Session: newPOSSessionResponse(session),
 	})

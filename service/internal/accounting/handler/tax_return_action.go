@@ -57,6 +57,7 @@ func (h TaxReturnHandler) File(c fiber.Ctx) error {
 		return writeTaxReturnError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Tax return filed successfully.", UpdateTaxReturnResponse{
 		TaxReturn: newTaxReturnResponse(taxReturn),
 	})
@@ -89,6 +90,7 @@ func (h TaxReturnHandler) Pay(c fiber.Ctx) error {
 		return writeTaxReturnError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Tax return paid successfully.", UpdateTaxReturnResponse{
 		TaxReturn: newTaxReturnResponse(taxReturn),
 	})
@@ -129,6 +131,7 @@ func (h TaxReturnHandler) Export(c fiber.Ctx) error {
 	if err != nil {
 		return writeTaxReturnError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Tax filing exported successfully.", ExportTaxReturnResponse{
 		CSV: content,
 	})
@@ -161,6 +164,7 @@ func (h TaxReturnHandler) Open(c fiber.Ctx) error {
 		return writeTaxReturnError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Tax return reopened successfully.", UpdateTaxReturnResponse{
 		TaxReturn: newTaxReturnResponse(taxReturn),
 	})

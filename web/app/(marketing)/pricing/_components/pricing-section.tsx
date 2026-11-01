@@ -39,7 +39,7 @@ export function PricingSection() {
               <p className="text-lg leading-relaxed text-muted-foreground">{t("subtitle")}</p>
 
               <div className="flex flex-col gap-3">
-                <div className="inline-flex rounded-full border border-border/60 bg-muted/40 p-1">
+                <div className="inline-flex rounded-full border border-border-subtle bg-muted/40 p-1">
                   <button
                     type="button"
                     aria-pressed={cycle === "monthly"}
@@ -47,7 +47,7 @@ export function PricingSection() {
                     className={cn(
                       "min-h-[40px] flex-1 rounded-full px-5 text-sm font-medium transition-colors",
                       cycle === "monthly"
-                        ? "bg-background text-foreground shadow-sm"
+                        ? "bg-background text-foreground "
                         : "text-muted-foreground hover:text-foreground",
                     )}
                   >
@@ -60,7 +60,7 @@ export function PricingSection() {
                     className={cn(
                       "inline-flex min-h-[40px] flex-1 items-center justify-center gap-2 rounded-full px-5 text-sm font-medium transition-colors",
                       cycle === "annual"
-                        ? "bg-background text-foreground shadow-sm"
+                        ? "bg-background text-foreground "
                         : "text-muted-foreground hover:text-foreground",
                     )}
                   >
@@ -79,7 +79,7 @@ export function PricingSection() {
         </div>
       </section>
 
-      <section className="border-t border-border/60">
+      <section className="border-t border-border-subtle">
         <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
           <div data-gsap="grid-stagger" className="grid grid-cols-1 gap-6 md:grid-cols-3">
             {PRICING_TIERS.map((tier) => {
@@ -92,7 +92,7 @@ export function PricingSection() {
                     "flex flex-col justify-between gap-10 rounded-2xl border p-6 sm:p-8",
                     tier.popular
                       ? "border-primary/30 bg-primary/[0.03]"
-                      : "border-border/60 bg-background",
+                      : "border-border-subtle bg-background",
                   )}
                 >
                   <div className="space-y-6">

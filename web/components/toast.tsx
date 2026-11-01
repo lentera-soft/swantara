@@ -17,7 +17,7 @@ function Toaster({ theme = "light", ...props }: ToasterProps) {
       toastOptions={{
         classNames: {
           toast:
-            "group toast group-[.toaster]:bg-popover group-[.toaster]:text-popover-foreground group-[.toaster]:border-border group-[.toaster]:shadow-md group-[.toaster]:rounded-lg group-[.toaster]:ring-1 group-[.toaster]:ring-foreground/10",
+            "group toast group-[.toaster]:bg-popover group-[.toaster]:text-popover-foreground group-[.toaster]:border-border group-[.toaster]:rounded-lg group-[.toaster]:ring-1 group-[.toaster]:ring-foreground/10",
           description: "group-[.toast]:text-muted-foreground text-sm",
           actionButton:
             "group-[.toast]:bg-primary group-[.toast]:text-primary-foreground group-[.toast]:rounded-md group-[.toast]:text-sm group-[.toast]: group-[.toast]:px-3 group-[.toast]:py-1 group-[.toast]:h-auto",

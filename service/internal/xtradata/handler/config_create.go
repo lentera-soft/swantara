@@ -51,6 +51,7 @@ func (h SystemConfigHandler) Create(c fiber.Ctx) error {
 		return writeSystemConfigError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "System config created successfully.", CreateSystemConfigResponse{
 		SystemConfig: newSystemConfigResponse(config),
 	})

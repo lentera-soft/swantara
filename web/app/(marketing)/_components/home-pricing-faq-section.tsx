@@ -44,7 +44,7 @@ export function HomePricingFaqSection() {
 
   return (
     <div data-slot="home-pricing-faq-section">
-      <section className="border-t border-border/60">
+      <section className="border-t border-border-subtle">
         <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
           <div data-gsap="section-header" className="grid grid-cols-1 gap-8 lg:grid-cols-12">
             <div className="lg:col-span-5">
@@ -74,7 +74,7 @@ export function HomePricingFaqSection() {
                   "flex flex-col justify-between gap-8 rounded-2xl border p-6 sm:p-8",
                   plan.popular
                     ? "border-primary/30 bg-primary/[0.03]"
-                    : "border-border/60 bg-background",
+                    : "border-border-subtle bg-background",
                 )}
               >
                 <div className="space-y-6">
@@ -117,7 +117,7 @@ export function HomePricingFaqSection() {
         </div>
       </section>
 
-      <section className="border-t border-border/60">
+      <section className="border-t border-border-subtle">
         <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
           <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
             <div data-gsap="section-header" className="lg:col-span-5">
@@ -134,7 +134,7 @@ export function HomePricingFaqSection() {
               </p>
             </div>
 
-            <div className="divide-y divide-border/60 lg:col-span-7">
+            <div className="divide-y divide-border-subtle lg:col-span-7">
               {HOME_FAQ_ITEMS.map((item) => {
                 const isOpen = openFaqId === item.id;
                 return (
@@ -170,7 +170,7 @@ export function HomePricingFaqSection() {
         </div>
       </section>
 
-      <section className="border-t border-border/60 bg-surface-warm">
+      <section className="border-t border-border-subtle bg-surface-warm">
         <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
           <div
             data-gsap="section-header"
@@ -191,7 +191,7 @@ export function HomePricingFaqSection() {
             </div>
 
             <div className="flex flex-col gap-3 lg:col-span-4">
-              <Button size="lg" className="w-full justify-between rounded-full px-5" asChild>
+              <Button size="lg" shape="pill" className="w-full justify-between px-5" asChild>
                 <Link href="/register">
                   <span>{t("ctaPrimary")}</span>
                   <ArrowUpRight aria-hidden="true" className="size-4" />
@@ -200,7 +200,8 @@ export function HomePricingFaqSection() {
               <Button
                 size="lg"
                 variant="outline"
-                className="w-full justify-between rounded-full px-5"
+                shape="pill"
+                className="w-full justify-between px-5"
                 asChild
               >
                 <Link href="/contact">

@@ -26,7 +26,6 @@ const moduleHome: Record<OrgNavModule, string> = {
   hr: "/employees",
   finance: "/accounting",
   projectManagement: "/projects",
-  subscriptions: "/subscriptions",
   sales: "/pos",
   service: "/service-orders",
 };
@@ -39,7 +38,6 @@ const moduleLabelKey: Record<OrgNavModule, string> = {
   hr: "moduleHr",
   finance: "moduleFinance",
   projectManagement: "moduleProjectManagement",
-  subscriptions: "moduleSubscriptions",
   sales: "moduleSales",
   service: "moduleService",
 };

@@ -84,6 +84,7 @@ func (h SaleOrderHandler) Deliver(c fiber.Ctx) error {
 		return writeSaleOrderError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Sale order delivered successfully.", GetSaleOrderResponse{
 		Order: newSaleOrderResponse(order),
 	})
@@ -160,6 +161,7 @@ func (h SaleOrderHandler) Invoice(c fiber.Ctx) error {
 		return writeSaleOrderError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Invoice generated successfully.", CreateInvoiceResponse{
 		Invoice: newInvoiceResponse(invoice),
 	})
@@ -216,6 +218,7 @@ func (h SaleOrderHandler) AdvanceInvoice(c fiber.Ctx) error {
 		return writeSaleOrderError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Advance invoice generated successfully.", CreateInvoiceResponse{
 		Invoice: newInvoiceResponse(invoice),
 	})
@@ -284,6 +287,7 @@ func (h SaleOrderHandler) Pay(c fiber.Ctx) error {
 		return writeSaleOrderError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Payment recorded successfully.", CreatePaymentResponse{
 		Payment: newPaymentResponse(payment),
 	})
@@ -338,6 +342,7 @@ func (h SaleOrderHandler) DeductDeposit(c fiber.Ctx) error {
 		return writeSaleOrderError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Deposit deducted successfully.", DepositDeductionResponse{
 		ID:               link.ID,
 		AdvanceInvoiceID: link.AdvanceInvoiceID,

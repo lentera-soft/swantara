@@ -3,6 +3,9 @@ import { accessTokenKey, csrfKey, refreshTokenKey } from "@/lib/constants/cookie
 
 export const ACCESS_TOKEN_MAX_AGE = 30 * 60;
 export const REFRESH_TOKEN_MAX_AGE = 48 * 60 * 60;
+export const REMEMBER_ME_MAX_AGE = 30 * 24 * 60 * 60;
+export const REMEMBER_ME_REFRESH_MAX_AGE = REMEMBER_ME_MAX_AGE;
+export const REMEMBER_ME_REFRESH_TOKEN_MAX_AGE = REMEMBER_ME_MAX_AGE;
 export const REFRESH_TOKEN_REUSED_CODE = "ERR_TOKEN_REUSED";
 
 export const baseCookieOptions = {
@@ -25,14 +28,30 @@ export function getRefreshToken(request: NextRequest): string | undefined {
   return request.cookies.get(refreshTokenKey)?.value;
 }
 
-export function setSessionCookies(response: NextResponse, tokens: SessionTokens): void {
+export type SetSessionCookiesOptions = {
+  maxAge?: number;
+  rememberMe?: boolean;
+};
+
+export function setSessionCookies(
+  response: NextResponse,
+  tokens: SessionTokens,
+  options?: number | SetSessionCookiesOptions,
+): void {
+  const maxAge =
+    typeof options === "number"
+      ? options
+      : options?.rememberMe
+        ? REMEMBER_ME_MAX_AGE
+        : (options?.maxAge ?? REFRESH_TOKEN_MAX_AGE);
+
   response.cookies.set(accessTokenKey, tokens.accessToken, {
     ...baseCookieOptions,
     maxAge: ACCESS_TOKEN_MAX_AGE,
   });
   response.cookies.set(refreshTokenKey, tokens.refreshToken, {
     ...baseCookieOptions,
-    maxAge: REFRESH_TOKEN_MAX_AGE,
+    maxAge,
   });
 }
 

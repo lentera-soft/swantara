@@ -55,6 +55,7 @@ func (h TransferHandler) Create(c fiber.Ctx) error {
 		return writeTransferError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Warehouse transfer created successfully.", CreateWarehouseTransferResponse{
 		WarehouseTransfer: newWarehouseTransferResponse(transfer),
 	})

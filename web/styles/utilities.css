@@ -69,7 +69,7 @@
 }
 
 @utility bg-surface-warm {
-  background-color: oklch(0.975 0.008 90);
+  background-color: var(--color-surface-warm);
 }
 
 @utility bg-surface-sunken {

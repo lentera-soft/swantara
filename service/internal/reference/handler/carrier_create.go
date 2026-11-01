@@ -54,6 +54,7 @@ func (h CarrierHandler) Create(c fiber.Ctx) error {
 		return writeCarrierError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Carrier created successfully.", CreateCarrierResponse{
 		Carrier: newCarrierResponse(carrier),
 	})

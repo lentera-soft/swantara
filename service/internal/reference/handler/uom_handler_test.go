@@ -14,7 +14,7 @@ import (
 	"github.com/jalusw/swantara/apps/service/internal/reference"
 )
 
-var uomColumns = []string{"id", "created_at", "updated_at", "deleted_at", "category_id", "name", "factor", "unit_type", "rounding"}
+var uomColumns = []string{"id", "created_at", "updated_at", "deleted_at", "organization_id", "category_id", "name", "factor", "unit_type", "rounding"}
 
 func uomHandlerTest(t *testing.T, units dao.Base[reference.Unit], categories dao.Base[reference.UnitGroup], svc reference.UnitService) *fiber.App {
 	t.Helper()
@@ -30,12 +30,13 @@ func uomTestSvc(units dao.Base[reference.Unit], categories dao.Base[reference.Un
 
 func TestUnitHandler_List_ReturnsUnits(t *testing.T) {
 	db, mock := query.NewMockDB(t)
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT count(*) FROM "units"`)).
+	mock.ExpectQuery(regexp.QuoteMeta(`SELECT count(*) FROM "units" WHERE organization_id = $1`)).
+		WithArgs(10).
 		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "units" LIMIT $1`)).
-		WithArgs(20).
+	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "units" WHERE organization_id = $1 LIMIT $2`)).
+		WithArgs(10, 20).
 		WillReturnRows(sqlmock.NewRows(uomColumns).
-			AddRow(1, timeNow(), timeNow(), nil, 1, "kg", 1.0, "", 0.001))
+			AddRow(1, timeNow(), timeNow(), nil, uint64(10), 1, "kg", 1.0, "", 0.001))
 	app := uomHandlerTest(t, dao.NewBase[reference.Unit](db), dao.NewBase[reference.UnitGroup](db), uomTestSvc(dao.NewBase[reference.Unit](db), dao.NewBase[reference.UnitGroup](db)))
 
 	resp, err := doRequest(app, http.MethodGet, "/units/", "")
@@ -80,12 +81,13 @@ func TestUnitHandler_List_ReturnsServerError(t *testing.T) {
 
 func TestUnitHandler_List_ExportsCSV(t *testing.T) {
 	db, mock := query.NewMockDB(t)
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT count(*) FROM "units"`)).
+	mock.ExpectQuery(regexp.QuoteMeta(`SELECT count(*) FROM "units" WHERE organization_id = $1`)).
+		WithArgs(10).
 		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "units" LIMIT $1`)).
-		WithArgs(20).
+	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "units" WHERE organization_id = $1 LIMIT $2`)).
+		WithArgs(10, 20).
 		WillReturnRows(sqlmock.NewRows(uomColumns).
-			AddRow(1, timeNow(), timeNow(), nil, 1, "kg", 1.0, "", 0.001))
+			AddRow(1, timeNow(), timeNow(), nil, uint64(10), 1, "kg", 1.0, "", 0.001))
 	app := uomHandlerTest(t, dao.NewBase[reference.Unit](db), dao.NewBase[reference.UnitGroup](db), uomTestSvc(dao.NewBase[reference.Unit](db), dao.NewBase[reference.UnitGroup](db)))
 
 	resp, err := doRequest(app, http.MethodGet, "/units/?format=csv", "")
@@ -103,7 +105,7 @@ func TestUnitHandler_Get_ReturnsUnit(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "units" WHERE id = $1 ORDER BY "units"."id" LIMIT $2`)).
 		WithArgs(1, 1).
 		WillReturnRows(sqlmock.NewRows(uomColumns).
-			AddRow(1, timeNow(), timeNow(), nil, 1, "kg", 1.0, "", 0.001))
+			AddRow(1, timeNow(), timeNow(), nil, uint64(10), 1, "kg", 1.0, "", 0.001))
 	app := uomHandlerTest(t, dao.NewBase[reference.Unit](db), dao.NewBase[reference.UnitGroup](db), uomTestSvc(dao.NewBase[reference.Unit](db), dao.NewBase[reference.UnitGroup](db)))
 
 	resp, err := doRequest(app, http.MethodGet, "/units/1", "")
@@ -230,7 +232,7 @@ func TestUnitHandler_Create_MapsDuplicateName(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "units" WHERE name = $1 LIMIT $2`)).
 		WithArgs("kg", 1).
 		WillReturnRows(sqlmock.NewRows(uomColumns).
-			AddRow(9, timeNow(), timeNow(), nil, 1, "kg", 1.0, "", 0.001))
+			AddRow(9, timeNow(), timeNow(), nil, uint64(10), 1, "kg", 1.0, "", 0.001))
 	app := uomHandlerTest(t, dao.NewBase[reference.Unit](db), dao.NewBase[reference.UnitGroup](db), uomTestSvc(dao.NewBase[reference.Unit](db), dao.NewBase[reference.UnitGroup](db)))
 
 	body := `{"category_id":1,"name":"kg","factor":1}`
@@ -292,11 +294,11 @@ func TestUnitHandler_Convert_Converts(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "units" WHERE id = $1 ORDER BY "units"."id" LIMIT $2`)).
 		WithArgs(1, 1).
 		WillReturnRows(sqlmock.NewRows(uomColumns).
-			AddRow(1, timeNow(), timeNow(), nil, 1, "kg", 1.0, "", 0.001))
+			AddRow(1, timeNow(), timeNow(), nil, uint64(10), 1, "kg", 1.0, "", 0.001))
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "units" WHERE id = $1 ORDER BY "units"."id" LIMIT $2`)).
 		WithArgs(2, 1).
 		WillReturnRows(sqlmock.NewRows(uomColumns).
-			AddRow(2, timeNow(), timeNow(), nil, 1, "g", 0.001, "", 0.001))
+			AddRow(2, timeNow(), timeNow(), nil, uint64(10), 1, "g", 0.001, "", 0.001))
 	app := uomHandlerTest(t, dao.NewBase[reference.Unit](db), dao.NewBase[reference.UnitGroup](db), uomTestSvc(dao.NewBase[reference.Unit](db), dao.NewBase[reference.UnitGroup](db)))
 
 	body := `{"from_id":1,"to_id":2,"qty":"2"}`
@@ -363,11 +365,11 @@ func TestUnitHandler_Convert_MapsCategoryMismatch(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "units" WHERE id = $1 ORDER BY "units"."id" LIMIT $2`)).
 		WithArgs(1, 1).
 		WillReturnRows(sqlmock.NewRows(uomColumns).
-			AddRow(1, timeNow(), timeNow(), nil, 1, "kg", 1.0, "", 0.001))
+			AddRow(1, timeNow(), timeNow(), nil, uint64(10), 1, "kg", 1.0, "", 0.001))
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "units" WHERE id = $1 ORDER BY "units"."id" LIMIT $2`)).
 		WithArgs(2, 1).
 		WillReturnRows(sqlmock.NewRows(uomColumns).
-			AddRow(2, timeNow(), timeNow(), nil, 2, "h", 1.0, "", 0.001))
+			AddRow(2, timeNow(), timeNow(), nil, uint64(10), 2, "h", 1.0, "", 0.001))
 	app := uomHandlerTest(t, dao.NewBase[reference.Unit](db), dao.NewBase[reference.UnitGroup](db), uomTestSvc(dao.NewBase[reference.Unit](db), dao.NewBase[reference.UnitGroup](db)))
 
 	body := `{"from_id":1,"to_id":2,"qty":"2"}`
@@ -386,11 +388,11 @@ func TestUnitHandler_Convert_MapsInvalidFactor(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "units" WHERE id = $1 ORDER BY "units"."id" LIMIT $2`)).
 		WithArgs(1, 1).
 		WillReturnRows(sqlmock.NewRows(uomColumns).
-			AddRow(1, timeNow(), timeNow(), nil, 1, "kg", 0, "", 0.001))
+			AddRow(1, timeNow(), timeNow(), nil, uint64(10), 1, "kg", 0, "", 0.001))
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "units" WHERE id = $1 ORDER BY "units"."id" LIMIT $2`)).
 		WithArgs(2, 1).
 		WillReturnRows(sqlmock.NewRows(uomColumns).
-			AddRow(2, timeNow(), timeNow(), nil, 1, "g", 0.001, "", 0.001))
+			AddRow(2, timeNow(), timeNow(), nil, uint64(10), 1, "g", 0.001, "", 0.001))
 	app := uomHandlerTest(t, dao.NewBase[reference.Unit](db), dao.NewBase[reference.UnitGroup](db), uomTestSvc(dao.NewBase[reference.Unit](db), dao.NewBase[reference.UnitGroup](db)))
 
 	body := `{"from_id":1,"to_id":2,"qty":"2"}`
@@ -427,7 +429,7 @@ func TestUnitHandler_Update_UpdatesUnit(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "units" WHERE id = $1 ORDER BY "units"."id" LIMIT $2`)).
 		WithArgs(1, 1).
 		WillReturnRows(sqlmock.NewRows(uomColumns).
-			AddRow(1, timeNow(), timeNow(), nil, 1, "kg", 1.0, "", 0.001))
+			AddRow(1, timeNow(), timeNow(), nil, uint64(10), 1, "kg", 1.0, "", 0.001))
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "unit_groups" WHERE id = $1 ORDER BY "unit_groups"."id" LIMIT $2`)).
 		WithArgs(1, 1).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
@@ -504,14 +506,14 @@ func TestUnitHandler_Update_MapsDuplicateName(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "units" WHERE id = $1 ORDER BY "units"."id" LIMIT $2`)).
 		WithArgs(1, 1).
 		WillReturnRows(sqlmock.NewRows(uomColumns).
-			AddRow(1, timeNow(), timeNow(), nil, 1, "kg", 1.0, "", 0.001))
+			AddRow(1, timeNow(), timeNow(), nil, uint64(10), 1, "kg", 1.0, "", 0.001))
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "unit_groups" WHERE id = $1 ORDER BY "unit_groups"."id" LIMIT $2`)).
 		WithArgs(1, 1).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "units" WHERE name = $1 LIMIT $2`)).
 		WithArgs("kilogram", 1).
 		WillReturnRows(sqlmock.NewRows(uomColumns).
-			AddRow(9, timeNow(), timeNow(), nil, 1, "kilogram", 1.0, "", 0.001))
+			AddRow(9, timeNow(), timeNow(), nil, uint64(10), 1, "kilogram", 1.0, "", 0.001))
 	app := uomHandlerTest(t, dao.NewBase[reference.Unit](db), dao.NewBase[reference.UnitGroup](db), uomTestSvc(dao.NewBase[reference.Unit](db), dao.NewBase[reference.UnitGroup](db)))
 
 	body := `{"name":"kilogram","factor":1}`
@@ -548,7 +550,7 @@ func TestUnitHandler_Update_ReturnsServerErrorOnSave(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "units" WHERE id = $1 ORDER BY "units"."id" LIMIT $2`)).
 		WithArgs(1, 1).
 		WillReturnRows(sqlmock.NewRows(uomColumns).
-			AddRow(1, timeNow(), timeNow(), nil, 1, "kg", 1.0, "", 0.001))
+			AddRow(1, timeNow(), timeNow(), nil, uint64(10), 1, "kg", 1.0, "", 0.001))
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "unit_groups" WHERE id = $1 ORDER BY "unit_groups"."id" LIMIT $2`)).
 		WithArgs(1, 1).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
@@ -577,7 +579,7 @@ func TestUnitHandler_Delete_DeletesUnit(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "units" WHERE id = $1 ORDER BY "units"."id" LIMIT $2`)).
 		WithArgs(1, 1).
 		WillReturnRows(sqlmock.NewRows(uomColumns).
-			AddRow(1, timeNow(), timeNow(), nil, 1, "kg", 1.0, "", 0.001))
+			AddRow(1, timeNow(), timeNow(), nil, uint64(10), 1, "kg", 1.0, "", 0.001))
 	mock.ExpectBegin()
 	mock.ExpectExec(regexp.QuoteMeta(`UPDATE "units" SET "deleted_at"=$1 WHERE "units"."id" = $2`)).
 		WithArgs(sqlmock.AnyArg(), 1).
@@ -648,7 +650,7 @@ func TestUnitHandler_Delete_ReturnsServerErrorOnDelete(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "units" WHERE id = $1 ORDER BY "units"."id" LIMIT $2`)).
 		WithArgs(1, 1).
 		WillReturnRows(sqlmock.NewRows(uomColumns).
-			AddRow(1, timeNow(), timeNow(), nil, 1, "kg", 1.0, "", 0.001))
+			AddRow(1, timeNow(), timeNow(), nil, uint64(10), 1, "kg", 1.0, "", 0.001))
 	mock.ExpectBegin()
 	mock.ExpectExec(regexp.QuoteMeta(`UPDATE "units" SET "deleted_at"=$1 WHERE "units"."id" = $2`)).
 		WithArgs(sqlmock.AnyArg(), 1).

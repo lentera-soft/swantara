@@ -42184,6 +42184,668 @@
                 }
             }
         },
+        "/organizations/{organization_id}/unit-groups": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Lists unit of measure categories with pagination, sorting, and filtering, automatically scoping results to the caller's organization; the response can be exported as JSON, XML, or CSV.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UoM"
+                ],
+                "summary": "List UoM categories",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Items per page (max 100)",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort fields (comma separated, e.g. name:asc)",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filters (repeatable, e.g. name:like:Weight)",
+                        "name": "filter",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "json",
+                            "xml",
+                            "csv"
+                        ],
+                        "type": "string",
+                        "description": "Response format",
+                        "name": "format",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "UoM categories retrieved successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ListUnitCategoriesResponseEnvelope"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid query parameters",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates a unit of measure category with a required name. The name must be provided or validation fails with a 422; on success the new category is returned.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UoM"
+                ],
+                "summary": "Create UoM category",
+                "parameters": [
+                    {
+                        "description": "UoM category details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.CreateUnitGroupRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "UoM category created successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/handler.CreateUnitGroupResponseEnvelope"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/organizations/{organization_id}/unit-groups/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a single unit of measure category by id, including HATEOAS-style links for retrieving, updating, and deleting the category; a 404 is returned if the category does not exist.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UoM"
+                ],
+                "summary": "Get UoM category",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UoM category ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "UoM category retrieved successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GetUnitGroupResponseEnvelope"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "UoM category not found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates a unit of measure category's name, which remains required. Returns 404 if the category does not exist and 422 when the name is missing; the updated category is returned with its links.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UoM"
+                ],
+                "summary": "Update UoM category",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UoM category ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "UoM category details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.UpdateUnitGroupRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "UoM category updated successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/handler.UpdateUnitGroupResponseEnvelope"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "UoM category not found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a unit of measure category by id; returns 404 if the category does not exist and 204 No Content on success.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UoM"
+                ],
+                "summary": "Delete UoM category",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UoM category ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "UoM category not found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/organizations/{organization_id}/units": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Lists units of measure with pagination, sorting, and filtering, automatically scoping results to the caller's organization; the response can be exported as JSON, XML, or CSV.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UoM"
+                ],
+                "summary": "List UoMs",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "default": 1,
+                        "description": "Page number",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "default": 20,
+                        "description": "Items per page (max 100)",
+                        "name": "size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Sort fields (comma separated, e.g. name:asc)",
+                        "name": "sort",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Filters (repeatable, e.g. category_id:eq:1)",
+                        "name": "filter",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "json",
+                            "xml",
+                            "csv"
+                        ],
+                        "type": "string",
+                        "description": "Response format",
+                        "name": "format",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "UoMs retrieved successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/handler.ListUnitsResponseEnvelope"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid query parameters",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates a unit of measure within a category, requiring a positive conversion factor and an optional rounding value. The category must exist and the UoM name must be unique within that category, otherwise a 422 is returned.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UoM"
+                ],
+                "summary": "Create UoM",
+                "parameters": [
+                    {
+                        "description": "UoM details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.CreateUnitRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "UoM created successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/handler.CreateUnitResponseEnvelope"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error, unknown category, or duplicate name",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/organizations/{organization_id}/units/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Returns a single unit of measure by id with its category, conversion factor, type, and rounding; a 404 is returned if the UoM does not exist.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UoM"
+                ],
+                "summary": "Get UoM",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UoM ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "UoM retrieved successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GetUnitResponseEnvelope"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "UoM not found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates a unit of measure's name, factor, type, and rounding. The factor must remain positive and the name must stay unique within its category; a 404 is returned if the UoM does not exist.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UoM"
+                ],
+                "summary": "Update UoM",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UoM ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "UoM details",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.UpdateUnitRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "UoM updated successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/handler.UpdateUnitResponseEnvelope"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "UoM not found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error or duplicate name",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a unit of measure by id; returns 404 if the UoM does not exist and 204 No Content on success.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "UoM"
+                ],
+                "summary": "Delete UoM",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "UoM ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad request",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "UoM not found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
         "/organizations/{organization_id}/warehouse-transfers": {
             "get": {
                 "security": [
@@ -43883,450 +44545,6 @@
                 }
             }
         },
-        "/unit-groups": {
-            "get": {
-                "description": "Lists unit of measure categories with pagination, sorting, and filtering, returning results as JSON, XML, or CSV.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "UoM"
-                ],
-                "summary": "List UoM categories",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 20,
-                        "description": "Items per page (max 100)",
-                        "name": "size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Sort fields (comma separated, e.g. name:asc)",
-                        "name": "sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filters (repeatable, e.g. name:like:Weight)",
-                        "name": "filter",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
-                            "json",
-                            "xml",
-                            "csv"
-                        ],
-                        "type": "string",
-                        "description": "Response format",
-                        "name": "format",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "UoM categories retrieved successfully.",
-                        "schema": {
-                            "$ref": "#/definitions/handler.ListUnitCategoriesResponseEnvelope"
-                        }
-                    },
-                    "422": {
-                        "description": "Invalid query parameters",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Creates a unit of measure category with a required name. The name must be provided or validation fails with a 422; on success the new category is returned.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "UoM"
-                ],
-                "summary": "Create UoM category",
-                "parameters": [
-                    {
-                        "description": "UoM category details",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handler.CreateUnitGroupRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "UoM category created successfully.",
-                        "schema": {
-                            "$ref": "#/definitions/handler.CreateUnitGroupResponseEnvelope"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/unit-groups/{id}": {
-            "get": {
-                "description": "Returns a single unit of measure category by id, including HATEOAS-style links for retrieving, updating, and deleting the category; a 404 is returned if the category does not exist.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "UoM"
-                ],
-                "summary": "Get UoM category",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "UoM category ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "UoM category retrieved successfully.",
-                        "schema": {
-                            "$ref": "#/definitions/handler.GetUnitGroupResponseEnvelope"
-                        }
-                    },
-                    "404": {
-                        "description": "UoM category not found",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Updates a unit of measure category's name, which remains required. Returns 404 if the category does not exist and 422 when the name is missing; the updated category is returned with its links.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "UoM"
-                ],
-                "summary": "Update UoM category",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "UoM category ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "UoM category details",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handler.UpdateUnitGroupRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "UoM category updated successfully.",
-                        "schema": {
-                            "$ref": "#/definitions/handler.UpdateUnitGroupResponseEnvelope"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "UoM category not found",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Deletes a unit of measure category by id; returns 404 if the category does not exist and 204 No Content on success.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "UoM"
-                ],
-                "summary": "Delete UoM category",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "UoM category ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "UoM category not found",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/units": {
-            "get": {
-                "description": "Lists units of measure with pagination, sorting, and filtering, supporting filters such as category and UoM type; the response can be exported as JSON, XML, or CSV.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "UoM"
-                ],
-                "summary": "List UoMs",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "default": 1,
-                        "description": "Page number",
-                        "name": "page",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "default": 20,
-                        "description": "Items per page (max 100)",
-                        "name": "size",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Sort fields (comma separated, e.g. name:asc)",
-                        "name": "sort",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "Filters (repeatable, e.g. category_id:eq:1)",
-                        "name": "filter",
-                        "in": "query"
-                    },
-                    {
-                        "enum": [
-                            "json",
-                            "xml",
-                            "csv"
-                        ],
-                        "type": "string",
-                        "description": "Response format",
-                        "name": "format",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "UoMs retrieved successfully.",
-                        "schema": {
-                            "$ref": "#/definitions/handler.ListUnitsResponseEnvelope"
-                        }
-                    },
-                    "422": {
-                        "description": "Invalid query parameters",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Creates a unit of measure within a category, requiring a positive conversion factor and an optional rounding value. The category must exist and the UoM name must be unique within that category, otherwise a 422 is returned.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "UoM"
-                ],
-                "summary": "Create UoM",
-                "parameters": [
-                    {
-                        "description": "UoM details",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handler.CreateUnitRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "UoM created successfully.",
-                        "schema": {
-                            "$ref": "#/definitions/handler.CreateUnitResponseEnvelope"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error, unknown category, or duplicate name",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
         "/units/convert": {
             "post": {
                 "description": "Converts a decimal quantity between two units of measure using their conversion factors. Both UoMs must exist and belong to the same category, and the quantity must be a valid decimal; the result is rounded according to the target UoM's rounding.",
@@ -44366,180 +44584,6 @@
                     },
                     "422": {
                         "description": "Validation error, unknown UoM, or category mismatch",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    }
-                }
-            }
-        },
-        "/units/{id}": {
-            "get": {
-                "description": "Returns a single unit of measure by id with its category, conversion factor, type, and rounding; a 404 is returned if the UoM does not exist.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "UoM"
-                ],
-                "summary": "Get UoM",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "UoM ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "UoM retrieved successfully.",
-                        "schema": {
-                            "$ref": "#/definitions/handler.GetUnitResponseEnvelope"
-                        }
-                    },
-                    "404": {
-                        "description": "UoM not found",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Updates a unit of measure's name, factor, type, and rounding. The factor must remain positive and the name must stay unique within its category; a 404 is returned if the UoM does not exist.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "UoM"
-                ],
-                "summary": "Update UoM",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "UoM ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "UoM details",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/handler.UpdateUnitRequest"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "UoM updated successfully.",
-                        "schema": {
-                            "$ref": "#/definitions/handler.UpdateUnitResponseEnvelope"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "UoM not found",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "422": {
-                        "description": "Validation error or duplicate name",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal server error",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "security": [
-                    {
-                        "BearerAuth": []
-                    }
-                ],
-                "description": "Deletes a unit of measure by id; returns 404 if the UoM does not exist and 204 No Content on success.",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "UoM"
-                ],
-                "summary": "Delete UoM",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "UoM ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "204": {
-                        "description": "No Content"
-                    },
-                    "400": {
-                        "description": "Bad request",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized",
-                        "schema": {
-                            "$ref": "#/definitions/httpx.ErrorResponse"
-                        }
-                    },
-                    "404": {
-                        "description": "UoM not found",
                         "schema": {
                             "$ref": "#/definitions/httpx.ErrorResponse"
                         }
@@ -70076,6 +70120,9 @@
                 "name": {
                     "type": "string"
                 },
+                "organization_id": {
+                    "type": "integer"
+                },
                 "updated_at": {
                     "type": "string"
                 }
@@ -70098,6 +70145,9 @@
                 },
                 "name": {
                     "type": "string"
+                },
+                "organization_id": {
+                    "type": "integer"
                 },
                 "rounding": {
                     "type": "number"

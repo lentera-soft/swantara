@@ -82,7 +82,7 @@ func (s *Seeder) SeedForOrganization(ctx context.Context, organizationID uint64)
 		{"currencies", s.seedCurrencies},
 		{"countries", s.seedCountries},
 		{"fx rates", func(ctx context.Context) error { return s.seedFxRates(ctx, organizationID) }},
-		{"units", s.seedUnits},
+		{"units", func(ctx context.Context) error { return s.seedUnits(ctx, organizationID) }},
 		{"payment terms", func(ctx context.Context) error { return s.seedPaymentTerms(ctx, organizationID) }},
 		{"accounts", func(ctx context.Context) error { return s.seedAccounts(ctx, organizationID) }},
 		{"dimension accounts", func(ctx context.Context) error { return s.seedDimensions(ctx, organizationID) }},
@@ -187,7 +187,11 @@ func (s *Seeder) seedFxRates(ctx context.Context, orgID uint64) error {
 	return err
 }
 
-func (s *Seeder) seedUnits(ctx context.Context) error {
+func (s *Seeder) seedUnits(ctx context.Context, organizationIDs ...uint64) error {
+	orgID := uint64(1)
+	if len(organizationIDs) > 0 && organizationIDs[0] != 0 {
+		orgID = organizationIDs[0]
+	}
 	seed, err := loadInventorySeed()
 	if err != nil {
 		return err
@@ -197,29 +201,30 @@ func (s *Seeder) seedUnits(ctx context.Context) error {
 
 	categories := make([]*reference.UnitGroup, 0, len(seed.UnitCategories))
 	for _, name := range seed.UnitCategories {
-		categories = append(categories, &reference.UnitGroup{Name: name})
+		categories = append(categories, &reference.UnitGroup{OrganizationID: helper.Ptr(orgID), Name: name})
 	}
-	if _, err := seedMissing(ctx, unitGroupDAO, "name", nil, categories, func(c *reference.UnitGroup) any { return c.Name }); err != nil {
+	if _, err := seedMissing(ctx, unitGroupDAO, "name", helper.Ptr(orgID), categories, func(c *reference.UnitGroup) any { return c.Name }); err != nil {
 		return err
 	}
 
 	for _, def := range seed.Units {
-		existing, err := uomDAO.Search(ctx, "name", def.Name)
+		existing, err := uomDAO.SearchInOrg(ctx, orgID, "name", def.Name)
 		if err != nil {
 			return err
 		}
 		if existing != nil {
 			continue
 		}
-		categoryID, err := refID(ctx, unitGroupDAO, "name", def.Category)
+		categoryID, err := refIDInOrg(ctx, unitGroupDAO, orgID, "name", def.Category)
 		if err != nil {
 			return err
 		}
 		unit := &reference.Unit{
-			Name:     def.Name,
-			Factor:   def.Factor,
-			UnitType: def.Type,
-			Rounding: def.Rounding,
+			OrganizationID: helper.Ptr(orgID),
+			Name:           def.Name,
+			Factor:         def.Factor,
+			UnitType:       def.Type,
+			Rounding:       def.Rounding,
 		}
 		unit.CategoryID = categoryID
 		if _, err := uomDAO.Create(ctx, unit); err != nil {
@@ -535,7 +540,7 @@ func (s *Seeder) seedItems(ctx context.Context, orgID uint64, seed *inventorySee
 		if err != nil {
 			return err
 		}
-		uomID, err := refID(ctx, uomDAO, "name", "Unit")
+		uomID, err := refIDInOrg(ctx, uomDAO, orgID, "name", "Unit")
 		if err != nil {
 			return err
 		}
@@ -910,7 +915,7 @@ func (s *Seeder) seedQualityPoints(ctx context.Context, orgID uint64) error {
 	uomDAO := dao.NewBase[reference.Unit](s.db)
 	qualityPointDAO := dao.NewBase[reference.QualityPoint](s.db)
 
-	uomID, err := refID(ctx, uomDAO, "name", seed.QualityPoints[0].Unit)
+	uomID, err := refIDInOrg(ctx, uomDAO, orgID, "name", seed.QualityPoints[0].Unit)
 	if err != nil {
 		return err
 	}

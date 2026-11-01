@@ -5,7 +5,7 @@ CREATE TABLE permissions(
   name TEXT NOT NULL,
   code TEXT NOT NULL,
   description TEXT,
-  action TEXT NOT NULL CHECK(action IN ('view','create','update','delete','approve','post')),
+  action TEXT NOT NULL CHECK(action IN ('view','create','update','delete','approve','post','override')),
   resource TEXT NOT NULL,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,

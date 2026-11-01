@@ -4,7 +4,6 @@ import {
   Briefcase,
   Calculator,
   ChevronDown,
-  CreditCard,
   Handshake,
   type LucideIcon,
   Package,
@@ -29,14 +28,13 @@ import type { OrgNavItem, OrgNavModule } from "./nav-items";
 import { SidebarTree } from "./sidebar-tree";
 
 export const moduleKey: Record<OrgNavModule, string> = {
-  crm: "CRM",
+  crm: "Customer",
   products: "Produk",
   inventory: "Persediaan",
   procurement: "Pengadaan",
   hr: "HR",
   finance: "Keuangan",
   projectManagement: "Manajemen Proyek",
-  subscriptions: "Langganan",
   sales: "Penjualan",
   service: "Layanan",
 };
@@ -49,7 +47,6 @@ export const moduleIcons: Record<OrgNavModule, LucideIcon> = {
   hr: Users,
   finance: Calculator,
   projectManagement: Briefcase,
-  subscriptions: CreditCard,
   sales: Receipt,
   service: Wrench,
 };

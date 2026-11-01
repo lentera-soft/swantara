@@ -24,6 +24,7 @@ func (h KpiHandler) Inventory(c fiber.Ctx) error {
 	if err != nil {
 		return writeKpiError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Inventory KPI retrieved successfully.", kpi)
 }
 
@@ -52,6 +53,7 @@ func (h KpiHandler) Procurement(c fiber.Ctx) error {
 	if err != nil {
 		return writeKpiError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Procurement KPI retrieved successfully.", kpi)
 }
 
@@ -80,6 +82,7 @@ func (h KpiHandler) Manufacturing(c fiber.Ctx) error {
 	if err != nil {
 		return writeKpiError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Manufacturing KPI retrieved successfully.", kpi)
 }
 
@@ -108,5 +111,6 @@ func (h KpiHandler) InventoryRatio(c fiber.Ctx) error {
 	if err != nil {
 		return writeKpiError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Inventory ratio KPI retrieved successfully.", kpi)
 }

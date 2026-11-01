@@ -14,6 +14,7 @@ import (
 	"github.com/jalusw/swantara/apps/service/internal/kernel/state"
 	"gorm.io/gorm"
 
+	"github.com/jalusw/swantara/apps/service/internal/helper"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/clock"
 
 	"github.com/jalusw/swantara/apps/service/internal/kernel/dao"
@@ -75,35 +76,43 @@ func validateLineType(lineType string) error {
 	return ErrOrderLineInvalidType
 }
 
-func (s Service) ListEquipments(ctx context.Context, q *query.Query) (*query.Page[Equipment], error) {
+func (s Service) ListEquipments(ctx context.Context, q *query.Query) (_ *query.Page[Equipment], err error) {
+	defer helper.RecordOp(ctx, "service.list_equipments", s.now(), &err)
 	return s.equipments.List(ctx, q)
 }
 
-func (s Service) FindEquipment(ctx context.Context, id uint64) (*Equipment, error) {
+func (s Service) FindEquipment(ctx context.Context, id uint64) (_ *Equipment, err error) {
+	defer helper.RecordOp(ctx, "service.find_equipment", s.now(), &err)
 	return s.equipments.Find(ctx, id)
 }
 
-func (s Service) CreateEquipment(ctx context.Context, equipment *Equipment) (*Equipment, error) {
+func (s Service) CreateEquipment(ctx context.Context, equipment *Equipment) (_ *Equipment, err error) {
+	defer helper.RecordOp(ctx, "service.create_equipment", s.now(), &err)
 	return s.equipments.Create(ctx, equipment)
 }
 
-func (s Service) ListContracts(ctx context.Context, q *query.Query) (*query.Page[ServiceContract], error) {
+func (s Service) ListContracts(ctx context.Context, q *query.Query) (_ *query.Page[ServiceContract], err error) {
+	defer helper.RecordOp(ctx, "service.list_contracts", s.now(), &err)
 	return s.contracts.List(ctx, q)
 }
 
-func (s Service) FindContract(ctx context.Context, id uint64) (*ServiceContract, error) {
+func (s Service) FindContract(ctx context.Context, id uint64) (_ *ServiceContract, err error) {
+	defer helper.RecordOp(ctx, "service.find_contract", s.now(), &err)
 	return s.contracts.Find(ctx, id)
 }
 
-func (s Service) ListOrders(ctx context.Context, q *query.Query) (*query.Page[ServiceOrder], error) {
+func (s Service) ListOrders(ctx context.Context, q *query.Query) (_ *query.Page[ServiceOrder], err error) {
+	defer helper.RecordOp(ctx, "service.list_orders", s.now(), &err)
 	return s.orders.List(ctx, q)
 }
 
-func (s Service) FindOrder(ctx context.Context, id uint64) (*ServiceOrder, error) {
+func (s Service) FindOrder(ctx context.Context, id uint64) (_ *ServiceOrder, err error) {
+	defer helper.RecordOp(ctx, "service.find_order", s.now(), &err)
 	return s.orders.Find(ctx, id)
 }
 
-func (s Service) ListOrderLines(ctx context.Context, orderID uint64) ([]*ServiceOrderLine, error) {
+func (s Service) ListOrderLines(ctx context.Context, orderID uint64) (_ []*ServiceOrderLine, err error) {
+	defer helper.RecordOp(ctx, "service.list_order_lines", s.now(), &err)
 	return s.lines.ListByOrder(ctx, orderID)
 }
 
@@ -134,7 +143,8 @@ type LineRequest struct {
 	CoveredByWarranty bool
 }
 
-func (s Service) CreateOrder(ctx context.Context, request CreateOrderRequest) (*ServiceOrder, error) {
+func (s Service) CreateOrder(ctx context.Context, request CreateOrderRequest) (_ *ServiceOrder, err error) {
+	defer helper.RecordOp(ctx, "service.create_order", s.now(), &err)
 	if request.Name == "" {
 		return nil, ErrOrderNameRequired
 	}
@@ -174,7 +184,7 @@ func (s Service) CreateOrder(ctx context.Context, request CreateOrderRequest) (*
 	}
 
 	var created *ServiceOrder
-	err := s.tx.Run(ctx, func(tx *gorm.DB) error {
+	err = s.tx.Run(ctx, func(tx *gorm.DB) error {
 		createdOrder, err := s.orders.CreateTx(ctx, tx, order)
 		if err != nil {
 			return err
@@ -211,7 +221,8 @@ type AddLineRequest struct {
 	Line    LineRequest
 }
 
-func (s Service) AddLine(ctx context.Context, request AddLineRequest) (*ServiceOrderLine, error) {
+func (s Service) AddLine(ctx context.Context, request AddLineRequest) (_ *ServiceOrderLine, err error) {
+	defer helper.RecordOp(ctx, "service.add_line", s.now(), &err)
 	order, err := s.order(ctx, request.OrderID)
 	if err != nil {
 		return nil, err
@@ -291,7 +302,8 @@ type ScheduleRequest struct {
 	TechnicianID  *uint64
 }
 
-func (s Service) Schedule(ctx context.Context, request ScheduleRequest) (*ServiceOrder, error) {
+func (s Service) Schedule(ctx context.Context, request ScheduleRequest) (_ *ServiceOrder, err error) {
+	defer helper.RecordOp(ctx, "service.schedule", s.now(), &err)
 	order, err := s.order(ctx, request.OrderID)
 	if err != nil {
 		return nil, err
@@ -306,7 +318,8 @@ func (s Service) Schedule(ctx context.Context, request ScheduleRequest) (*Servic
 	return s.orders.Update(ctx, updated)
 }
 
-func (s Service) Start(ctx context.Context, orderID uint64) (*ServiceOrder, error) {
+func (s Service) Start(ctx context.Context, orderID uint64) (_ *ServiceOrder, err error) {
+	defer helper.RecordOp(ctx, "service.start", s.now(), &err)
 	order, err := s.order(ctx, orderID)
 	if err != nil {
 		return nil, err
@@ -323,7 +336,8 @@ type CompleteRequest struct {
 	Resolution              string
 }
 
-func (s Service) Complete(ctx context.Context, request CompleteRequest) (*ServiceOrder, error) {
+func (s Service) Complete(ctx context.Context, request CompleteRequest) (_ *ServiceOrder, err error) {
+	defer helper.RecordOp(ctx, "service.complete", s.now(), &err)
 	if request.JournalID == 0 {
 		return nil, ErrOrderRequiresJournal
 	}
@@ -394,7 +408,8 @@ type BillRequest struct {
 	DeferredAccount  *uint64
 }
 
-func (s Service) Bill(ctx context.Context, request BillRequest) (*ServiceOrder, error) {
+func (s Service) Bill(ctx context.Context, request BillRequest) (_ *ServiceOrder, err error) {
+	defer helper.RecordOp(ctx, "service.bill", s.now(), &err)
 	if request.JournalID == 0 {
 		return nil, ErrOrderRequiresJournal
 	}
@@ -456,7 +471,8 @@ func (s Service) Bill(ctx context.Context, request BillRequest) (*ServiceOrder, 
 	return s.orders.Update(ctx, updated)
 }
 
-func (s Service) CancelOrder(ctx context.Context, orderID uint64) (*ServiceOrder, error) {
+func (s Service) CancelOrder(ctx context.Context, orderID uint64) (_ *ServiceOrder, err error) {
+	defer helper.RecordOp(ctx, "service.cancel_order", s.now(), &err)
 	order, err := s.order(ctx, orderID)
 	if err != nil {
 		return nil, err
@@ -479,7 +495,8 @@ type CreateContractRequest struct {
 	DateEnd          *time.Time
 }
 
-func (s Service) CreateContract(ctx context.Context, request CreateContractRequest) (*ServiceContract, error) {
+func (s Service) CreateContract(ctx context.Context, request CreateContractRequest) (_ *ServiceContract, err error) {
+	defer helper.RecordOp(ctx, "service.create_contract", s.now(), &err)
 	if request.Name == "" {
 		return nil, ErrContractNameRequired
 	}
@@ -501,7 +518,8 @@ func (s Service) CreateContract(ctx context.Context, request CreateContractReque
 	})
 }
 
-func (s Service) CancelContract(ctx context.Context, contractID uint64) (*ServiceContract, error) {
+func (s Service) CancelContract(ctx context.Context, contractID uint64) (_ *ServiceContract, err error) {
+	defer helper.RecordOp(ctx, "service.cancel_contract", s.now(), &err)
 	contract, err := s.contracts.Find(ctx, contractID)
 	if err != nil {
 		return nil, dao.NotFound(err, ErrContractNotFound)
@@ -516,7 +534,8 @@ func (s Service) CancelContract(ctx context.Context, contractID uint64) (*Servic
 	return s.contracts.Update(ctx, contract)
 }
 
-func (s Service) ActivateContract(ctx context.Context, contractID uint64) (*ServiceContract, error) {
+func (s Service) ActivateContract(ctx context.Context, contractID uint64) (_ *ServiceContract, err error) {
+	defer helper.RecordOp(ctx, "service.activate_contract", s.now(), &err)
 	contract, err := s.contracts.Find(ctx, contractID)
 	if err != nil {
 		return nil, dao.NotFound(err, ErrContractNotFound)
@@ -534,11 +553,13 @@ func (s Service) ActivateContract(ctx context.Context, contractID uint64) (*Serv
 	return s.contracts.Update(ctx, contract)
 }
 
-func (s Service) ListEquipmentsInOrg(ctx context.Context, q *query.Query, organizationID uint64) (*query.Page[Equipment], error) {
+func (s Service) ListEquipmentsInOrg(ctx context.Context, q *query.Query, organizationID uint64) (_ *query.Page[Equipment], err error) {
+	defer helper.RecordOp(ctx, "service.list_equipments_in_org", s.now(), &err)
 	return s.equipments.List(ctx, scope.ToOrg(q, organizationID))
 }
 
-func (s Service) FindEquipmentInOrg(ctx context.Context, id, organizationID uint64) (*Equipment, error) {
+func (s Service) FindEquipmentInOrg(ctx context.Context, id, organizationID uint64) (_ *Equipment, err error) {
+	defer helper.RecordOp(ctx, "service.find_equipment_in_org", s.now(), &err)
 	e, err := s.FindEquipment(ctx, id)
 	if err != nil || e == nil || !scope.Owns(e.OrganizationID, organizationID) {
 		return nil, err
@@ -546,11 +567,13 @@ func (s Service) FindEquipmentInOrg(ctx context.Context, id, organizationID uint
 	return e, nil
 }
 
-func (s Service) ListContractsInOrg(ctx context.Context, q *query.Query, organizationID uint64) (*query.Page[ServiceContract], error) {
+func (s Service) ListContractsInOrg(ctx context.Context, q *query.Query, organizationID uint64) (_ *query.Page[ServiceContract], err error) {
+	defer helper.RecordOp(ctx, "service.list_contracts_in_org", s.now(), &err)
 	return s.contracts.List(ctx, scope.ToOrg(q, organizationID))
 }
 
-func (s Service) FindContractInOrg(ctx context.Context, id, organizationID uint64) (*ServiceContract, error) {
+func (s Service) FindContractInOrg(ctx context.Context, id, organizationID uint64) (_ *ServiceContract, err error) {
+	defer helper.RecordOp(ctx, "service.find_contract_in_org", s.now(), &err)
 	e, err := s.FindContract(ctx, id)
 	if err != nil || e == nil || !scope.Owns(e.OrganizationID, organizationID) {
 		return nil, err
@@ -558,11 +581,13 @@ func (s Service) FindContractInOrg(ctx context.Context, id, organizationID uint6
 	return e, nil
 }
 
-func (s Service) ListOrdersInOrg(ctx context.Context, q *query.Query, organizationID uint64) (*query.Page[ServiceOrder], error) {
+func (s Service) ListOrdersInOrg(ctx context.Context, q *query.Query, organizationID uint64) (_ *query.Page[ServiceOrder], err error) {
+	defer helper.RecordOp(ctx, "service.list_orders_in_org", s.now(), &err)
 	return s.orders.List(ctx, scope.ToOrg(q, organizationID))
 }
 
-func (s Service) FindOrderInOrg(ctx context.Context, id, organizationID uint64) (*ServiceOrder, error) {
+func (s Service) FindOrderInOrg(ctx context.Context, id, organizationID uint64) (_ *ServiceOrder, err error) {
+	defer helper.RecordOp(ctx, "service.find_order_in_org", s.now(), &err)
 	e, err := s.FindOrder(ctx, id)
 	if err != nil || e == nil || !scope.Owns(e.OrganizationID, organizationID) {
 		return nil, err

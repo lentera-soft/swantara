@@ -34,5 +34,6 @@ func (h CampaignHandler) Delete(c fiber.Ctx) error {
 		return writeCampaignError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateNoContentResponse(c)
 }

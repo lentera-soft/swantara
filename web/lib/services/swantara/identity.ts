@@ -27,6 +27,7 @@ import { withListMeta } from "./types";
 export type LoginRequest = {
   email: string;
   password: string;
+  rememberMe?: boolean;
 };
 
 export type TokenPair = {

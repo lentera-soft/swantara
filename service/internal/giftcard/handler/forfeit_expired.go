@@ -57,6 +57,7 @@ func (h GiftCardHandler) ForfeitExpired(c fiber.Ctx) error {
 	for i, card := range forfeited {
 		items[i] = newGiftCardResponse(card)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Expired gift cards forfeited successfully.", ForfeitExpiredGiftCardsResponse{
 		GiftCards: items,
 	})

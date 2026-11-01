@@ -69,6 +69,7 @@ func (h ProductionHandler) Consume(c fiber.Ctx) error {
 		return writeProductionError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Raw materials consumed successfully.", GetConsumedMaterialResponse{
 		Component: newConsumedMaterialResponse(component),
 	})
@@ -126,6 +127,7 @@ func (h ProductionHandler) Produce(c fiber.Ctx) error {
 		return writeProductionError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Finished goods produced successfully.", GetProductionOrderResponse{
 		ProductionOrder: newProductionOrderResponse(productionOrder),
 	})

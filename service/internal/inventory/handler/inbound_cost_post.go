@@ -42,6 +42,7 @@ func (h InboundCostHandler) Post(c fiber.Ctx) error {
 		return writeInboundCostError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Inbound cost posted successfully.", PostInboundCostResponseEnvelope{
 		Data: newInboundCostResponse(updated),
 	})

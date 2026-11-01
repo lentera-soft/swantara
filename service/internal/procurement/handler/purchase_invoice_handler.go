@@ -95,6 +95,7 @@ func (h PurchaseOrderHandler) CreateSupplierBill(c fiber.Ctx) error {
 	if err != nil {
 		return writePurchaseOrderError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Supplier bill created successfully.", BillPurchaseOrderResponse{
 		Invoice: newPurchaseInvoiceResponse(invoice),
 	})
@@ -172,6 +173,7 @@ func (h PurchaseOrderHandler) Pay(c fiber.Ctx) error {
 	if err != nil {
 		return writePurchaseOrderError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Supplier payment recorded successfully.", PayPurchaseOrderResponse{
 		Payment: newPurchasePaymentResponse(payment),
 	})
@@ -254,6 +256,7 @@ func (h PurchaseOrderHandler) CreateCreditMemo(c fiber.Ctx) error {
 	if err != nil {
 		return writePurchaseOrderError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Credit memo created successfully.", CreateCreditMemoResponse{
 		Memo: newCreditMemoResponse(memo),
 	})
@@ -336,6 +339,7 @@ func (h PurchaseOrderHandler) CreateDebitMemo(c fiber.Ctx) error {
 	if err != nil {
 		return writePurchaseOrderError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Debit memo created successfully.", CreateDebitMemoResponse{
 		Memo: newDebitMemoResponse(memo),
 	})

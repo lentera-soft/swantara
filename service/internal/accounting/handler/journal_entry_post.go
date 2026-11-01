@@ -122,6 +122,7 @@ func (h JournalEntryHandler) Post(c fiber.Ctx) error {
 		return writeJournalEntryError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Journal entry posted successfully.", PostJournalEntryResponse{
 		Entry: newJournalEntryResponse(entry),
 	})

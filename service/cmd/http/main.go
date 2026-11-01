@@ -3,12 +3,23 @@ package main
 import (
 	"context"
 	"log/slog"
-	"net/http"
 	"os/signal"
 	"syscall"
 	"time"
 
 	"github.com/gofiber/fiber/v3"
+
+	"github.com/jalusw/swantara/apps/service/internal/config"
+	"github.com/jalusw/swantara/apps/service/internal/db"
+	"github.com/jalusw/swantara/apps/service/internal/httpx"
+	"github.com/jalusw/swantara/apps/service/internal/kernel/audit"
+	auditHandler "github.com/jalusw/swantara/apps/service/internal/kernel/audit/handler"
+	"github.com/jalusw/swantara/apps/service/internal/kernel/dao"
+	"github.com/jalusw/swantara/apps/service/internal/kernel/sequence"
+	"github.com/jalusw/swantara/apps/service/internal/logger"
+	"github.com/jalusw/swantara/apps/service/internal/queue"
+	"github.com/jalusw/swantara/apps/service/internal/seeders"
+	"github.com/jalusw/swantara/apps/service/internal/storage"
 
 	"github.com/jalusw/swantara/apps/service/internal/accounting"
 	accountingHandler "github.com/jalusw/swantara/apps/service/internal/accounting/handler"
@@ -16,19 +27,16 @@ import (
 	assetHandler "github.com/jalusw/swantara/apps/service/internal/asset/handler"
 	"github.com/jalusw/swantara/apps/service/internal/commission"
 	commissionHandler "github.com/jalusw/swantara/apps/service/internal/commission/handler"
-	"github.com/jalusw/swantara/apps/service/internal/config"
 	"github.com/jalusw/swantara/apps/service/internal/contacts"
 	contactsHandler "github.com/jalusw/swantara/apps/service/internal/contacts/handler"
 	"github.com/jalusw/swantara/apps/service/internal/crm"
 	crmHandler "github.com/jalusw/swantara/apps/service/internal/crm/handler"
 	"github.com/jalusw/swantara/apps/service/internal/crosscutting"
 	crosscuttingHandler "github.com/jalusw/swantara/apps/service/internal/crosscutting/handler"
-	"github.com/jalusw/swantara/apps/service/internal/db"
 	"github.com/jalusw/swantara/apps/service/internal/expense"
 	expenseHandler "github.com/jalusw/swantara/apps/service/internal/expense/handler"
 	"github.com/jalusw/swantara/apps/service/internal/giftcard"
 	giftcardHandler "github.com/jalusw/swantara/apps/service/internal/giftcard/handler"
-	"github.com/jalusw/swantara/apps/service/internal/httpx"
 	"github.com/jalusw/swantara/apps/service/internal/iam"
 	"github.com/jalusw/swantara/apps/service/internal/iam/handler"
 	"github.com/jalusw/swantara/apps/service/internal/inquiry"
@@ -37,13 +45,8 @@ import (
 	interorganizationHandler "github.com/jalusw/swantara/apps/service/internal/interorganization/handler"
 	"github.com/jalusw/swantara/apps/service/internal/inventory"
 	inventoryHandler "github.com/jalusw/swantara/apps/service/internal/inventory/handler"
-	"github.com/jalusw/swantara/apps/service/internal/kernel/audit"
-	auditHandler "github.com/jalusw/swantara/apps/service/internal/kernel/audit/handler"
-	"github.com/jalusw/swantara/apps/service/internal/kernel/dao"
-	"github.com/jalusw/swantara/apps/service/internal/kernel/sequence"
 	"github.com/jalusw/swantara/apps/service/internal/localization"
 	localizationHandler "github.com/jalusw/swantara/apps/service/internal/localization/handler"
-	"github.com/jalusw/swantara/apps/service/internal/logger"
 	"github.com/jalusw/swantara/apps/service/internal/manufacturing"
 	manufacturingHandler "github.com/jalusw/swantara/apps/service/internal/manufacturing/handler"
 	"github.com/jalusw/swantara/apps/service/internal/organization"
@@ -60,7 +63,6 @@ import (
 	projectHandler "github.com/jalusw/swantara/apps/service/internal/project/handler"
 	"github.com/jalusw/swantara/apps/service/internal/quality"
 	qualityHandler "github.com/jalusw/swantara/apps/service/internal/quality/handler"
-	"github.com/jalusw/swantara/apps/service/internal/queue"
 	"github.com/jalusw/swantara/apps/service/internal/reference"
 	referenceHandler "github.com/jalusw/swantara/apps/service/internal/reference/handler"
 	"github.com/jalusw/swantara/apps/service/internal/reporting"
@@ -69,10 +71,8 @@ import (
 	returnsHandler "github.com/jalusw/swantara/apps/service/internal/returns/handler"
 	"github.com/jalusw/swantara/apps/service/internal/sales"
 	salesHandler "github.com/jalusw/swantara/apps/service/internal/sales/handler"
-	"github.com/jalusw/swantara/apps/service/internal/seeders"
 	"github.com/jalusw/swantara/apps/service/internal/service"
 	serviceHandler "github.com/jalusw/swantara/apps/service/internal/service/handler"
-	"github.com/jalusw/swantara/apps/service/internal/storage"
 	"github.com/jalusw/swantara/apps/service/internal/subscription"
 	subscriptionHandler "github.com/jalusw/swantara/apps/service/internal/subscription/handler"
 	"github.com/jalusw/swantara/apps/service/internal/xtradata"
@@ -112,6 +112,7 @@ func main() {
 	if err != nil {
 		slog.Error("Failed to load database", "error", err)
 	}
+
 	if err := d.Use(audit.NewGormPlugin()); err != nil {
 		slog.Error("Failed to register audit plugin", "error", err)
 	}
@@ -126,6 +127,20 @@ func main() {
 	httpx.SetResponseVersion(cfg.ApplicationVersion)
 	httpx.SetLinkBaseURL(cfg.ApplicationURL)
 
+	passwordSvc := iam.NewPasswordService(cfg)
+	tokenSvc := iam.NewTokenService(cfg)
+	queueClient := queue.NewQueueClient(cfg)
+
+	seeder, err := seeders.New(d, passwordSvc)
+	if err != nil {
+		slog.Error("Failed to initialize seeder", "error", err)
+	}
+
+	objectStore, err := storage.NewStorageService(cfg)
+	if err != nil {
+		logger.Fatalf("Failed to initialize storage: %v", err)
+	}
+
 	userDAO := iam.NewUserDAO(d)
 	userSessionDAO := iam.NewUserSessionDAO(d)
 	userEmailVerificationDAO := iam.NewUserEmailVerificationDAO(d)
@@ -133,7 +148,6 @@ func main() {
 	permissionDAO := iam.NewPermissionDAO(d)
 	memberDAO := iam.NewMemberDAO(d)
 	memberRoleDAO := iam.NewMemberRoleDAO(d)
-
 	organizationDAO := dao.NewBase[reference.Organization](d)
 	currencyDAO := dao.NewBase[reference.Currency](d)
 	countryDAO := dao.NewBase[reference.Country](d)
@@ -161,21 +175,38 @@ func main() {
 	expenseCategoryDAO := dao.NewBase[reference.ExpenseCategory](d)
 	subscriptionPlanDAO := dao.NewBase[reference.SubscriptionPlan](d)
 	systemConfigDAO := dao.NewBase[reference.SystemConfig](d)
-
 	journalEntryDAO := accounting.NewJournalEntryDAO(d)
+	contactDAO := contacts.NewContactDAO(d)
+	contactAddressDAO := contacts.NewContactAddressDAO(d)
+	contactBankAccountDAO := contacts.NewContactBankAccountDAO(d)
+	customerProfileDAO := contacts.NewCustomerProfileDAO(d)
+	supplierProfileDAO := contacts.NewSupplierProfileDAO(d)
+	orgSystemConfigDAO := xtradata.NewSystemConfigDAO(d)
+	orgIdempotencyKeyDAO := xtradata.NewIdempotencyKeyDAO(d)
+	orgLocalizerDAO := localization.NewOrganizationLocalizer(d)
+	localizationProfileDAO := localization.NewProfileDAO(d)
+	taxTemplateLineDAO := localization.NewTaxTemplateLineDAO(d)
+	webhookSubscriptionDAO := xtradata.NewWebhookSubscriptionDAO(d)
+	webhookDeliveryDAO := xtradata.NewWebhookDeliveryDAO(d)
+	integrationEventDAO := xtradata.NewIntegrationEventDAO(d)
+	contactInquiryDAO := inquiry.NewContactInquiryDAO(d)
+	itemDAO := products.NewItemDAO(d)
+	itemVariantDAO := products.NewItemVariantDAO(d)
+	priceBookDAO := products.NewPriceBookDAO(d)
+	priceBookRuleDAO := products.NewPriceRuleDAO(d)
 
-	seeder, err := seeders.New(d, iam.NewPasswordService(cfg))
-	if err != nil {
-		logger.Fatalf("Failed to initialize seeder %v", err)
-	}
-
+	memberSvc := iam.NewMemberService(
+		memberDAO,
+		memberRoleDAO,
+		permissionDAO,
+	)
 	organizationSvc := organization.NewOrganizationService(
 		organizationDAO,
 		currencyDAO,
 		countryDAO,
-		iam.NewMemberService(memberDAO, memberRoleDAO, permissionDAO),
+		memberSvc,
 		seeder,
-	)
+	).WithProvisionEnqueuer(queueClient)
 	fxRateSvc := reference.NewFxRateService(fxRateDAO, currencyDAO)
 	countrySvc := reference.NewCountryService(countryDAO)
 	uomSvc := reference.NewUnitService(unitGroupDAO, uomDAO)
@@ -186,25 +217,18 @@ func main() {
 	taxSvc := reference.NewTaxService(taxDAO, accountDAO)
 	taxYearSvc := reference.NewTaxYearService(taxYearDAO)
 	campaignSvc := reference.NewCampaignService(campaignDAO)
-
 	contactSvc := contacts.NewContactService(
-		contacts.NewContactDAO(d),
-		contacts.NewContactAddressDAO(d),
-		contacts.NewContactBankAccountDAO(d),
-		contacts.NewCustomerProfileDAO(d),
-		contacts.NewSupplierProfileDAO(d),
+		contactDAO,
+		contactAddressDAO,
+		contactBankAccountDAO,
+		customerProfileDAO,
+		supplierProfileDAO,
 	)
-
-	tokenSvc := iam.NewTokenService(cfg)
-	passwordSvc := iam.NewPasswordService(cfg)
-	queueClient := queue.NewQueueClient(cfg)
-	organizationSvc = organizationSvc.WithProvisionEnqueuer(queueClient)
-
-	configSvc := xtradata.NewConfigService(xtradata.NewSystemConfigDAO(d))
-	idemSvc := xtradata.NewIdempotencyService(xtradata.NewIdempotencyKeyDAO(d))
-
+	configSvc := xtradata.NewConfigService(orgSystemConfigDAO)
+	idemSvc := xtradata.NewIdempotencyService(orgIdempotencyKeyDAO)
+	integrationEventSvc := xtradata.NewEventService(integrationEventDAO, nil)
+	webhoookSvc := xtradata.NewWebhookService(webhookSubscriptionDAO, webhookDeliveryDAO)
 	userSvc := iam.NewUserService(userDAO, passwordSvc)
-
 	authSvc := iam.NewAuthService(
 		userDAO,
 		userSvc,
@@ -217,107 +241,14 @@ func main() {
 		cfg.AuthEmailVerifyTTLDuration,
 		cfg.AuthPasswordResetTTLDuration,
 	)
+	localizationProfileSvc := localization.NewProfileService(
+		localizationProfileDAO,
+		taxTemplateLineDAO,
+		orgLocalizerDAO,
+	)
 	authzSvc := iam.NewAuthzService(permissionDAO)
-
-	objectStore, err := newStorageStore(cfg)
-	if err != nil {
-		logger.Fatalf("Failed to initialize storage: %v", err)
-	}
 	avatarSvc := iam.NewAvatarService(userDAO, objectStore)
-
-	authHandler := handler.NewAuthHandler(authSvc)
-	userHandler := handler.NewUserHandler(userDAO, userSvc, authzSvc, iam.NewMemberService(memberDAO, memberRoleDAO, permissionDAO), avatarSvc)
-
-	authn := httpx.NewAuthenticationMiddleware(tokenSvc, userDAO, userSessionDAO)
-	authz := httpx.NewAuthorizationMiddleware(permissionDAO)
-
-	guards := httpx.RouteGuards{
-		AuthN:       authn.AuthN,
-		Guard:       authz.Guard,
-		Idempotency: idemSvc,
-	}
-
-	api := app.Group("/api/v1")
-	orgAPI := api.Group("/organizations/:organization_id")
-	authHandler.Register(api, guards)
-	userHandler.Register(api, guards)
-
-	fxRateHandler := referenceHandler.NewFxRateHandler(fxRateSvc, reference.NewFxRateSource(fxRateDAO))
-	unitGroupHandler := referenceHandler.NewUnitGroupHandler(uomSvc)
-	uomHandler := referenceHandler.NewUnitHandler(uomSvc)
-	dimensionHandler := referenceHandler.NewDimensionHandler(dimensionSvc)
-	paymentTermHandler := referenceHandler.NewPaymentTermHandler(paymentTermSvc)
-	accountHandler := referenceHandler.NewAccountHandler(accountSvc)
-	journalHandler := referenceHandler.NewJournalHandler(journalSvc)
-	taxHandler := referenceHandler.NewTaxHandler(taxSvc)
-	taxYearHandler := referenceHandler.NewTaxYearHandler(taxYearSvc)
-
-	currencyHandler := referenceHandler.NewCurrencyHandler(fxRateSvc)
-	countryHandler := referenceHandler.NewCountryHandler(countrySvc)
-
-	unitGroupHandler.Register(api, guards)
-	uomHandler.Register(api, guards)
-	paymentTermHandler.Register(api, guards)
-	paymentTermHandler.RegisterOrg(orgAPI, guards)
-	currencyHandler.Register(api)
-	countryHandler.Register(api)
-
-	fxRateHandler.Register(orgAPI, guards)
-	dimensionHandler.Register(orgAPI, guards)
-	accountHandler.Register(orgAPI, guards)
-	journalHandler.Register(orgAPI, guards)
-	taxHandler.Register(orgAPI, guards)
-	taxYearHandler.Register(orgAPI, guards)
-
-	systemConfigHandler := xtradataHandler.NewSystemConfigHandler(configSvc)
-	webhookSubscriptionDAO := xtradata.NewWebhookSubscriptionDAO(d)
-	webhookDeliveryDAO := xtradata.NewWebhookDeliveryDAO(d)
-	webhookDeliverer := xtradata.NewWebhookDeliverer(
-		webhookSubscriptionDAO,
-		webhookDeliveryDAO,
-		&http.Client{Timeout: 10 * time.Second},
-	)
-	integrationEventHandler := xtradataHandler.NewIntegrationEventHandler(xtradata.NewEventService(xtradata.NewIntegrationEventDAO(d), nil).WithDeliver(webhookDeliverer.Deliver))
-	webhookSubscriptionHandler := xtradataHandler.NewWebhookSubscriptionHandler(xtradata.NewWebhookService(webhookSubscriptionDAO, webhookDeliveryDAO))
-	systemConfigHandler.Register(orgAPI, guards)
-	integrationEventHandler.Register(orgAPI, guards)
-	webhookSubscriptionHandler.Register(orgAPI, guards)
-
-	localizationProfileHandler := localizationHandler.NewProfileHandler(localization.NewProfileService(
-		localization.NewProfileDAO(d),
-		localization.NewTaxTemplateLineDAO(d),
-		localization.NewOrganizationLocalizer(d),
-	))
-	localizationProfileHandler.Register(api, guards)
-	localizationProfileHandler.RegisterOrg(orgAPI, guards)
-
-	auditLogHandler := auditHandler.NewAuditLogHandler(audit.NewAuditLogService(audit.NewLogDAO(d)))
-	auditLogHandler.Register(orgAPI, guards)
-
-	orgHandler := organizationHandler.NewOrganizationHandler(
-		organizationSvc,
-		organizationDAO,
-	)
-	orgHandler.Register(api, guards)
-
-	memberHandler := handler.NewMemberHandler(iam.NewMemberService(memberDAO, memberRoleDAO, permissionDAO))
-	memberHandler.Register(orgAPI, guards)
-
-	contactHandler := contactsHandler.NewContactHandler(contactSvc)
-	contactRelationHandler := contactsHandler.NewContactRelationHandler(
-		contactSvc,
-	)
-	contactHandler.Register(orgAPI, guards)
-	contactRelationHandler.Register(orgAPI, guards)
-
-	contactInquirySvc := inquiry.NewContactInquiryService(inquiry.NewContactInquiryDAO(d))
-	contactInquiryHandler := inquiryHandler.NewContactInquiryHandler(contactInquirySvc)
-	contactInquiryHandler.RegisterPublic(api)
-
-	itemDAO := products.NewItemDAO(d)
-	itemVariantDAO := products.NewItemVariantDAO(d)
-	priceBookDAO := products.NewPriceBookDAO(d)
-	priceBookRuleDAO := products.NewPriceRuleDAO(d)
+	contactInquirySvc := inquiry.NewContactInquiryService(contactInquiryDAO)
 	productSvc := products.NewProductService(
 		itemDAO,
 		itemVariantDAO,
@@ -326,12 +257,95 @@ func main() {
 		priceBookRuleDAO,
 	)
 
+	webhookDeliverer := xtradata.NewWebhookDeliverer(
+		webhookSubscriptionDAO,
+		webhookDeliveryDAO,
+		nil,
+	)
+
+	fxRateSource := reference.NewFxRateSource(fxRateDAO)
+
+	authHandler := handler.NewAuthHandler(authSvc)
+	userHandler := handler.NewUserHandler(userDAO, userSvc, authzSvc, memberSvc, avatarSvc)
+	fxRateHandler := referenceHandler.NewFxRateHandler(fxRateSvc, fxRateSource)
+	unitGroupHandler := referenceHandler.NewUnitGroupHandler(uomSvc)
+	uomHandler := referenceHandler.NewUnitHandler(uomSvc)
+	dimensionHandler := referenceHandler.NewDimensionHandler(dimensionSvc)
+	paymentTermHandler := referenceHandler.NewPaymentTermHandler(paymentTermSvc)
+	accountHandler := referenceHandler.NewAccountHandler(accountSvc)
+	journalHandler := referenceHandler.NewJournalHandler(journalSvc)
+	taxHandler := referenceHandler.NewTaxHandler(taxSvc)
+	taxYearHandler := referenceHandler.NewTaxYearHandler(taxYearSvc)
+	currencyHandler := referenceHandler.NewCurrencyHandler(fxRateSvc)
+	countryHandler := referenceHandler.NewCountryHandler(countrySvc)
+	systemConfigHandler := xtradataHandler.NewSystemConfigHandler(configSvc)
+	integrationEventHandler := xtradataHandler.NewIntegrationEventHandler(
+		integrationEventSvc.WithDeliver(webhookDeliverer.Deliver),
+	)
+	webhookSubscriptionHandler := xtradataHandler.NewWebhookSubscriptionHandler(webhoookSvc)
+	localizationProfileHandler := localizationHandler.NewProfileHandler(localizationProfileSvc)
+	auditLogDAO := audit.NewLogDAO(d)
+	auditLogSvc := audit.NewAuditLogService(auditLogDAO)
+	auditLogHandler := auditHandler.NewAuditLogHandler(auditLogSvc)
+	orgHandler := organizationHandler.NewOrganizationHandler(
+		organizationSvc,
+		organizationDAO,
+	)
+	memberHandler := handler.NewMemberHandler(memberSvc)
+	contactHandler := contactsHandler.NewContactHandler(contactSvc)
+	contactRelationHandler := contactsHandler.NewContactRelationHandler(
+		contactSvc,
+	)
+	contactInquiryHandler := inquiryHandler.NewContactInquiryHandler(contactInquirySvc)
 	itemCategoryHandler := productsHandler.NewItemCategoryHandler(itemCategoryDAO)
 	productHandler := productsHandler.NewProductHandler(productSvc)
 	priceBookHandler := productsHandler.NewPriceBookHandler(productSvc)
-
-	carrierHandler := referenceHandler.NewCarrierHandler(reference.NewCarrierService(carrierDAO, itemVariantDAO))
+	carrierSvc := reference.NewCarrierService(carrierDAO, itemVariantDAO)
+	carrierHandler := referenceHandler.NewCarrierHandler(carrierSvc)
 	campaignHandler := referenceHandler.NewCampaignHandler(campaignSvc)
+
+	authzMiddleware := httpx.NewAuthorizationMiddleware(permissionDAO)
+	authnMiddleware := httpx.NewAuthenticationMiddleware(
+		tokenSvc,
+		userDAO,
+		userSessionDAO,
+	)
+
+	guards := httpx.RouteGuards{
+		AuthN:       authnMiddleware.AuthN,
+		Guard:       authzMiddleware.Guard,
+		Idempotency: idemSvc,
+	}
+
+	api := app.Group("/api/v1")
+	orgAPI := api.Group("/organizations/:organization_id")
+
+	contactInquiryHandler.RegisterPublic(api)
+
+	authHandler.Register(api, guards)
+	userHandler.Register(api, guards)
+	unitGroupHandler.Register(orgAPI, guards)
+	uomHandler.Register(orgAPI, guards)
+	paymentTermHandler.Register(api, guards)
+	paymentTermHandler.RegisterOrg(orgAPI, guards)
+	currencyHandler.Register(api)
+	countryHandler.Register(api)
+	fxRateHandler.Register(orgAPI, guards)
+	dimensionHandler.Register(orgAPI, guards)
+	accountHandler.Register(orgAPI, guards)
+	journalHandler.Register(orgAPI, guards)
+	taxHandler.Register(orgAPI, guards)
+	taxYearHandler.Register(orgAPI, guards)
+	systemConfigHandler.Register(orgAPI, guards)
+	integrationEventHandler.Register(orgAPI, guards)
+	webhookSubscriptionHandler.Register(orgAPI, guards)
+	localizationProfileHandler.Register(api, guards)
+	localizationProfileHandler.RegisterOrg(orgAPI, guards)
+	auditLogHandler.Register(orgAPI, guards)
+	orgHandler.Register(api, guards)
+	memberHandler.Register(orgAPI, guards)
+	contactHandler.Register(orgAPI, guards)
+	contactRelationHandler.Register(orgAPI, guards)
 	carrierHandler.RegisterOrg(orgAPI, guards)
 	campaignHandler.RegisterOrg(orgAPI, guards)
 
@@ -340,8 +354,8 @@ func main() {
 		itemVariantDAO,
 		itemDAO,
 		supplierProductDAO,
-		contacts.NewContactDAO(d),
-		contacts.NewSupplierProfileDAO(d),
+		contactDAO,
+		supplierProfileDAO,
 	)
 	supplierProductHandler := productsHandler.NewSupplierProductHandler(supplierProductSvc)
 
@@ -349,8 +363,9 @@ func main() {
 	recipeLineDAO := manufacturing.NewRecipeLineDAO(d)
 	routingOperationDAO := manufacturing.NewProductionStepDAO(d)
 	bomSvc := manufacturing.NewRecipeService(itemVariantDAO, recipeDAO, recipeLineDAO)
+	routingSvc := manufacturing.NewRoutingService(recipeDAO, routingOperationDAO)
 	bomHandler := manufacturingHandler.NewRecipeHandler(bomSvc)
-	routingHandler := manufacturingHandler.NewRoutingHandler(manufacturing.NewRoutingService(recipeDAO, routingOperationDAO))
+	routingHandler := manufacturingHandler.NewRoutingHandler(routingSvc)
 	workCenterHandler := manufacturingHandler.NewWorkCenterHandler(workCenterDAO)
 
 	itemCategoryHandler.Register(orgAPI, guards)
@@ -365,7 +380,8 @@ func main() {
 	journalEntryLineDAO := accounting.NewJournalLineDAO(d)
 
 	taxPeriodDAO := accounting.NewTaxPeriodDAO(d)
-	taxPeriodSvc := accounting.NewTaxPeriodService(taxPeriodDAO, taxYearDAO).WithCloseGuard(accounting.NewPeriodCloseDAO(d))
+	periodCloseDAO := accounting.NewPeriodCloseDAO(d)
+	taxPeriodSvc := accounting.NewTaxPeriodService(taxPeriodDAO, taxYearDAO).WithCloseGuard(periodCloseDAO)
 	reversalEngine := accounting.NewReversalEngine(journalEntryDAO, journalEntryLineDAO).WithPeriods(taxPeriodSvc)
 	sequenceSvc := sequence.NewService(sequence.NewDAO(d))
 	postingSvc := accounting.NewPostingService(journalEntryDAO).WithPeriods(taxPeriodSvc).WithReverser(reversalEngine).WithLines(journalEntryLineDAO).WithAccounts(accountDAO).WithSequences(sequenceSvc)
@@ -374,11 +390,16 @@ func main() {
 	invoiceTaxDAO := accounting.NewInvoiceTaxDAO(d)
 	paymentDAO := accounting.NewPaymentDAO(d)
 	paymentAllocationDAO := accounting.NewPaymentAllocationDAO(d)
-	invoiceSvc := accounting.NewInvoiceService(invoiceDAO, invoiceLineDAO, invoiceTaxDAO, postingSvc, accountDAO, taxDAO, sequenceSvc, db.NewDBTransactioner(d)).WithProducts(accounting.NewProductAdapter(itemVariantDAO, itemDAO), itemCategoryDAO).WithCurrencyResolvers(organizationDAO, reference.NewFxRateSource(fxRateDAO)).WithPaymentTerms(accounting.NewPaymentTermAdapter(paymentTermDAO))
-	paymentSvc := accounting.NewPaymentService(paymentDAO, invoiceDAO, postingSvc, accountDAO, journalDAO, sequenceSvc, db.NewDBTransactioner(d)).WithFxResolvers(reference.NewFxRateSource(fxRateDAO), accounting.NewFxAccountResolver(systemConfigDAO, accountDAO)).WithOrganizations(organizationDAO).WithAdvanceAccounts(accounting.NewAdvanceAccountResolver(systemConfigDAO, accountDAO)).WithAllocations(paymentAllocationDAO)
+	productAdapter := accounting.NewProductAdapter(itemVariantDAO, itemDAO)
+	paymentTermAdapter := accounting.NewPaymentTermAdapter(paymentTermDAO)
+	fxAccountResolver := accounting.NewFxAccountResolver(systemConfigDAO, accountDAO)
+	advanceAccountResolver := accounting.NewAdvanceAccountResolver(systemConfigDAO, accountDAO)
+	bankChargeResolver := accounting.NewBankChargeResolver(systemConfigDAO, accountDAO)
+	invoiceSvc := accounting.NewInvoiceService(invoiceDAO, invoiceLineDAO, invoiceTaxDAO, postingSvc, accountDAO, taxDAO, sequenceSvc, db.NewDBTransactioner(d)).WithProducts(productAdapter, itemCategoryDAO).WithCurrencyResolvers(organizationDAO, fxRateSource).WithPaymentTerms(paymentTermAdapter)
+	paymentSvc := accounting.NewPaymentService(paymentDAO, invoiceDAO, postingSvc, accountDAO, journalDAO, sequenceSvc, db.NewDBTransactioner(d)).WithFxResolvers(fxRateSource, fxAccountResolver).WithOrganizations(organizationDAO).WithAdvanceAccounts(advanceAccountResolver).WithAllocations(paymentAllocationDAO)
 	bankStatementDAO := accounting.NewBankStatementDAO(d)
 	bankStatementLineDAO := accounting.NewBankStatementLineDAO(d)
-	bankStatementSvc := accounting.NewBankStatementService(bankStatementDAO, bankStatementLineDAO, paymentDAO, journalDAO, db.NewDBTransactioner(d)).WithPosting(postingSvc, accounting.NewBankChargeResolver(systemConfigDAO, accountDAO))
+	bankStatementSvc := accounting.NewBankStatementService(bankStatementDAO, bankStatementLineDAO, paymentDAO, journalDAO, db.NewDBTransactioner(d)).WithPosting(postingSvc, bankChargeResolver)
 	partialReconcileDAO := accounting.NewAccountPartialReconcileDAO(d)
 	fullReconcileDAO := accounting.NewAccountFullReconcileDAO(d)
 	reconcileSvc := accounting.NewReconcileService(journalEntryLineDAO, partialReconcileDAO, fullReconcileDAO, journalEntryDAO, db.NewDBTransactioner(d))
@@ -393,26 +414,38 @@ func main() {
 	taxRuleTaxMapDAO := accounting.NewTaxRuleTaxMapDAO(d)
 	taxRuleAccountMapDAO := accounting.NewTaxRuleAccountMapDAO(d)
 	taxRuleResolver := accounting.NewTaxRuleResolver(taxRuleDAO, taxRuleTaxMapDAO, taxRuleAccountMapDAO, db.NewDBTransactioner(d))
-	invoiceSvc = invoiceSvc.WithTaxRules(taxRuleResolver).WithInstallments(accounting.NewInvoiceInstallmentDAO(d)).WithSettlements(accounting.NewInvoiceCreditApplicationDAO(d), accounting.NewInvoiceContraSettlementDAO(d)).WithDownPayments(accounting.NewDownPaymentLinkDAO(d)).WithCreditLimits(accounting.NewContactCreditAdapter(contacts.NewCustomerProfileDAO(d)))
+	invoiceInstallmentDAO := accounting.NewInvoiceInstallmentDAO(d)
+	invoiceCreditApplicationDAO := accounting.NewInvoiceCreditApplicationDAO(d)
+	invoiceContraSettlementDAO := accounting.NewInvoiceContraSettlementDAO(d)
+	downPaymentLinkDAO := accounting.NewDownPaymentLinkDAO(d)
+	contactCreditAdapter := accounting.NewContactCreditAdapter(customerProfileDAO)
+	invoiceSvc = invoiceSvc.WithTaxRules(taxRuleResolver).WithInstallments(invoiceInstallmentDAO).WithSettlements(invoiceCreditApplicationDAO, invoiceContraSettlementDAO).WithDownPayments(downPaymentLinkDAO).WithCreditLimits(contactCreditAdapter)
 	withholdingTaxDAO := accounting.NewWithholdingTaxDAO(d)
 	withholdingSvc := accounting.NewWithholdingService(withholdingTaxDAO, postingSvc, db.NewDBTransactioner(d))
 	taxReturnDAO := accounting.NewTaxReturnDAO(d)
 	taxReturnSvc := accounting.NewTaxReturnService(taxReturnDAO, taxPeriodDAO, invoiceTaxDAO, db.NewDBTransactioner(d)).WithSettlement(postingSvc, journalDAO, accountDAO)
 
-	trialBalanceSvc := accounting.NewTrialBalanceService(accounting.NewTrialBalanceDAO(d), taxPeriodDAO).WithAccounts(accountDAO)
+	trialBalanceDAO := accounting.NewTrialBalanceDAO(d)
+	cashFlowDAO := accounting.NewCashFlowDAO(d)
+	equityDAO := accounting.NewEquityDAO(d)
+	generalLedgerDAO := accounting.NewGeneralLedgerDAO(d)
+	trialBalanceSvc := accounting.NewTrialBalanceService(trialBalanceDAO, taxPeriodDAO).WithAccounts(accountDAO)
 	trialBalanceHandler := accountingHandler.NewTrialBalanceHandler(trialBalanceSvc)
-	cashFlowSvc := accounting.NewCashFlowService(accounting.NewCashFlowDAO(d))
+	cashFlowSvc := accounting.NewCashFlowService(cashFlowDAO)
 	cashFlowHandler := accountingHandler.NewCashFlowHandler(cashFlowSvc)
-	equitySvc := accounting.NewEquityService(accounting.NewEquityDAO(d), taxPeriodDAO)
+	equitySvc := accounting.NewEquityService(equityDAO, taxPeriodDAO)
 	equityHandler := accountingHandler.NewEquityHandler(equitySvc)
-	integritySvc := accounting.NewReportIntegrityService(accounting.NewTrialBalanceDAO(d), accounting.NewCashFlowDAO(d), accounting.NewEquityDAO(d), taxPeriodDAO, accountDAO)
+	integritySvc := accounting.NewReportIntegrityService(trialBalanceDAO, cashFlowDAO, equityDAO, taxPeriodDAO, accountDAO)
 	integrityHandler := accountingHandler.NewIntegrityHandler(integritySvc)
-	generalLedgerHandler := accountingHandler.NewGeneralLedgerHandler(accounting.NewGeneralLedgerService(accounting.NewGeneralLedgerDAO(d)))
+	generalLedgerSvc := accounting.NewGeneralLedgerService(generalLedgerDAO)
+	generalLedgerHandler := accountingHandler.NewGeneralLedgerHandler(generalLedgerSvc)
 
 	accountMoveHandler := accountingHandler.NewJournalEntryHandler(postingSvc)
 	invoiceHandler := accountingHandler.NewInvoiceHandler(invoiceSvc)
 	paymentHandler := accountingHandler.NewPaymentHandler(paymentSvc)
-	pdcHandler := accountingHandler.NewPdcHandler(accounting.NewPdcService(accounting.NewPdcInstrumentDAO(d), paymentSvc, db.NewDBTransactioner(d)))
+	pdcInstrumentDAO := accounting.NewPdcInstrumentDAO(d)
+	pdcSvc := accounting.NewPdcService(pdcInstrumentDAO, paymentSvc, db.NewDBTransactioner(d))
+	pdcHandler := accountingHandler.NewPdcHandler(pdcSvc)
 	taxPeriodHandler := accountingHandler.NewTaxPeriodHandler(taxPeriodSvc)
 	bankStatementHandler := accountingHandler.NewBankStatementHandler(bankStatementSvc)
 	reconcileHandler := accountingHandler.NewReconcileHandler(reconcileSvc)
@@ -502,13 +535,14 @@ func main() {
 	crmLeadDAO := crm.NewProspectDAO(d)
 	crmActivityDAO := crm.NewProspectActivityDAO(d)
 	crmHistoryDAO := crm.NewStageHistoryDAO(d)
-	leadSvc := crm.NewProspectService(crmLeadDAO, crmStageDAO, salesTeamDAO, contacts.NewContactDAO(d)).
+	crmProspectContactDAO := crm.NewProspectContactDAO(d)
+	leadSvc := crm.NewProspectService(crmLeadDAO, crmStageDAO, salesTeamDAO, contactDAO).
 		WithStageHistory(crmHistoryDAO).
-		WithBuyingCommittee(crm.NewProspectContactDAO(d)).
+		WithBuyingCommittee(crmProspectContactDAO).
 		WithConfigs(systemConfigDAO).
 		WithMembers(memberDAO).
 		WithPermissions(permissionDAO)
-	activitySvc := crm.NewProspectActivityService(crmActivityDAO, crmLeadDAO, contacts.NewContactDAO(d)).
+	activitySvc := crm.NewProspectActivityService(crmActivityDAO, crmLeadDAO, contactDAO).
 		WithStageHistory(crmHistoryDAO)
 	pipelineSvc := crm.NewPipelineService(crmLeadDAO, crmStageDAO).
 		WithConfigs(systemConfigDAO).
@@ -538,7 +572,7 @@ func main() {
 	saleOrderLineDAO := sales.NewSaleOrderLineDAO(d)
 	saleQuoteDAO := sales.NewSaleQuoteDAO(d)
 	saleQuoteLineDAO := sales.NewSaleQuoteLineDAO(d)
-	saleContactDAO := contacts.NewContactDAO(d)
+	saleContactDAO := contactDAO
 	saleOrderSvc := sales.NewSaleOrderService(
 		sales.SaleOrderRepositories{
 			Orders:       saleOrderDAO,
@@ -581,16 +615,19 @@ func main() {
 			Product:   productSvc,
 		},
 	)
+	approvalRequestDAO := crosscutting.NewApprovalRequestDAO(d)
+	approvalStepDAO := crosscutting.NewApprovalStepDAO(d)
 	saleApprovalSvc := crosscutting.NewApprovalService(
-		crosscutting.NewApprovalRequestDAO(d),
-		crosscutting.NewApprovalStepDAO(d),
+		approvalRequestDAO,
+		approvalStepDAO,
 		db.NewDBTransactioner(d),
 	)
+	salesConfigSource := sales.NewSystemConfigSource(systemConfigDAO)
 	saleControls := sales.SalesControls{
-		Customers: contacts.NewCustomerProfileDAO(d),
+		Customers: customerProfileDAO,
 		Invoices:  invoiceDAO,
 		Approvals: saleApprovalSvc,
-		Configs:   sales.NewSystemConfigSource(systemConfigDAO),
+		Configs:   salesConfigSource,
 	}
 	saleOrderSvc = saleOrderSvc.WithControls(saleControls)
 	saleQuoteSvc = saleQuoteSvc.WithControls(saleControls)
@@ -605,7 +642,8 @@ func main() {
 	posOrderLineDAO := pos.NewPOSOrderLineDAO(d)
 	posPaymentDAO := pos.NewPOSPaymentDAO(d)
 	posPaymentAccountDAO := dao.NewBase[reference.POSPaymentAccount](d)
-	couponSvc := giftcard.NewCouponService(giftcard.NewCouponDAO(d), db.NewDBTransactioner(d))
+	couponDAO := giftcard.NewCouponDAO(d)
+	couponSvc := giftcard.NewCouponService(couponDAO, db.NewDBTransactioner(d))
 	posSvc := pos.NewPOSService(
 		pos.POSRepositories{
 			Configs:   posConfigDAO,
@@ -645,8 +683,6 @@ func main() {
 	posOrderHandler.Register(orgAPI, guards)
 	posPaymentAccountHandler.Register(orgAPI, guards)
 
-	approvalRequestDAO := crosscutting.NewApprovalRequestDAO(d)
-	approvalStepDAO := crosscutting.NewApprovalStepDAO(d)
 	approvalSvc := crosscutting.NewApprovalService(approvalRequestDAO, approvalStepDAO, db.NewDBTransactioner(d))
 	approvalHandler := crosscuttingHandler.NewApprovalRequestHandler(approvalSvc)
 	approvalHandler.Register(orgAPI, guards)
@@ -670,7 +706,6 @@ func main() {
 	purchaseConfigSource := procurement.NewSystemConfigSource(systemConfigDAO)
 	purchaseRequestDAO := procurement.NewPurchaseRequestDAO(d)
 	purchaseRequestLineDAO := procurement.NewPurchaseRequestLineDAO(d)
-	contactDAO := contacts.NewContactDAO(d)
 	purchaseRequestSvc := procurement.NewPurchaseRequestService(
 		purchaseRequestDAO,
 		purchaseRequestLineDAO,
@@ -689,6 +724,7 @@ func main() {
 	purchaseDebitMemoDAO := procurement.NewPurchaseDebitMemoDAO(d)
 	purchasePaymentBatchDAO := procurement.NewPaymentBatchDAO(d)
 	purchasePaymentBatchLineDAO := procurement.NewPaymentBatchLineDAO(d)
+	costCenterDAO := procurement.NewCostCenterDAO(d)
 	purchaseOrderSvc := procurement.NewPurchaseOrderService(
 		procurement.PurchaseOrderRepositories{
 			Orders:           purchaseOrderDAO,
@@ -702,14 +738,14 @@ func main() {
 			Batches:          purchasePaymentBatchDAO,
 			BatchLines:       purchasePaymentBatchLineDAO,
 			Contacts:         contactDAO,
-			Suppliers:        contacts.NewSupplierProfileDAO(d),
+			Suppliers:        supplierProfileDAO,
 			Warehouses:       warehouseDAO,
 			Locations:        stockLocationDAO,
 			Shipments:        stockShipmentDAO,
 			Movements:        stockMovementDAO,
 			Resolver:         productResolver,
 			Taxes:            taxDAO,
-			CostCenters:      dao.NewBase[procurement.CostCenter](d),
+			CostCenters:      costCenterDAO,
 		},
 		procurement.PurchaseOrderEngines{
 			Sequences:    sequenceSvc,
@@ -743,7 +779,6 @@ func main() {
 	vendorScorecardDAO := procurement.NewSupplierScorecardDAO(d)
 	vendorScorecardSvc := procurement.NewSupplierScorecardService(vendorScorecardDAO)
 	vendorScorecardHandler := procurementHandler.NewSupplierScorecardHandler(vendorScorecardSvc)
-	costCenterDAO := procurement.NewCostCenterDAO(d)
 	costCenterSvc := procurement.NewCostCenterService(costCenterDAO)
 	costCenterHandler := procurementHandler.NewCostCenterHandler(costCenterSvc)
 	purchasePaymentBatchHandler := procurementHandler.NewPaymentBatchHandler(purchaseOrderSvc)
@@ -771,10 +806,11 @@ func main() {
 
 	rmaDAO := returns.NewRMADAO(d)
 	rmaLineDAO := returns.NewRMALineDAO(d)
+	originOrderLookup := returns.NewOriginOrderLookup(saleOrderDAO, purchaseOrderDAO)
 	rmaSvc := returns.NewRMAService(
 		rmaDAO,
 		rmaLineDAO,
-		returns.NewOriginOrderLookup(saleOrderDAO, purchaseOrderDAO),
+		originOrderLookup,
 		stockMovementDAO,
 		stockLocationDAO,
 		stockCostLayerDAO,
@@ -814,7 +850,7 @@ func main() {
 		departmentDAO,
 		jobPositionDAO,
 		organizationDAO,
-		contacts.NewContactDAO(d),
+		contactDAO,
 		dimensionDAO,
 		userDAO,
 		attendanceDAO,
@@ -919,7 +955,7 @@ func main() {
 		productResolver,
 		postingSvc,
 		inboundCostConfigSource,
-		accounting.NewInvoiceLineDAO(d),
+		invoiceLineDAO,
 		db.NewDBTransactioner(d),
 	)
 	inboundCostHandler := inventoryHandler.NewInboundCostHandler(inboundCostSvc)
@@ -942,9 +978,11 @@ func main() {
 	assetHandler.Register(orgAPI, guards)
 
 	subscriptionConfigSource := subscription.NewSubscriptionConfigSource(systemConfigDAO)
+	deferredScheduleDAO := accounting.NewDeferredScheduleDAO(d)
+	deferredScheduleLineDAO := accounting.NewDeferredScheduleLineDAO(d)
 	deferralSvc := accounting.NewDeferralService(
-		accounting.NewDeferredScheduleDAO(d),
-		accounting.NewDeferredScheduleLineDAO(d),
+		deferredScheduleDAO,
+		deferredScheduleLineDAO,
 		postingSvc,
 		subscriptionConfigSource,
 		db.NewDBTransactioner(d),
@@ -953,11 +991,13 @@ func main() {
 	paymentBatchLineDAO := accounting.NewPaymentBatchLineDAO(d)
 	paymentBatchSvc := accounting.NewPaymentBatchService(paymentBatchDAO, paymentBatchLineDAO, paymentDAO, subscriptionConfigSource, db.NewDBTransactioner(d))
 	paymentBatchHandler := accountingHandler.NewPaymentBatchHandler(paymentBatchSvc)
+	subscriptionDAO := subscription.NewSubscriptionDAO(d)
+	subscriptionLineDAO := subscription.NewSubscriptionLineDAO(d)
 	subscriptionSvc := subscription.NewSubscriptionService(
-		subscription.NewSubscriptionDAO(d),
-		subscription.NewSubscriptionLineDAO(d),
+		subscriptionDAO,
+		subscriptionLineDAO,
 		subscriptionPlanDAO,
-		contacts.NewContactDAO(d),
+		contactDAO,
 		priceBookDAO,
 		productSvc,
 		invoiceSvc,
@@ -974,15 +1014,19 @@ func main() {
 	deferralHandler.Register(orgAPI, guards)
 	paymentBatchHandler.Register(orgAPI, guards)
 
+	commissionPlanDAO := commission.NewCommissionPlanDAO(d)
+	commissionRuleDAO := commission.NewCommissionRuleDAO(d)
+	commissionAssignmentDAO := commission.NewCommissionAssignmentDAO(d)
+	commissionEntryDAO := commission.NewCommissionEntryDAO(d)
 	commissionSvc := commission.NewCommissionService(
-		commission.NewCommissionPlanDAO(d),
-		commission.NewCommissionRuleDAO(d),
-		commission.NewCommissionAssignmentDAO(d),
-		commission.NewCommissionEntryDAO(d),
+		commissionPlanDAO,
+		commissionRuleDAO,
+		commissionAssignmentDAO,
+		commissionEntryDAO,
 		postingSvc,
-		accounting.NewInvoiceDAO(d),
-		accounting.NewInvoiceLineDAO(d),
-		accounting.NewPaymentAllocationDAO(d),
+		invoiceDAO,
+		invoiceLineDAO,
+		paymentAllocationDAO,
 		productResolver,
 		db.NewDBTransactioner(d),
 	)
@@ -991,9 +1035,11 @@ func main() {
 	)
 	commissionHandler.Register(orgAPI, guards)
 
+	giftCardDAO := giftcard.NewGiftCardDAO(d)
+	giftCardTransactionDAO := giftcard.NewGiftCardTransactionDAO(d)
 	giftCardSvc := giftcard.NewGiftCardService(
-		giftcard.NewGiftCardDAO(d),
-		giftcard.NewGiftCardTransactionDAO(d),
+		giftCardDAO,
+		giftCardTransactionDAO,
 		postingSvc,
 		db.NewDBTransactioner(d),
 	)
@@ -1003,19 +1049,24 @@ func main() {
 	couponHandler := giftcardHandler.NewCouponHandler(couponSvc)
 	couponHandler.Register(orgAPI, guards)
 
+	equipmentDAO := service.NewEquipmentDAO(d)
+	serviceContractDAO := service.NewServiceContractDAO(d)
+	serviceOrderDAO := service.NewServiceOrderDAO(d)
+	serviceOrderLineDAO := service.NewServiceOrderLineDAO(d)
+	maintenancePlanDAO := service.NewMaintenancePlanDAO(d)
 	serviceSvc := service.NewService(
-		service.NewEquipmentDAO(d),
-		service.NewServiceContractDAO(d),
-		service.NewServiceOrderDAO(d),
-		service.NewServiceOrderLineDAO(d),
+		equipmentDAO,
+		serviceContractDAO,
+		serviceOrderDAO,
+		serviceOrderLineDAO,
 		postingSvc,
 		invoiceSvc,
 		db.NewDBTransactioner(d),
 	)
 	maintenanceSvc := service.NewMaintenanceService(
-		service.NewMaintenancePlanDAO(d),
-		service.NewEquipmentDAO(d),
-		service.NewServiceOrderDAO(d),
+		maintenancePlanDAO,
+		equipmentDAO,
+		serviceOrderDAO,
 		db.NewDBTransactioner(d),
 	)
 	serviceHandler := serviceHandler.NewServiceHandler(
@@ -1024,8 +1075,9 @@ func main() {
 	)
 	serviceHandler.Register(orgAPI, guards)
 
+	dropshipLinkDAO := interorganization.NewDropshipLinkDAO(d)
 	dropshipSvc := interorganization.NewDropShipService(
-		interorganization.NewDropshipLinkDAO(d),
+		dropshipLinkDAO,
 		purchaseOrderSvc,
 		purchaseOrderDAO,
 		purchaseOrderLineDAO,
@@ -1039,9 +1091,11 @@ func main() {
 	)
 	dropshipHandler := interorganizationHandler.NewDropShipHandler(dropshipSvc)
 
+	interorgRuleDAO := interorganization.NewInterorganizationRuleDAO(d)
+	interorgTransactionDAO := interorganization.NewInterorganizationTransactionDAO(d)
 	interorgSvc := interorganization.NewInterorganizationService(
-		interorganization.NewInterorganizationRuleDAO(d),
-		interorganization.NewInterorganizationTransactionDAO(d),
+		interorgRuleDAO,
+		interorgTransactionDAO,
 		purchaseOrderSvc,
 		saleOrderDAO,
 		saleOrderLineDAO,
@@ -1050,18 +1104,21 @@ func main() {
 		interorgSvc,
 	)
 
+	consolidationRunDAO := interorganization.NewConsolidationRunDAO(d)
+	consolidationEliminationDAO := interorganization.NewConsolidationEliminationDAO(d)
+	accountBalanceDAO := accounting.NewAccountBalanceDAO(d)
 	consolidationSvc := interorganization.NewConsolidationService(
-		interorganization.NewConsolidationRunDAO(d),
-		interorganization.NewConsolidationEliminationDAO(d),
-		interorganization.NewInterorganizationTransactionDAO(d),
+		consolidationRunDAO,
+		consolidationEliminationDAO,
+		interorgTransactionDAO,
 		organizationDAO,
 		taxPeriodDAO,
 		accountDAO,
-		accounting.NewAccountBalanceDAO(d),
+		accountBalanceDAO,
 		purchaseOrderLineDAO,
 		productResolver,
 		stockCostLayerDAO,
-		reference.NewFxRateSource(fxRateDAO),
+		fxRateSource,
 		db.NewDBTransactioner(d),
 	)
 	consolidationHandler := interorganizationHandler.NewConsolidationHandler(consolidationSvc)
@@ -1077,14 +1134,15 @@ func main() {
 	accrualDAO := reporting.NewAccrualDAO(d)
 	accrualLineDAO := reporting.NewAccrualLineDAO(d)
 	kpiSummaryDAO := reporting.NewKpiSummaryDAO(d)
-	leadToCashSvc := reporting.NewLeadToCashService(reporting.NewLeadToCashDAO(d))
+	leadToCashDAO := reporting.NewLeadToCashDAO(d)
+	leadToCashSvc := reporting.NewLeadToCashService(leadToCashDAO)
 	reportSvc := reporting.NewReportService(reportDAO, trialBalanceSvc)
 	kpiSummarySvc := reporting.NewKpiSummaryService(kpiSummaryDAO, taxPeriodDAO)
 	kpiSvc := reporting.NewKpiService(
 		reportDAO,
 		pipelineSvc,
 		subscriptionSvc,
-		project.NewProjectDAO(d),
+		projectDAO,
 		projectSvc,
 	)
 	fxRevaluationSvc := reporting.NewFxRevaluationService(
@@ -1093,7 +1151,7 @@ func main() {
 		fxRevaluationLineDAO,
 		postingSvc,
 		reportConfigSource,
-		reference.NewFxRateSource(fxRateDAO),
+		fxRateSource,
 		organizationDAO,
 	)
 	accrualSvc := reporting.NewAccrualService(accrualDAO, accrualLineDAO, postingSvc, reportConfigSource)
@@ -1156,21 +1214,5 @@ func main() {
 
 	if limiterStorage != nil {
 		_ = limiterStorage.Close()
-	}
-}
-
-func newStorageStore(cfg *config.Config) (storage.Store, error) {
-	switch cfg.StorageProvider {
-	case "s3", "rustfs":
-		return storage.NewS3Store(context.Background(), storage.S3Config{
-			Endpoint:     cfg.StorageEndpoint,
-			Bucket:       cfg.StorageBucket,
-			AccessKey:    cfg.StorageAccessKey,
-			SecretKey:    cfg.StorageSecretKey,
-			Region:       cfg.StorageRegion,
-			UsePathStyle: cfg.StorageUsePathStyle,
-		})
-	default:
-		return storage.NewLocalStore(cfg.StoragePath), nil
 	}
 }

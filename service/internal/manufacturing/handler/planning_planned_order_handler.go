@@ -53,6 +53,7 @@ func (h PlanningHandler) Confirm(c fiber.Ctx) error {
 	if err != nil {
 		return writeMrpError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Planned order confirmed successfully.", PlannedSupplyResponse{
 		ID:               order.ID,
 		PlanningRunID:    order.PlanningRunID,

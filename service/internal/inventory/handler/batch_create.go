@@ -60,6 +60,7 @@ func (h BatchHandler) Create(c fiber.Ctx) error {
 		return writeLotError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Stock batch created successfully.", CreateBatchResponse{
 		Lot: newBatchResponse(batch),
 	})

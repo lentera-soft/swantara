@@ -82,5 +82,6 @@ func (h AccrualHandler) Create(c fiber.Ctx) error {
 	if err != nil {
 		return writeAccrualError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Accrual created successfully.", result)
 }

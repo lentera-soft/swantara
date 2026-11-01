@@ -367,7 +367,7 @@ export function LeadToCashSection() {
                     segments.map((segment) => (
                       <tr
                         key={`${segment.dimensionLabel}-${segment.dimension}-${segment.key}`}
-                        className="border-t border-border/60"
+                        className="border-t border-border"
                       >
                         <td className="py-2 pr-3 text-muted-foreground">
                           {segment.dimensionLabel}

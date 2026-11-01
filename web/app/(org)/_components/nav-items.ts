@@ -41,7 +41,6 @@ export type OrgNavModule =
   | "hr"
   | "finance"
   | "projectManagement"
-  | "subscriptions"
   | "sales"
   | "service";
 
@@ -62,7 +61,6 @@ export const orgNavModuleOrder: OrgNavModule[] = [
   "hr",
   "projectManagement",
   "finance",
-  "subscriptions",
   "sales",
   "service",
 ];
@@ -333,7 +331,7 @@ export const orgNavItems: OrgNavItem[] = [
   {
     key: "subscriptions",
     group: "modules",
-    module: "subscriptions",
+    module: "sales",
     href: "/subscriptions",
     icon: CreditCard,
     permission: "subscription.view",
@@ -485,7 +483,7 @@ export const orgNavItems: OrgNavItem[] = [
 
 const NAV_LABEL_OVERRIDES: Record<string, string> = {
   dashboard: "Dasbor",
-  crm: "CRM",
+  crm: "Customer",
   sales: "Pesanan Penjualan",
   productionOrders: "Perintah Produksi",
   planning: "Perencanaan Produksi",

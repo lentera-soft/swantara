@@ -67,6 +67,7 @@ func (h TaxHandler) Update(c fiber.Ctx) error {
 		return writeTaxError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Tax updated successfully.", UpdateTaxResponse{
 		Tax: newTaxResponse(updated),
 	})

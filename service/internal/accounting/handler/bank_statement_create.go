@@ -102,6 +102,7 @@ func (h BankStatementHandler) Create(c fiber.Ctx) error {
 		return writeBankStatementError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Bank statement created successfully.", CreateBankStatementResponse{
 		BankStatement: newBankStatementResponse(statement),
 	})

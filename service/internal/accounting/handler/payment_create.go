@@ -70,6 +70,7 @@ func (h PaymentHandler) Create(c fiber.Ctx) error {
 		return writePaymentError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Payment created successfully.", CreatePaymentResponse{
 		Payment: newPaymentResponse(payment),
 	})
@@ -123,6 +124,7 @@ func (h PaymentHandler) CreateOutbound(c fiber.Ctx) error {
 		return writePaymentError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Payment created successfully.", CreatePaymentResponse{
 		Payment: newPaymentResponse(payment),
 	})

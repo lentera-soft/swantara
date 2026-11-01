@@ -34,5 +34,6 @@ func (h CarrierHandler) Delete(c fiber.Ctx) error {
 		return writeCarrierError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateNoContentResponse(c)
 }

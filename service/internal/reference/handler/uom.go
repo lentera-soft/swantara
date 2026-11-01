@@ -17,35 +17,38 @@ func NewUnitHandler(svc reference.UnitService) UnitHandler {
 }
 
 type UnitResponse struct {
-	ID         uint64    `json:"id"`
-	CategoryID uint64    `json:"category_id"`
-	Name       string    `json:"name"`
-	Factor     float64   `json:"factor"`
-	UnitType   string    `json:"unit_type"`
-	Rounding   float64   `json:"rounding"`
-	CreatedAt  time.Time `json:"created_at"`
-	UpdatedAt  time.Time `json:"updated_at"`
+	ID             uint64    `json:"id"`
+	OrganizationID *uint64   `json:"organization_id"`
+	CategoryID     uint64    `json:"category_id"`
+	Name           string    `json:"name"`
+	Factor         float64   `json:"factor"`
+	UnitType       string    `json:"unit_type"`
+	Rounding       float64   `json:"rounding"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 func newUnitResponse(unit *reference.Unit) UnitResponse {
 	return UnitResponse{
-		ID:         unit.ID,
-		CategoryID: unit.CategoryID,
-		Name:       unit.Name,
-		Factor:     unit.Factor,
-		UnitType:   unit.UnitType,
-		Rounding:   unit.Rounding,
-		CreatedAt:  unit.CreatedAt,
-		UpdatedAt:  unit.UpdatedAt,
+		ID:             unit.ID,
+		OrganizationID: unit.OrganizationID,
+		CategoryID:     unit.CategoryID,
+		Name:           unit.Name,
+		Factor:         unit.Factor,
+		UnitType:       unit.UnitType,
+		Rounding:       unit.Rounding,
+		CreatedAt:      unit.CreatedAt,
+		UpdatedAt:      unit.UpdatedAt,
 	}
 }
 
 var uomQueryAllowlist = map[string]struct{}{
-	"category_id": {},
-	"name":        {},
-	"unit_type":   {},
-	"created_at":  {},
-	"updated_at":  {},
+	"organization_id": {},
+	"category_id":     {},
+	"name":            {},
+	"unit_type":       {},
+	"created_at":      {},
+	"updated_at":      {},
 }
 
 type ListUnitsResponseEnvelope struct {

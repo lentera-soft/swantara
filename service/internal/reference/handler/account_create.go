@@ -63,6 +63,7 @@ func (h AccountHandler) Create(c fiber.Ctx) error {
 		return writeAccountError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Account created successfully.", CreateAccountResponse{
 		Account: newAccountResponse(account),
 	})

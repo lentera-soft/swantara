@@ -68,6 +68,7 @@ func (h InboundCostHandler) ListLines(c fiber.Ctx) error {
 		}
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Inbound cost lines retrieved successfully.", ListInboundCostLinesResponse{
 		Lines: items,
 	})

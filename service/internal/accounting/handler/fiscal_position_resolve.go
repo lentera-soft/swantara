@@ -36,6 +36,7 @@ func (h TaxRuleHandler) Resolve(c fiber.Ctx) error {
 		return writeTaxRuleError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Fiscal position resolved successfully.", ResolveTaxRuleResponse{
 		TaxID:     result.TaxAccount,
 		AccountID: result.Account,

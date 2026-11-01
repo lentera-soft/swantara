@@ -50,6 +50,7 @@ describe("useLoginForm submission", () => {
     await act(async () => {
       result.current.form.setValue("email", "demo@swantara.local");
       result.current.form.setValue("password", "secret");
+      result.current.form.setValue("rememberMe", true);
     });
 
     await submitValid(result.current.handleSubmit);
@@ -178,6 +179,7 @@ describe("useLoginForm with credential management", () => {
     await act(async () => {
       result.current.form.setValue("email", "demo@swantara.local");
       result.current.form.setValue("password", "secret");
+      result.current.form.setValue("rememberMe", true);
     });
 
     await submitValid(result.current.handleSubmit);
@@ -222,6 +224,7 @@ describe("useLoginForm with credential management", () => {
     await act(async () => {
       result.current.form.setValue("email", "demo@swantara.local");
       result.current.form.setValue("password", "secret");
+      result.current.form.setValue("rememberMe", true);
     });
 
     await submitValid(result.current.handleSubmit);

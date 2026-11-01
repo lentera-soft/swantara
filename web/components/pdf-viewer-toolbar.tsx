@@ -169,7 +169,7 @@ export function PdfViewerToolbar({
     <div
       data-slot="pdf-viewer-toolbar"
       className={cn(
-        "flex flex-wrap items-center justify-between gap-2 border-b border-border-subtle px-3 py-2",
+        "flex flex-wrap items-center justify-between gap-2 border-b border-border px-3 py-2",
         className,
       )}
     >

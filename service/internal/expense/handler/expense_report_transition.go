@@ -139,6 +139,7 @@ func (h ExpenseReportHandler) Bill(c fiber.Ctx) error {
 		return writeExpenseError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Expense report billed successfully.", BillExpenseReportResponseEnvelope{
 		Data: BillExpenseReportResponse{InvoiceID: invoice.ID},
 	})
@@ -164,6 +165,7 @@ func (h ExpenseReportHandler) transition(c fiber.Ctx, transition func(c fiber.Ct
 		return writeExpenseError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Expense report updated successfully.", TransitionExpenseReportResponseEnvelope{
 		Data: newExpenseReportResponse(updated),
 	})

@@ -11,7 +11,7 @@ export function HomeFeaturesSection() {
   const tActions = useTranslations("Marketing.actions");
 
   return (
-    <section data-slot="home-features-section" className="border-t border-border/60">
+    <section data-slot="home-features-section" className="border-t border-border-subtle">
       <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
         <div
           data-gsap="section-header"

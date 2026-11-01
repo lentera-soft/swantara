@@ -37,6 +37,7 @@ func (h POSSessionHandler) StartClosing(c fiber.Ctx) error {
 	if err != nil {
 		return writePOSError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "POS session closing started.", ClosePOSSessionResponse{
 		Session: newPOSSessionResponse(session),
 	})
@@ -69,6 +70,7 @@ func (h POSSessionHandler) Close(c fiber.Ctx) error {
 	if err != nil {
 		return writePOSError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "POS session closed successfully.", ClosePOSSessionResponse{
 		Session: newPOSSessionResponse(session),
 	})

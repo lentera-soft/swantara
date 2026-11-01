@@ -9,6 +9,9 @@ const publicPagePatterns = [
   "/pricing",
   "/about",
   "/contact",
+  "/~offline",
+  "/manifest.webmanifest",
+  "/manifest.json",
 ];
 
 export function isProtectedPage(pathname: string): boolean {

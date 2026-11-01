@@ -55,6 +55,7 @@ func (h ProductionOrderHandler) Confirm(c fiber.Ctx) error {
 		return writeProductionOrderError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Production order confirmed successfully.", GetProductionOrderResponse{
 		ProductionOrder: newProductionOrderResponse(productionOrder),
 	})
@@ -94,6 +95,7 @@ func (h ProductionOrderHandler) Plan(c fiber.Ctx) error {
 		return writeProductionOrderError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Production order planned successfully.", GetProductionOrderResponse{
 		ProductionOrder: newProductionOrderResponse(productionOrder),
 	})
@@ -132,6 +134,7 @@ func (h ProductionOrderHandler) Cancel(c fiber.Ctx) error {
 		return writeProductionOrderError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Production order cancelled successfully.", GetProductionOrderResponse{
 		ProductionOrder: newProductionOrderResponse(productionOrder),
 	})

@@ -425,13 +425,18 @@ func (s memberRoleDAO) BindPermission(ctx context.Context, roleID, permissionID 
 }
 
 func (s memberRoleDAO) SetPermissions(ctx context.Context, roleID uint64, permissionIDs []uint64) error {
-	if err := s.db.WithContext(ctx).Unscoped().Where("member_role_id = ?", roleID).Delete(&MemberRolePermission{}).Error; err != nil {
+	if err := s.db.WithContext(ctx).
+		Unscoped().
+		Where("member_role_id = ?", roleID).
+		Delete(&MemberRolePermission{}).Error; err != nil {
 		return err
 	}
+
 	for _, permissionID := range permissionIDs {
 		if err := s.BindPermission(ctx, roleID, permissionID); err != nil {
 			return err
 		}
 	}
+
 	return nil
 }

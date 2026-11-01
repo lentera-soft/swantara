@@ -571,8 +571,8 @@ export function AppShell({
         <SidebarContent>{nav}</SidebarContent>
         {footer ? <SidebarFooter>{footer}</SidebarFooter> : null}
       </Sidebar>
-      <SidebarInset className="bg-muted/20">
-        <header className="sticky top-0 z-header flex h-[64px] shrink-0 items-center gap-3 border-b border-border bg-background px-4 sm:h-[64px] sm:px-6">
+      <SidebarInset className="bg-surface-sunken">
+        <header className="sticky top-0 z-header flex h-[64px] shrink-0 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-xl sm:h-[64px] sm:px-6">
           <SidebarTrigger label={labels?.toggleSidebar} />
           {search ? (
             <div className="flex min-w-0 flex-1 justify-start">{search}</div>

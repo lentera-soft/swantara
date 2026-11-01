@@ -67,7 +67,7 @@ export default async function OrgCrmPage({
 
   return (
     <div className="flex flex-col gap-6 sm:gap-8">
-      <section className="relative isolate overflow-hidden rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/10 via-card to-card px-5 py-6 shadow-sm sm:px-8 sm:py-8">
+      <section className="relative isolate overflow-hidden rounded-2xl border border-primary/15 bg-gradient-to-br from-primary/10 via-card to-card px-5 py-6 sm:px-8 sm:py-8">
         <div
           aria-hidden="true"
           className="absolute -right-14 -top-20 -z-10 size-64 rounded-full bg-primary/10 blur-3xl"
@@ -115,7 +115,7 @@ export default async function OrgCrmPage({
             <Link
               key={href}
               href={href}
-              className="group flex min-h-40 flex-col rounded-xl border border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/35 hover:shadow-md focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:p-5"
+              className="group flex min-h-40 flex-col rounded-xl border border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/35 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:p-5"
             >
               <span
                 className={`mb-4 flex size-10 items-center justify-center rounded-xl ${iconClassName}`}

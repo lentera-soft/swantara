@@ -67,9 +67,11 @@ func (h OrganizationHandler) Update(c fiber.Ctx) error {
 		TaxYearStartMonth: request.TaxYearStartMonth,
 	})
 	if err != nil {
+		httpx.RequestLog(c).Error("organization update failed", "organization_id", orgID, "error", err)
 		return writeOrganizationError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("organization updated", "organization_id", org.ID)
 	return httpx.CreateSuccessResponseWithLinks(c, "Organization updated successfully.", UpdateOrganizationResponse{
 		Organization: newOrganizationResponse(org),
 	}, buildOrganizationLinks(c, org.ID))

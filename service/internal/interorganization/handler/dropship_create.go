@@ -69,6 +69,7 @@ func (h DropShipHandler) Create(c fiber.Ctx) error {
 	for i, link := range links {
 		items[i] = newDropshipLinkResponse(link)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Drop-ship order created successfully.", CreateDropshipOrderResponse{
 		PurchaseOrder: newDropshipOrderResponse(order),
 		Links:         items,

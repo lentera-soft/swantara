@@ -10,7 +10,7 @@ export function HomeWorkflowSection() {
   return (
     <section
       data-slot="home-workflow-section"
-      className="border-t border-border/60 bg-surface-warm"
+      className="border-t border-border-subtle bg-surface-warm"
     >
       <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
         <div
@@ -58,7 +58,7 @@ export function HomeWorkflowSection() {
           data-gsap="section-header"
           data-gsap-parallax
           data-gsap-speed="0.04"
-          className="mt-20 grid grid-cols-1 gap-8 rounded-2xl border border-border/60 bg-background p-8 shadow-sm sm:p-10 lg:grid-cols-12 lg:p-12"
+          className="mt-20 grid grid-cols-1 gap-8 rounded-2xl border border-border-subtle bg-background p-8 sm:p-10 lg:grid-cols-12 lg:p-12"
         >
           <div className="lg:col-span-4">
             <p className="text-label text-muted-foreground uppercase">{t("testimonialEyebrow")}</p>

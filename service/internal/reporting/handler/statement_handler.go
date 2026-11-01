@@ -45,6 +45,7 @@ func (h StatementHandler) ProfitAndLoss(c fiber.Ctx) error {
 	if err != nil {
 		return writeStatementError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Profit and loss retrieved successfully.", statement)
 }
 
@@ -77,6 +78,7 @@ func (h StatementHandler) BalanceSheet(c fiber.Ctx) error {
 	if err != nil {
 		return writeStatementError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Balance sheet retrieved successfully.", sheet)
 }
 
@@ -118,6 +120,7 @@ func (h StatementHandler) CashFlow(c fiber.Ctx) error {
 	if err != nil {
 		return writeStatementError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Cash flow statement retrieved successfully.", flow)
 }
 
@@ -160,6 +163,7 @@ func (h StatementHandler) YearEndRoll(c fiber.Ctx) error {
 	if err != nil {
 		return writeStatementError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Year-end retained earnings roll posted successfully.", result)
 }
 

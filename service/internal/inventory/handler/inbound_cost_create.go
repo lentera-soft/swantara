@@ -81,6 +81,7 @@ func (h InboundCostHandler) Create(c fiber.Ctx) error {
 		return writeInboundCostError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Inbound cost created successfully.", CreateInboundCostResponseEnvelope{
 		Data: newInboundCostResponse(cost),
 	})

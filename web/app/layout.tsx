@@ -1,3 +1,4 @@
+import { SerwistProvider } from "@serwist/turbopack/react";
 import type { Metadata, Viewport } from "next";
 import { Inter_Tight } from "next/font/google";
 import { NextIntlClientProvider } from "next-intl";
@@ -23,6 +24,16 @@ export async function generateMetadata(): Promise<Metadata> {
   return {
     title: t("title"),
     description: t("description"),
+    applicationName: "Swantara",
+    icons: {
+      icon: "/icon.svg",
+      apple: "/icons/apple-touch-icon.png",
+    },
+    appleWebApp: {
+      capable: true,
+      statusBarStyle: "default",
+      title: t("title"),
+    },
     formatDetection: {
       telephone: false,
     },
@@ -52,12 +63,15 @@ export default async function RootLayout({ children }: RootLayoutProps) {
     >
       <head>
         <ThemeScript />
+        <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
       </head>
       <body>
         <NextIntlClientProvider locale={locale} messages={messages}>
           <SkipToMain label={tCommon("skipToMain")} />
           <DevtoolWarning />
-          <ProviderContainer>{children}</ProviderContainer>
+          <SerwistProvider swUrl="/serwist/sw.js">
+            <ProviderContainer>{children}</ProviderContainer>
+          </SerwistProvider>
           <ReportWebVitals />
         </NextIntlClientProvider>
       </body>

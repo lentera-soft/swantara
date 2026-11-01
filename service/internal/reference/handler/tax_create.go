@@ -56,6 +56,7 @@ func (h TaxHandler) Create(c fiber.Ctx) error {
 		return writeTaxError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Tax created successfully.", CreateTaxResponse{
 		Tax: newTaxResponse(tax),
 	})

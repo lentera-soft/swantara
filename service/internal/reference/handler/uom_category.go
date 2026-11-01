@@ -16,25 +16,28 @@ func NewUnitGroupHandler(svc reference.UnitService) UnitGroupHandler {
 }
 
 type UnitGroupResponse struct {
-	ID        uint64    `json:"id"`
-	Name      string    `json:"name"`
-	CreatedAt time.Time `json:"created_at"`
-	UpdatedAt time.Time `json:"updated_at"`
+	ID             uint64    `json:"id"`
+	OrganizationID *uint64   `json:"organization_id"`
+	Name           string    `json:"name"`
+	CreatedAt      time.Time `json:"created_at"`
+	UpdatedAt      time.Time `json:"updated_at"`
 }
 
 func newUnitGroupResponse(category *reference.UnitGroup) UnitGroupResponse {
 	return UnitGroupResponse{
-		ID:        category.ID,
-		Name:      category.Name,
-		CreatedAt: category.CreatedAt,
-		UpdatedAt: category.UpdatedAt,
+		ID:             category.ID,
+		OrganizationID: category.OrganizationID,
+		Name:           category.Name,
+		CreatedAt:      category.CreatedAt,
+		UpdatedAt:      category.UpdatedAt,
 	}
 }
 
 var unitGroupQueryAllowlist = map[string]struct{}{
-	"name":       {},
-	"created_at": {},
-	"updated_at": {},
+	"organization_id": {},
+	"name":            {},
+	"created_at":      {},
+	"updated_at":      {},
 }
 
 type ListUnitCategoriesResponseEnvelope struct {

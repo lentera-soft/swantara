@@ -152,12 +152,13 @@ func StockLocationFixture(opts ...func(*StockLocation) *StockLocation) *StockLoc
 
 func UnitFixture(opts ...func(*Unit) *Unit) *Unit {
 	u := &Unit{
-		Base:       model.Base{ID: uint64(gofakeit.Number(1, 10000)), CreatedAt: gofakeit.Date(), UpdatedAt: gofakeit.Date()},
-		CategoryID: uint64(gofakeit.Number(1, 10000)),
-		Name:       gofakeit.AppName(),
-		Factor:     1.0,
-		UnitType:   "reference",
-		Rounding:   0.01,
+		Base:           model.Base{ID: uint64(gofakeit.Number(1, 10000)), CreatedAt: gofakeit.Date(), UpdatedAt: gofakeit.Date()},
+		OrganizationID: helper.Ptr(uint64(gofakeit.Number(1, 10000))),
+		CategoryID:     uint64(gofakeit.Number(1, 10000)),
+		Name:           gofakeit.AppName(),
+		Factor:         1.0,
+		UnitType:       "reference",
+		Rounding:       0.01,
 	}
 	for _, opt := range opts {
 		opt(u)

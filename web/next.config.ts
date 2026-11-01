@@ -1,3 +1,4 @@
+import { withSerwist } from "@serwist/turbopack";
 import type { NextConfig } from "next";
 import createNextIntlPlugin from "next-intl/plugin";
 
@@ -8,6 +9,9 @@ const allowedDevOrigins = process.env?.ALLOWED_DEV_ORIGINS
 const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
 
 let nextConfig: NextConfig = {
+  images: {
+    remotePatterns: [{ protocol: "https", hostname: "flagcdn.com" }],
+  },
   output: "standalone" as const,
   allowedDevOrigins: [...allowedDevOrigins],
   logging: {
@@ -45,4 +49,4 @@ if (process.env.ANALYZE === "true") {
   nextConfig = withBundleAnalyzer({ enabled: true })(nextConfig);
 }
 
-export default withNextIntl(nextConfig);
+export default withNextIntl(withSerwist(nextConfig));

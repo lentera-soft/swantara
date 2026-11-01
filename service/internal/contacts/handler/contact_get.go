@@ -32,6 +32,7 @@ func (h ContactHandler) Get(c fiber.Ctx) error {
 		return nil
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponseWithLinks(c, "Contact retrieved successfully.", GetContactResponse{
 		Contact: newContactResponse(contact),
 	}, buildContactLinks(c, contact.ID))

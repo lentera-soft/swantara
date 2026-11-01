@@ -28,6 +28,7 @@ func (h StockHandler) shipmentAction(c fiber.Ctx, action func(id, organizationID
 	if err != nil {
 		return writeShipmentError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Stock shipment updated successfully.", GetShipmentResponse{
 		Shipment: newShipmentResponse(shipment),
 	})

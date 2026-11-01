@@ -69,6 +69,7 @@ func (h EquityHandler) Generate(c fiber.Ctx) error {
 		return writeEquityError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Equity rollforward generated successfully.", EquityRollforwardResponse{
 		OpeningBalance:       toEquityMovements(eq.OpeningBalance),
 		CapitalContributions: toEquityMovements(eq.CapitalContributions),

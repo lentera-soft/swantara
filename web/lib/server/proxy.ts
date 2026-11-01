@@ -14,6 +14,7 @@ import {
   getRefreshToken,
   REFRESH_TOKEN_MAX_AGE,
   REFRESH_TOKEN_REUSED_CODE,
+  REMEMBER_ME_MAX_AGE,
   type SessionTokens,
   setSessionCookies,
 } from "./session";
@@ -211,6 +212,17 @@ export async function proxyRequest(request: NextRequest, path: string[]): Promis
   const target = buildTarget(path, request);
   const headers = buildRequestHeaders(request);
   const body = await buildRequestBody(request, fullPath, refreshToken);
+  const rememberMe =
+    fullPath === "/api/v1/auth/login" && typeof body === "string"
+      ? (() => {
+          try {
+            const parsed = JSON.parse(body) as Record<string, unknown>;
+            return parsed.rememberMe === true || parsed.remember_me === true;
+          } catch {
+            return false;
+          }
+        })()
+      : false;
   if (
     body !== undefined &&
     (fullPath === AUTH_REFRESH_PATH || fullPath === AUTH_LOGOUT_PATH) &&
@@ -285,16 +297,21 @@ export async function proxyRequest(request: NextRequest, path: string[]): Promis
       const accessToken = rawData?.accessToken ?? rawData?.access_token;
       const rotatedRefreshToken = rawData?.refreshToken ?? rawData?.refresh_token;
       if (accessToken && rotatedRefreshToken) {
-        setSessionCookies(response, {
-          accessToken,
-          refreshToken: rotatedRefreshToken,
-        });
+        const cookieMaxAge = rememberMe ? REMEMBER_ME_MAX_AGE : REFRESH_TOKEN_MAX_AGE;
+        setSessionCookies(
+          response,
+          {
+            accessToken,
+            refreshToken: rotatedRefreshToken,
+          },
+          cookieMaxAge,
+        );
         response.cookies.set(csrfKey, crypto.randomUUID(), {
           httpOnly: false,
           secure: process.env.NODE_ENV === "production",
           sameSite: "lax",
           path: "/",
-          maxAge: REFRESH_TOKEN_MAX_AGE,
+          maxAge: cookieMaxAge,
         });
       }
     }

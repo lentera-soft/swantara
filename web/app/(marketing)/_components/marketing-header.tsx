@@ -35,7 +35,7 @@ export function MarketingHeader() {
       data-slot="marketing-header"
       className="fixed inset-x-0 top-4 z-header px-4 sm:top-5 sm:px-6 lg:px-8"
     >
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between rounded-full border border-border/40 bg-background/75 px-2 shadow-sm shadow-foreground/5 backdrop-blur-xl">
+      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between rounded-full border border-border/40 bg-background/75 px-2 backdrop-blur-xl">
         <Link
           href="/"
           className="group inline-flex items-center gap-2.5 pl-4 text-foreground transition-opacity hover:opacity-70"
@@ -82,10 +82,10 @@ export function MarketingHeader() {
           </Button>
 
           <div className="hidden items-center gap-1 pl-1 sm:flex">
-            <Button variant="ghost" className="rounded-full" asChild>
+            <Button variant="ghost" shape="pill" asChild>
               <Link href="/login">{tActions("signIn")}</Link>
             </Button>
-            <Button variant="default" className="rounded-full px-4" asChild>
+            <Button variant="default" shape="pill" className="px-4" asChild>
               <Link href="/register">{tActions("startFree")}</Link>
             </Button>
           </div>
@@ -107,7 +107,7 @@ export function MarketingHeader() {
       {mobileMenuOpen ? (
         <div
           data-slot="marketing-mobile-nav"
-          className="mx-auto mt-2 max-w-7xl rounded-2xl border border-border/40 bg-background/95 p-3 shadow-lg shadow-foreground/5 backdrop-blur-xl md:hidden"
+          className="mx-auto mt-2 max-w-7xl rounded-2xl border border-border/40 bg-background/95 p-3 backdrop-blur-xl md:hidden"
         >
           <nav aria-label={tBrand("name")} className="flex flex-col">
             {MARKETING_NAV_ITEMS.map((item) => {
@@ -127,7 +127,7 @@ export function MarketingHeader() {
                 </Link>
               );
             })}
-            <div className="mt-2 flex flex-col gap-2 border-t border-border/60 pt-2">
+            <div className="mt-2 flex flex-col gap-2 border-t border-border-subtle pt-2">
               <Button variant="outline" className="w-full rounded-xl" asChild>
                 <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
                   {tActions("signIn")}

@@ -60,6 +60,7 @@ func (h BudgetHandler) Create(c fiber.Ctx) error {
 		return writeBudgetError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Budget created successfully.", CreateBudgetResponse{
 		Budget: newBudgetResponse(budget),
 	})

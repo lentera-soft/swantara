@@ -14,7 +14,7 @@ import (
 	"github.com/jalusw/swantara/apps/service/internal/reference"
 )
 
-var unitGroupColumns = []string{"id", "created_at", "updated_at", "deleted_at", "name"}
+var unitGroupColumns = []string{"id", "created_at", "updated_at", "deleted_at", "organization_id", "name"}
 
 func unitGroupHandlerTest(t *testing.T, categories dao.Base[reference.UnitGroup]) *fiber.App {
 	t.Helper()
@@ -26,12 +26,13 @@ func unitGroupHandlerTest(t *testing.T, categories dao.Base[reference.UnitGroup]
 
 func TestUnitGroupHandler_List_ReturnsCategories(t *testing.T) {
 	db, mock := query.NewMockDB(t)
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT count(*) FROM "unit_groups"`)).
+	mock.ExpectQuery(regexp.QuoteMeta(`SELECT count(*) FROM "unit_groups" WHERE organization_id = $1`)).
+		WithArgs(10).
 		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "unit_groups" LIMIT $1`)).
-		WithArgs(20).
+	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "unit_groups" WHERE organization_id = $1 LIMIT $2`)).
+		WithArgs(10, 20).
 		WillReturnRows(sqlmock.NewRows(unitGroupColumns).
-			AddRow(1, timeNow(), timeNow(), nil, "Weight"))
+			AddRow(1, timeNow(), timeNow(), nil, uint64(10), "Weight"))
 	app := unitGroupHandlerTest(t, dao.NewBase[reference.UnitGroup](db))
 
 	resp, err := doRequest(app, http.MethodGet, "/unit-groups/", "")
@@ -76,12 +77,13 @@ func TestUnitGroupHandler_List_ReturnsServerError(t *testing.T) {
 
 func TestUnitGroupHandler_List_ExportsCSV(t *testing.T) {
 	db, mock := query.NewMockDB(t)
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT count(*) FROM "unit_groups"`)).
+	mock.ExpectQuery(regexp.QuoteMeta(`SELECT count(*) FROM "unit_groups" WHERE organization_id = $1`)).
+		WithArgs(10).
 		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
-	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "unit_groups" LIMIT $1`)).
-		WithArgs(20).
+	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "unit_groups" WHERE organization_id = $1 LIMIT $2`)).
+		WithArgs(10, 20).
 		WillReturnRows(sqlmock.NewRows(unitGroupColumns).
-			AddRow(1, timeNow(), timeNow(), nil, "Weight"))
+			AddRow(1, timeNow(), timeNow(), nil, uint64(10), "Weight"))
 	app := unitGroupHandlerTest(t, dao.NewBase[reference.UnitGroup](db))
 
 	resp, err := doRequest(app, http.MethodGet, "/unit-groups/?format=csv", "")
@@ -99,7 +101,7 @@ func TestUnitGroupHandler_Get_ReturnsCategory(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "unit_groups" WHERE id = $1 ORDER BY "unit_groups"."id" LIMIT $2`)).
 		WithArgs(1, 1).
 		WillReturnRows(sqlmock.NewRows(unitGroupColumns).
-			AddRow(1, timeNow(), timeNow(), nil, "Weight"))
+			AddRow(1, timeNow(), timeNow(), nil, uint64(10), "Weight"))
 	app := unitGroupHandlerTest(t, dao.NewBase[reference.UnitGroup](db))
 
 	resp, err := doRequest(app, http.MethodGet, "/unit-groups/1", "")
@@ -218,7 +220,7 @@ func TestUnitGroupHandler_Update_UpdatesCategory(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "unit_groups" WHERE id = $1 ORDER BY "unit_groups"."id" LIMIT $2`)).
 		WithArgs(1, 1).
 		WillReturnRows(sqlmock.NewRows(unitGroupColumns).
-			AddRow(1, timeNow(), timeNow(), nil, "Weight"))
+			AddRow(1, timeNow(), timeNow(), nil, uint64(10), "Weight"))
 	mock.ExpectBegin()
 	mock.ExpectExec(regexp.QuoteMeta(`UPDATE "unit_groups" SET`)).
 		WillReturnResult(sqlmock.NewResult(1, 1))
@@ -307,7 +309,7 @@ func TestUnitGroupHandler_Update_ReturnsServerErrorOnSave(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "unit_groups" WHERE id = $1 ORDER BY "unit_groups"."id" LIMIT $2`)).
 		WithArgs(1, 1).
 		WillReturnRows(sqlmock.NewRows(unitGroupColumns).
-			AddRow(1, timeNow(), timeNow(), nil, "Weight"))
+			AddRow(1, timeNow(), timeNow(), nil, uint64(10), "Weight"))
 	mock.ExpectBegin()
 	mock.ExpectExec(regexp.QuoteMeta(`UPDATE "unit_groups" SET`)).
 		WillReturnError(errors.New("db down"))
@@ -330,7 +332,7 @@ func TestUnitGroupHandler_Delete_DeletesCategory(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "unit_groups" WHERE id = $1 ORDER BY "unit_groups"."id" LIMIT $2`)).
 		WithArgs(1, 1).
 		WillReturnRows(sqlmock.NewRows(unitGroupColumns).
-			AddRow(1, timeNow(), timeNow(), nil, "Weight"))
+			AddRow(1, timeNow(), timeNow(), nil, uint64(10), "Weight"))
 	mock.ExpectBegin()
 	mock.ExpectExec(regexp.QuoteMeta(`UPDATE "unit_groups" SET "deleted_at"=$1 WHERE "unit_groups"."id" = $2`)).
 		WithArgs(sqlmock.AnyArg(), 1).
@@ -401,7 +403,7 @@ func TestUnitGroupHandler_Delete_ReturnsServerErrorOnDelete(t *testing.T) {
 	mock.ExpectQuery(regexp.QuoteMeta(`SELECT * FROM "unit_groups" WHERE id = $1 ORDER BY "unit_groups"."id" LIMIT $2`)).
 		WithArgs(1, 1).
 		WillReturnRows(sqlmock.NewRows(unitGroupColumns).
-			AddRow(1, timeNow(), timeNow(), nil, "Weight"))
+			AddRow(1, timeNow(), timeNow(), nil, uint64(10), "Weight"))
 	mock.ExpectBegin()
 	mock.ExpectExec(regexp.QuoteMeta(`UPDATE "unit_groups" SET "deleted_at"=$1 WHERE "unit_groups"."id" = $2`)).
 		WithArgs(sqlmock.AnyArg(), 1).

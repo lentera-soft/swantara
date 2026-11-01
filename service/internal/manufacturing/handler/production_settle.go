@@ -60,6 +60,7 @@ func (h ProductionHandler) SettleVariance(c fiber.Ctx) error {
 		return writeProductionError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Manufacturing variance settled successfully.", GetProductionOrderResponse{
 		ProductionOrder: newProductionOrderResponse(productionOrder),
 	})

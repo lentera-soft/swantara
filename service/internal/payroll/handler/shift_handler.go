@@ -89,6 +89,7 @@ func (h ShiftHandler) List(c fiber.Ctx) error {
 	for i, shift := range page.Items {
 		items[i] = newShiftResponse(shift)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponseWithMeta(c, "Shifts retrieved successfully.", items, httpx.BuildListMeta(parsedQuery, page.Count))
 }
 
@@ -110,6 +111,7 @@ func (h ShiftHandler) Create(c fiber.Ctx) error {
 	if err != nil {
 		return writeHRError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Shift created successfully.", newShiftResponse(shift))
 }
 
@@ -134,6 +136,7 @@ func (h ShiftHandler) Update(c fiber.Ctx) error {
 	if err != nil {
 		return writeHRError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Shift updated successfully.", newShiftResponse(shift))
 }
 
@@ -148,5 +151,6 @@ func (h ShiftHandler) Delete(c fiber.Ctx) error {
 	if err := h.svc.DeleteShift(c, shiftID); err != nil {
 		return writeHRError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateNoContentResponse(c)
 }

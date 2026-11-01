@@ -80,6 +80,7 @@ func (h CashFlowHandler) Generate(c fiber.Ctx) error {
 		return writeCashFlowError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Cash flow statement generated successfully.", CashFlowResponse{
 		Operating:   toCashFlowLines(cf.Operating),
 		Investing:   toCashFlowLines(cf.Investing),

@@ -41,7 +41,7 @@ describe("OrgNav", () => {
     );
 
     expect(await screen.findByRole("link", { name: "Dasbor" })).toBeInTheDocument();
-    await waitFor(() => expect(screen.queryByRole("button", { name: "CRM" })).toBeNull());
+    await waitFor(() => expect(screen.queryByRole("button", { name: "Pelanggan" })).toBeNull());
     expect(screen.queryByRole("link", { name: "Pesanan Penjualan" })).toBeNull();
     await waitFor(() => expect(screen.queryByRole("link", { name: "Karyawan" })).toBeNull());
     expect(screen.queryByRole("link", { name: "Anggota" })).toBeNull();

@@ -50,7 +50,10 @@ export function MarketingFooter() {
   const tFooter = useTranslations("Marketing.footer");
 
   return (
-    <footer data-slot="marketing-footer" className="border-t border-border/60 bg-surface-sunken">
+    <footer
+      data-slot="marketing-footer"
+      className="border-t border-border-subtle bg-surface-sunken"
+    >
       <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
           <div className="space-y-5 lg:col-span-5">
@@ -61,7 +64,7 @@ export function MarketingFooter() {
             <p className="max-w-sm text-base leading-relaxed text-muted-foreground">
               {tBrand("description")}
             </p>
-            <div className="inline-flex items-center gap-2 rounded-full border border-border/60 bg-background px-3 py-1.5 text-xs text-muted-foreground">
+            <div className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-background px-3 py-1.5 text-xs text-muted-foreground">
               <span className="size-1.5 rounded-full bg-success" aria-hidden="true" />
               <span>{tFooter("status")}</span>
             </div>
@@ -90,7 +93,7 @@ export function MarketingFooter() {
           </div>
         </div>
 
-        <div className="mt-16 flex flex-col items-start justify-between gap-3 border-t border-border/60 pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center">
+        <div className="mt-16 flex flex-col items-start justify-between gap-3 border-t border-border-subtle pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center">
           <p>{tFooter("copyright", { year: CURRENT_YEAR })}</p>
           <p>{tFooter("madeIn")}</p>
         </div>

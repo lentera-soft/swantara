@@ -58,6 +58,7 @@ func (h HoldHandler) Reserve(c fiber.Ctx) error {
 		return writeReservationError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Stock reserved successfully.", ReserveStockResponse{
 		Reservation: newStockHoldResponse(reservation),
 	})

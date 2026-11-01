@@ -38,7 +38,7 @@ describe("DashboardOverview", () => {
     renderWithProviders(<DashboardOverview orgId="1" />);
 
     expect(await screen.findByText("Jelajahi alur bisnis")).toBeInTheDocument();
-    expect(await screen.findByText("CRM")).toBeInTheDocument();
+    expect((await screen.findAllByText("Pelanggan")).length).toBeGreaterThan(0);
     expect(
       screen.getByText("Setiap layanan organisasi Anda — satu ketuk ke modulnya."),
     ).toBeInTheDocument();

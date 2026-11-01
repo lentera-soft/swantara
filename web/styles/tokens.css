@@ -136,6 +136,7 @@
   --color-surface-raised: oklch(1 0 0);
   --color-surface-overlay: oklch(1 0 0);
   --color-surface-sunken: oklch(0.975 0.006 90);
+  --color-surface-warm: oklch(0.975 0.008 90);
 
   --color-foreground: oklch(0.22 0 0);
   --color-foreground-secondary: oklch(0.48 0.012 80);
@@ -151,6 +152,7 @@
   --color-accent-on: oklch(1 0 0);
 
   --color-border: oklch(0.22 0.01 80 / 0.12);
+  --color-border-subtle: oklch(0.22 0.01 80 / 0.07);
   --color-border-hover: oklch(0.22 0.01 80 / 0.18);
   --color-border-active: var(--accent-600);
   --color-border-disabled: oklch(0.22 0.01 80 / 0.06);
@@ -232,24 +234,25 @@
   --color-surface-raised: var(--color-surface-raised);
   --color-surface-overlay: var(--color-surface-overlay);
   --color-surface-sunken: var(--color-surface-sunken);
+  --color-surface-warm: var(--color-surface-warm);
   --color-card: var(--color-surface);
   --color-card-foreground: var(--color-foreground);
   --color-popover: var(--color-surface-overlay);
   --color-popover-foreground: var(--color-foreground);
   --color-primary: var(--color-accent);
   --color-primary-foreground: var(--color-accent-on);
-  --color-secondary: oklch(0.22 0.01 80 / 0.05);
-  --color-secondary-foreground: var(--color-foreground);
-  --color-muted: oklch(0.22 0.01 80 / 0.05);
-  --color-muted-foreground: var(--color-foreground-secondary);
-  --color-accent: oklch(0.22 0.01 80 / 0.05);
-  --color-accent-foreground: var(--color-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-fg);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-fg);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-fg);
   --color-destructive: var(--color-danger);
   --color-success: var(--color-success);
   --color-warning: var(--color-warning);
   --color-info: var(--color-info);
   --color-border: var(--color-border);
-  --color-border-subtle: oklch(0 0 0 / 0.12);
+  --color-border-subtle: var(--color-border-subtle);
   --color-border-hover: var(--color-border-hover);
   --color-border-active: var(--color-border-active);
   --color-border-muted: var(--color-divider);
@@ -327,6 +330,7 @@
   --color-surface-raised: oklch(0.22 0.008 90);
   --color-surface-overlay: oklch(0.24 0.008 90);
   --color-surface-sunken: oklch(0.16 0.004 90);
+  --color-surface-warm: oklch(0.19 0.007 90);
 
   --color-foreground: oklch(0.97 0.004 90);
   --color-foreground-secondary: oklch(0.75 0.012 80);
@@ -342,6 +346,7 @@
   --color-accent-on: oklch(1 0 0);
 
   --color-border: oklch(0.96 0.006 90 / 0.14);
+  --color-border-subtle: oklch(0.96 0.006 90 / 0.08);
   --color-border-hover: oklch(0.96 0.006 90 / 0.2);
   --color-border-active: var(--accent-500);
   --color-border-disabled: oklch(0.96 0.006 90 / 0.06);

@@ -14,6 +14,7 @@ import {
 } from "@/components/combobox";
 import { Field } from "@/components/field";
 import { FieldFeedback } from "@/components/field-feedback";
+import { InputGroupAddon } from "@/components/input-group";
 import { Label } from "@/components/label";
 import {
   QuestionnaireDescription,
@@ -24,12 +25,6 @@ import {
 import type { Country } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
 import type { OnboardingFormSchema } from "../_hooks/use-onboarding-form";
-
-function countryCodeToFlag(code: string): string {
-  return code
-    .toUpperCase()
-    .replace(/./g, (char) => String.fromCodePoint(char.charCodeAt(0) + 127397));
-}
 
 export function CompanyInfoStep() {
   const { control } = useFormContext<OnboardingFormSchema>();
@@ -57,7 +52,7 @@ export function CompanyInfoStep() {
       } catch {
         // Keep the API-provided name when localization is unavailable.
       }
-      return { code: country.code, name, flag: countryCodeToFlag(country.code) };
+      return { code: country.code, name };
     });
   }, [countriesQuery.data, locale]);
 
@@ -121,7 +116,13 @@ export function CompanyInfoStep() {
                   aria-invalid={Boolean(fieldState.error)}
                   aria-describedby={errorId}
                   onChange={(event) => setCountrySearch(event.target.value)}
-                />
+                >
+                  {field.value ? (
+                    <InputGroupAddon align="inline-start" className="pointer-events-none">
+                      <span className="text-xs font-medium">{field.value}</span>
+                    </InputGroupAddon>
+                  ) : null}
+                </ComboboxInput>
                 <ComboboxContent>
                   <ComboboxList>
                     {(code: string) => {
@@ -130,8 +131,8 @@ export function CompanyInfoStep() {
                       return (
                         <ComboboxItem key={country.code} value={country.code}>
                           <span className="flex items-center gap-2">
-                            <span aria-hidden="true" className="text-base leading-none">
-                              {country.flag}
+                            <span className="w-5 text-center text-xs font-medium">
+                              {country.code}
                             </span>
                             <span>{country.name}</span>
                             <span className="text-muted-foreground text-xs">{country.code}</span>

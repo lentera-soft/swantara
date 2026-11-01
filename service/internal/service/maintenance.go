@@ -45,15 +45,18 @@ type CreatePlanRequest struct {
 	NextDue      *time.Time
 }
 
-func (s MaintenanceService) ListPlans(ctx context.Context, q *query.Query) (*query.Page[MaintenancePlan], error) {
+func (s MaintenanceService) ListPlans(ctx context.Context, q *query.Query) (_ *query.Page[MaintenancePlan], err error) {
+	defer helper.RecordOp(ctx, "maintenance.list_plans", s.now(), &err)
 	return s.plans.List(ctx, q)
 }
 
-func (s MaintenanceService) FindPlan(ctx context.Context, id uint64) (*MaintenancePlan, error) {
+func (s MaintenanceService) FindPlan(ctx context.Context, id uint64) (_ *MaintenancePlan, err error) {
+	defer helper.RecordOp(ctx, "maintenance.find_plan", s.now(), &err)
 	return s.plans.Find(ctx, id)
 }
 
-func (s MaintenanceService) CreatePlan(ctx context.Context, request CreatePlanRequest) (*MaintenancePlan, error) {
+func (s MaintenanceService) CreatePlan(ctx context.Context, request CreatePlanRequest) (_ *MaintenancePlan, err error) {
+	defer helper.RecordOp(ctx, "maintenance.create_plan", s.now(), &err)
 	if request.Name == "" {
 		return nil, ErrPlanNameRequired
 	}
@@ -79,11 +82,13 @@ func (s MaintenanceService) CreatePlan(ctx context.Context, request CreatePlanRe
 	})
 }
 
-func (s MaintenanceService) GenerateDueOrdersNow(ctx context.Context, organizationID uint64) ([]*ServiceOrder, error) {
+func (s MaintenanceService) GenerateDueOrdersNow(ctx context.Context, organizationID uint64) (_ []*ServiceOrder, err error) {
+	defer helper.RecordOp(ctx, "maintenance.generate_due_orders_now", s.now(), &err)
 	return s.GenerateDueOrders(ctx, organizationID, s.now().UTC())
 }
 
-func (s MaintenanceService) GenerateDueOrders(ctx context.Context, organizationID uint64, asOf time.Time) ([]*ServiceOrder, error) {
+func (s MaintenanceService) GenerateDueOrders(ctx context.Context, organizationID uint64, asOf time.Time) (_ []*ServiceOrder, err error) {
+	defer helper.RecordOp(ctx, "maintenance.generate_due_orders", s.now(), &err)
 	due, err := s.plans.ListDue(ctx, organizationID, asOf)
 	if err != nil {
 		return nil, err
@@ -139,7 +144,8 @@ func advanceNextDue(due time.Time, intervalDays int, asOf time.Time) time.Time {
 	return due
 }
 
-func (s MaintenanceService) FindPlanInOrg(ctx context.Context, id, organizationID uint64) (*MaintenancePlan, error) {
+func (s MaintenanceService) FindPlanInOrg(ctx context.Context, id, organizationID uint64) (_ *MaintenancePlan, err error) {
+	defer helper.RecordOp(ctx, "maintenance.find_plan_in_org", s.now(), &err)
 	plan, err := s.plans.Find(ctx, id)
 	if err != nil || plan == nil {
 		return plan, err

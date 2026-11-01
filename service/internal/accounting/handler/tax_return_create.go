@@ -53,6 +53,7 @@ func (h TaxReturnHandler) Create(c fiber.Ctx) error {
 		return writeTaxReturnError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Tax return created successfully.", CreateTaxReturnResponse{
 		TaxReturn: newTaxReturnResponse(taxReturn),
 	})

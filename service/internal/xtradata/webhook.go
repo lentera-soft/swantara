@@ -20,6 +20,7 @@ import (
 const (
 	webhookMaxAttempts = 5
 	webhookBackoffBase = 200 * time.Millisecond
+	clientTimeout      = 10 * time.Second
 )
 
 type WebhookDeliverer struct {
@@ -30,9 +31,13 @@ type WebhookDeliverer struct {
 	backoff       func(attempt int) time.Duration
 }
 
-func NewWebhookDeliverer(subscriptions WebhookSubscriptionDAO, deliveries WebhookDeliveryDAO, client *http.Client) WebhookDeliverer {
+func NewWebhookDeliverer(
+	subscriptions WebhookSubscriptionDAO,
+	deliveries WebhookDeliveryDAO,
+	client *http.Client,
+) WebhookDeliverer {
 	if client == nil {
-		client = &http.Client{Timeout: 10 * time.Second}
+		client = &http.Client{Timeout: clientTimeout}
 	}
 	return WebhookDeliverer{
 		subscriptions: subscriptions,

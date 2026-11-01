@@ -82,6 +82,7 @@ func (h POSOrderHandler) Sell(c fiber.Ctx) error {
 	if err != nil {
 		return writePOSError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "POS order created successfully.", SellPOSOrderResponse{
 		Order: newPOSOrderResponse(order),
 	})

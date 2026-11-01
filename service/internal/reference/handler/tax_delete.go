@@ -34,5 +34,6 @@ func (h TaxHandler) Delete(c fiber.Ctx) error {
 		return writeTaxError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateNoContentResponse(c)
 }

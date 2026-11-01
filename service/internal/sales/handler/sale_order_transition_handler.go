@@ -51,6 +51,7 @@ func (h SaleOrderHandler) Send(c fiber.Ctx) error {
 		return writeSaleOrderError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Sale order sent successfully.", GetSaleOrderResponse{
 		Order: newSaleOrderResponse(order),
 	})
@@ -86,6 +87,7 @@ func (h SaleOrderHandler) Confirm(c fiber.Ctx) error {
 		return writeSaleOrderError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Sale order confirmed successfully.", GetSaleOrderResponse{
 		Order: newSaleOrderResponse(order),
 	})
@@ -119,6 +121,7 @@ func (h SaleOrderHandler) Cancel(c fiber.Ctx) error {
 		return writeSaleOrderError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Sale order cancelled successfully.", GetSaleOrderResponse{
 		Order: newSaleOrderResponse(order),
 	})
@@ -152,6 +155,7 @@ func (h SaleOrderHandler) Done(c fiber.Ctx) error {
 		return writeSaleOrderError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Sale order marked done successfully.", GetSaleOrderResponse{
 		Order: newSaleOrderResponse(order),
 	})
@@ -184,6 +188,7 @@ func (h SaleOrderHandler) RecomputeStatuses(c fiber.Ctx) error {
 		return writeSaleOrderError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Sale order statuses recomputed successfully.", GetSaleOrderResponse{
 		Order: newSaleOrderResponse(order),
 	})

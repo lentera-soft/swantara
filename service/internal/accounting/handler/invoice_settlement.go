@@ -92,6 +92,7 @@ func (h InvoiceHandler) ApplyCredit(c fiber.Ctx) error {
 	if err != nil {
 		return writeInvoiceError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Credit applied successfully.", CreditApplicationResponse{
 		ID:           applied.ID,
 		InvoiceID:    applied.InvoiceID,
@@ -142,6 +143,7 @@ func (h InvoiceHandler) ContraSettle(c fiber.Ctx) error {
 	if err != nil {
 		return writeInvoiceError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Contra settled successfully.", ContraSettlementResponse{
 		ID:                settlement.ID,
 		CustomerInvoiceID: settlement.CustomerInvoiceID,
@@ -189,6 +191,7 @@ func (h InvoiceHandler) DeductDownPayment(c fiber.Ctx) error {
 	if err != nil {
 		return writeInvoiceError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Down payment deducted successfully.", DownPaymentLinkResponse{
 		ID:               link.ID,
 		AdvanceInvoiceID: link.AdvanceInvoiceID,

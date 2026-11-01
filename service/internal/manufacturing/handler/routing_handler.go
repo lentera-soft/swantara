@@ -100,6 +100,7 @@ func (h RoutingHandler) List(c fiber.Ctx) error {
 	for i, step := range steps {
 		items[i] = newRoutingOperationResponse(step)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Routing operations retrieved successfully.", ListRoutingOperationsResponse{
 		Operations: items,
 	})
@@ -120,6 +121,7 @@ func (h RoutingHandler) Create(c fiber.Ctx) error {
 	if err != nil {
 		return writeRoutingError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Routing operation created successfully.", RoutingOperationResponse{
 		ID:           step.ID,
 		RecipeID:     step.RecipeID,
@@ -152,6 +154,7 @@ func (h RoutingHandler) Update(c fiber.Ctx) error {
 	if err != nil {
 		return writeRoutingError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Routing operation updated successfully.", newRoutingOperationResponse(step))
 }
 
@@ -168,5 +171,6 @@ func (h RoutingHandler) Delete(c fiber.Ctx) error {
 	if err := h.svc.DeleteInOrg(c, recipeID, stepID, organizationID); err != nil {
 		return writeRoutingError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Routing operation deleted successfully.", struct{}{})
 }

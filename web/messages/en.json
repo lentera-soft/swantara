@@ -36,7 +36,9 @@
     "date": "Date",
     "journal": "Journal",
     "selectJournal": "Select journal",
-    "payOnAccount": "Pay other open customer invoices when this order has none"
+    "payOnAccount": "Pay other open customer invoices when this order has none",
+    "offlineTitle": "You're offline",
+    "offlineDescription": "Swantara is unavailable right now. Please check your connection and try again."
   },
   "Auth": {
     "welcomeBackTitle": "Welcome back",
@@ -56,6 +58,7 @@
     "confirmPassword": "Confirm password",
     "forgotPassword": "Forgot password?",
     "loginButton": "Sign in",
+    "rememberMe": "Remember me",
     "registerButton": "Sign up",
     "sendResetLink": "Send reset link",
     "resetButton": "Reset password",
@@ -101,7 +104,8 @@
     "modules": "Modules",
     "settings": "Settings",
     "dashboard": "Dashboard",
-    "crm": "CRM",
+    "crm": "Customer",
+
     "sales": "Sales Orders",
     "productionOrders": "Production Orders",
     "planning": "Production Planning",
@@ -227,7 +231,7 @@
     "en": "English"
   },
   "NavModules": {
-    "crm": "CRM",
+    "crm": "Customer",
     "products": "Products",
     "inventory": "Inventory",
     "procurement": "Procurement",
@@ -245,7 +249,7 @@
     "noResults": "No apps found",
     "noResultsDescription": "Try a different search term.",
     "launcherLabel": "App launcher",
-    "moduleCrm": "CRM",
+    "moduleCrm": "Customer",
     "moduleProducts": "Products",
     "moduleInventory": "Inventory",
     "moduleProcurement": "Procurement",
@@ -3784,7 +3788,7 @@
     "headingDesc_procurement": "Purchasing activity, spend and supplier performance.",
     "headingDesc_manufacturing": "Production output, OEE and order progress.",
     "headingDesc_operations": "Payroll, projects and subscriptions.",
-    "moduleTitle_crm": "CRM",
+    "moduleTitle_crm": "Customer",
     "moduleTitle_sales": "Sales",
     "moduleTitle_procurement": "Procurement",
     "moduleTitle_inventory": "Inventory",

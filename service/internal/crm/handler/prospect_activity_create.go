@@ -86,6 +86,7 @@ func (h ProspectActivityHandler) Create(c fiber.Ctx) error {
 		return writeProspectActivityError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Activity created successfully.", CreateProspectActivityResponse{
 		Activity: newProspectActivityResponse(activity),
 	})

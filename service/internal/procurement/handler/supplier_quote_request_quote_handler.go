@@ -119,6 +119,7 @@ func (h SupplierQuoteRequestHandler) SubmitQuote(c fiber.Ctx) error {
 	if err != nil {
 		return writePurchaseOrderError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Supplier quotation submitted successfully.", SubmitSupplierQuoteResponse{
 		Quote: newSupplierQuoteResponse(quote),
 	})
@@ -150,6 +151,7 @@ func (h SupplierQuoteRequestHandler) ListQuotes(c fiber.Ctx) error {
 	for i, quote := range quotes {
 		items[i] = newSupplierQuoteResponse(quote)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Supplier quotations retrieved successfully.", ListSupplierQuotesResponse{
 		Quotes: items,
 	})
@@ -179,6 +181,7 @@ func (h SupplierQuoteRequestHandler) AcceptQuote(c fiber.Ctx) error {
 	if err != nil {
 		return writePurchaseOrderError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Supplier quotation accepted successfully.", GetSupplierQuoteRequestResponse{
 		QuoteRequest: newSupplierQuoteRequestResponse(quoteRequest),
 	})

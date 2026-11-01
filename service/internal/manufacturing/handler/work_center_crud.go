@@ -44,6 +44,7 @@ func (h WorkCenterHandler) findInOrg(c fiber.Ctx, id uint64) (*reference.WorkCen
 		if dao.IsNotFound(err) {
 			return nil, httpx.CreateNotFoundResponse(c, "Work center not found.")
 		}
+		httpx.RequestLog(c).Error("failed to get work center", "error", err)
 		return nil, httpx.CreateInternalServerErrorResponse(c, "Failed to get work center.", err)
 	}
 	if center == nil || !scope.Owns(center.OrganizationID, organizationID) {
@@ -74,6 +75,7 @@ func (h WorkCenterHandler) Get(c fiber.Ctx) error {
 	if err != nil {
 		return err
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Work center retrieved successfully.", GetWorkCenterResponse{
 		WorkCenter: newWorkCenterResponse(center),
 	})
@@ -113,8 +115,10 @@ func (h WorkCenterHandler) Create(c fiber.Ctx) error {
 		DimensionID:     request.DimensionID,
 	})
 	if err != nil {
+		httpx.RequestLog(c).Error("failed to create work center", "error", err)
 		return httpx.CreateInternalServerErrorResponse(c, "Failed to create work center.", err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Work center created successfully.", GetWorkCenterResponse{
 		WorkCenter: newWorkCenterResponse(center),
 	})
@@ -159,8 +163,10 @@ func (h WorkCenterHandler) Update(c fiber.Ctx) error {
 
 	updated, err := h.centers.Update(c, center)
 	if err != nil {
+		httpx.RequestLog(c).Error("failed to update work center", "error", err)
 		return httpx.CreateInternalServerErrorResponse(c, "Failed to update work center.", err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Work center updated successfully.", GetWorkCenterResponse{
 		WorkCenter: newWorkCenterResponse(updated),
 	})
@@ -188,8 +194,10 @@ func (h WorkCenterHandler) Delete(c fiber.Ctx) error {
 		return err
 	}
 	if err := h.centers.Delete(c, id); err != nil {
+		httpx.RequestLog(c).Error("failed to delete work center", "error", err)
 		return httpx.CreateInternalServerErrorResponse(c, "Failed to delete work center.", err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateNoContentResponse(c)
 }
 

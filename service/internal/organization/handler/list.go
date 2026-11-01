@@ -41,6 +41,8 @@ func (h OrganizationHandler) List(c fiber.Ctx) error {
 		return httpx.CreateInternalServerErrorResponse(c, "Failed to retrieve organizations.", err)
 	}
 
+	httpx.RequestLog(c).Info("organizations listed", "count", len(page.Items))
+
 	items := make([]OrganizationResponse, len(page.Items))
 	for i, org := range page.Items {
 		items[i] = newOrganizationResponse(org)

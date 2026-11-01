@@ -51,6 +51,7 @@ func (h RMAHandler) Confirm(c fiber.Ctx) error {
 		return writeRMAError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "RMA confirmed successfully.", TransitionResponse{
 		RMA: newRMAResponse(rma),
 	})
@@ -100,6 +101,7 @@ func (h RMAHandler) Receive(c fiber.Ctx) error {
 		return writeRMAError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "RMA received successfully.", TransitionResponse{
 		RMA: newRMAResponse(rma),
 	})
@@ -150,6 +152,7 @@ func (h RMAHandler) Refund(c fiber.Ctx) error {
 		return writeRMAError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "RMA refunded successfully.", TransitionResponse{
 		RMA: newRMAResponse(rma),
 	})
@@ -183,6 +186,7 @@ func (h RMAHandler) Done(c fiber.Ctx) error {
 		return writeRMAError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "RMA completed successfully.", TransitionResponse{
 		RMA: newRMAResponse(rma),
 	})
@@ -216,6 +220,7 @@ func (h RMAHandler) Cancel(c fiber.Ctx) error {
 		return writeRMAError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "RMA cancelled successfully.", TransitionResponse{
 		RMA: newRMAResponse(rma),
 	})

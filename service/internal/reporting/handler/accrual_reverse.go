@@ -48,6 +48,7 @@ func (h AccrualHandler) ReverseDue(c fiber.Ctx) error {
 	if err != nil {
 		return writeAccrualError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Due accruals reversed successfully.", ReverseAccrualsResponse{
 		Reversed: reversed,
 	})
@@ -96,5 +97,6 @@ func (h AccrualHandler) Reverse(c fiber.Ctx) error {
 	if err != nil {
 		return writeAccrualError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Accrual reversed successfully.", result)
 }

@@ -18,6 +18,7 @@ type LoginResponseEnvelope struct {
 	httpx.EnvelopeBase
 	Data LoginResponse `json:"data"`
 }
+
 type LoginResponse struct {
 	AccessToken  string `json:"access_token"`
 	RefreshToken string `json:"refresh_token"`
@@ -38,16 +39,22 @@ type LoginResponse struct {
 func (h AuthHandler) LoginHandler(c fiber.Ctx) error {
 	var request LoginRequest
 
-	if !bindAndValidate(c, &request) {
+	if !httpx.BindAndValidate(c, &request) {
 		return nil
 	}
 
-	tokens, err := h.authSvc.Login(c, request.Email, request.Password, iam.SessionClientInfo{
-		IPAddress:  httpx.ClientIP(c),
-		DeviceName: httpx.DeviceName(c),
-		Browser:    httpx.Browser(c),
-		OS:         httpx.OS(c),
-	})
+	tokens, err := h.authSvc.Login(
+		c,
+		request.Email,
+		request.Password,
+		iam.SessionClientInfo{
+			IPAddress:  httpx.ClientIP(c),
+			DeviceName: httpx.DeviceName(c),
+			Browser:    httpx.Browser(c),
+			OS:         httpx.OS(c),
+		},
+	)
+
 	if err != nil {
 		switch {
 		case errors.Is(err, iam.ErrInvalidCredentials):

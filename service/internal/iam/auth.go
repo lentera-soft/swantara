@@ -59,7 +59,12 @@ type LoginResult struct {
 	RefreshTokenExpiresAt time.Time
 }
 
-func (s AuthService) Login(ctx context.Context, email, password string, client SessionClientInfo) (result *LoginResult, err error) {
+func (s AuthService) Login(
+	ctx context.Context,
+	email,
+	password string,
+	client SessionClientInfo,
+) (result *LoginResult, err error) {
 	defer helper.RecordOp(ctx, "auth.login", clock.Now(), &err)
 
 	user, err := s.userDAO.FindByEmail(ctx, email)

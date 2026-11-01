@@ -65,6 +65,7 @@ func (h CarrierHandler) Update(c fiber.Ctx) error {
 		return writeCarrierError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Carrier updated successfully.", UpdateCarrierResponse{
 		Carrier: newCarrierResponse(updated),
 	})

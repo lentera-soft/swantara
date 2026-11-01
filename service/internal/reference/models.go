@@ -51,7 +51,8 @@ type FxRate struct {
 
 type UnitGroup struct {
 	model.Base
-	Name string `json:"name"`
+	OrganizationID *uint64 `json:"organization_id"`
+	Name           string  `json:"name"`
 }
 
 func (UnitGroup) TableName() string {
@@ -60,11 +61,12 @@ func (UnitGroup) TableName() string {
 
 type Unit struct {
 	model.Base
-	CategoryID uint64  `json:"category_id"`
-	Name       string  `json:"name"`
-	Factor     float64 `gorm:"type:numeric(28,8);not null" json:"factor"`
-	UnitType   string  `gorm:"type:text" json:"unit_type"`
-	Rounding   float64 `gorm:"type:numeric(12,6)" json:"rounding"`
+	OrganizationID *uint64 `json:"organization_id"`
+	CategoryID     uint64  `json:"category_id"`
+	Name           string  `json:"name"`
+	Factor         float64 `gorm:"type:numeric(28,8);not null" json:"factor"`
+	UnitType       string  `gorm:"type:text" json:"unit_type"`
+	Rounding       float64 `gorm:"type:numeric(12,6)" json:"rounding"`
 }
 
 func (Unit) TableName() string {

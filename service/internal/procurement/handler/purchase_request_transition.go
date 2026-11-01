@@ -49,6 +49,7 @@ func (h PurchaseRequestHandler) Confirm(c fiber.Ctx) error {
 	if err != nil {
 		return writeRequisitionError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Purchase requisition confirmed successfully.", GetPurchaseRequestResponse{
 		Request: newPurchaseRequestResponse(requisition),
 	})
@@ -80,6 +81,7 @@ func (h PurchaseRequestHandler) Approve(c fiber.Ctx) error {
 	if err != nil {
 		return writeRequisitionError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Purchase requisition approved successfully.", GetPurchaseRequestResponse{
 		Request: newPurchaseRequestResponse(requisition),
 	})
@@ -111,6 +113,7 @@ func (h PurchaseRequestHandler) Cancel(c fiber.Ctx) error {
 	if err != nil {
 		return writeRequisitionError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Purchase requisition cancelled successfully.", GetPurchaseRequestResponse{
 		Request: newPurchaseRequestResponse(requisition),
 	})

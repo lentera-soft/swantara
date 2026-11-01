@@ -105,6 +105,7 @@ func (h PdcHandler) Create(c fiber.Ctx) error {
 	if err != nil {
 		return writePdcError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "PDC registered successfully.", newPdcInstrumentResponse(instrument))
 }
 
@@ -202,6 +203,7 @@ func (h PdcHandler) transition(c fiber.Ctx, action, successMessage string) error
 	if err != nil {
 		return writePdcError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, successMessage, newPdcInstrumentResponse(instrument))
 }
 

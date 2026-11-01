@@ -156,6 +156,7 @@ func (h ContactHandler) Create(c fiber.Ctx) error {
 		return writeContactError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponseWithLinks(c, "Contact created successfully.", CreateContactResponse{
 		Contact: newContactResponse(contact),
 	}, buildContactLinks(c, contact.ID))

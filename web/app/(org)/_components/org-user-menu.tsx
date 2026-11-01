@@ -75,7 +75,7 @@ export function OrgUserMenu() {
               <button
                 type="button"
                 aria-label={t("accountMenu")}
-                className="outline-none ring-ring transition-shadow focus-visible:ring-3 ring-offset-2 ring-offset-background focus-visible:ring-ring"
+                className="outline-none ring-ring focus-visible:ring-3 ring-offset-2 ring-offset-background focus-visible:ring-ring"
               >
                 <Avatar size="sm">
                   <AvatarFallback>{initials}</AvatarFallback>

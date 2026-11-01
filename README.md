@@ -209,7 +209,3 @@ Copyright (c) 2026 Swantara. All rights reserved.
 
 This is proprietary software. Use, copying, modification, and distribution
 require prior written permission from Swantara. See [`LICENSE`](LICENSE).
-
-Third-party copyright and license notices are in
-[`THIRD_PARTY_NOTICES.md`](THIRD_PARTY_NOTICES.md) and are served by the web app
-at `/licenses`. Regenerate them with `just notices` after dependency changes.

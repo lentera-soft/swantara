@@ -31,24 +31,24 @@ func (h CountryHandler) Register(api fiber.Router, _ ...httpx.RouteGuards) {
 }
 
 func (h UnitGroupHandler) Register(api fiber.Router, guards httpx.RouteGuards) {
-	categories := api.Group("/unit-groups")
+	categories := api.Group("/unit-groups", guards.AuthN)
 
-	categories.Get("/", h.List)
-	categories.Get("/:id", h.Get)
-	categories.Post("/", guards.AuthN, h.Create)
-	categories.Put("/:id", guards.AuthN, h.Update)
-	categories.Delete("/:id", guards.AuthN, h.Delete)
+	categories.Get("/", guards.Guard("unit", "view"), h.List)
+	categories.Get("/:id", guards.Guard("unit", "view"), h.Get)
+	categories.Post("/", guards.Guard("unit", "create"), h.Create)
+	categories.Put("/:id", guards.Guard("unit", "update"), h.Update)
+	categories.Delete("/:id", guards.Guard("unit", "delete"), h.Delete)
 }
 
 func (h UnitHandler) Register(api fiber.Router, guards httpx.RouteGuards) {
-	units := api.Group("/units")
+	units := api.Group("/units", guards.AuthN)
 
-	units.Get("/", h.List)
-	units.Get("/:id", h.Get)
-	units.Post("/convert", h.Convert)
-	units.Post("/", guards.AuthN, h.Create)
-	units.Put("/:id", guards.AuthN, h.Update)
-	units.Delete("/:id", guards.AuthN, h.Delete)
+	units.Get("/", guards.Guard("unit", "view"), h.List)
+	units.Get("/:id", guards.Guard("unit", "view"), h.Get)
+	units.Post("/convert", guards.Guard("unit", "view"), h.Convert)
+	units.Post("/", guards.Guard("unit", "create"), h.Create)
+	units.Put("/:id", guards.Guard("unit", "update"), h.Update)
+	units.Delete("/:id", guards.Guard("unit", "delete"), h.Delete)
 }
 
 func (h DimensionHandler) Register(api fiber.Router, guards httpx.RouteGuards) {

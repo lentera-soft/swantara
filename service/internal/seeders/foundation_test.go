@@ -377,12 +377,14 @@ func TestSeeder_seedUnits_ReturnsCategoryCreateError(t *testing.T) {
 		t.Fatalf("New error = %v", err)
 	}
 
+	mock.ExpectQuery(`SELECT count\(\*\) FROM "unit_groups" WHERE .*`).
+		WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(0))
 	mock.ExpectQuery(`SELECT \* FROM "unit_groups" WHERE .*`).
 		WillReturnRows(sqlmock.NewRows([]string{"id"}))
 	mock.ExpectQuery(`INSERT INTO "unit_groups" .*`).
 		WillReturnError(errors.New("db down"))
 
-	if err := seeder.seedUnits(context.Background()); err == nil {
+	if err := seeder.seedUnits(context.Background(), 1); err == nil {
 		t.Fatal("expected create error")
 	}
 	query.AssertDBMockDone(t, mock)
@@ -401,13 +403,15 @@ func TestSeeder_seedUnits_ReturnsSearchError(t *testing.T) {
 	}
 
 	for i := 0; i < len(seed.UnitCategories); i++ {
+		mock.ExpectQuery(`SELECT count\(\*\) FROM "unit_groups" WHERE .*`).
+			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
 		mock.ExpectQuery(`SELECT \* FROM "unit_groups" WHERE .*`).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 	}
 	mock.ExpectQuery(`SELECT \* FROM "units" WHERE .*`).
 		WillReturnError(errors.New("db down"))
 
-	if err := seeder.seedUnits(context.Background()); err == nil {
+	if err := seeder.seedUnits(context.Background(), 1); err == nil {
 		t.Fatal("expected search error")
 	}
 	query.AssertDBMockDone(t, mock)
@@ -426,6 +430,8 @@ func TestSeeder_seedUnits_ReturnsRefError(t *testing.T) {
 	}
 
 	for i := 0; i < len(seed.UnitCategories); i++ {
+		mock.ExpectQuery(`SELECT count\(\*\) FROM "unit_groups" WHERE .*`).
+			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
 		mock.ExpectQuery(`SELECT \* FROM "unit_groups" WHERE .*`).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 	}
@@ -434,7 +440,7 @@ func TestSeeder_seedUnits_ReturnsRefError(t *testing.T) {
 	mock.ExpectQuery(`SELECT \* FROM "unit_groups" WHERE .*`).
 		WillReturnError(errors.New("db down"))
 
-	if err := seeder.seedUnits(context.Background()); err == nil {
+	if err := seeder.seedUnits(context.Background(), 1); err == nil {
 		t.Fatal("expected reference lookup error")
 	}
 	query.AssertDBMockDone(t, mock)
@@ -454,6 +460,8 @@ func TestSeeder_seedUnits_ReturnsCreateError(t *testing.T) {
 	}
 
 	for i := 0; i < len(seed.UnitCategories); i++ {
+		mock.ExpectQuery(`SELECT count\(\*\) FROM "unit_groups" WHERE .*`).
+			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
 		mock.ExpectQuery(`SELECT \* FROM "unit_groups" WHERE .*`).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 	}
@@ -464,7 +472,7 @@ func TestSeeder_seedUnits_ReturnsCreateError(t *testing.T) {
 	mock.ExpectQuery(`INSERT INTO "units" .*`).
 		WillReturnError(errors.New("db down"))
 
-	if err := seeder.seedUnits(context.Background()); err == nil {
+	if err := seeder.seedUnits(context.Background(), 1); err == nil {
 		t.Fatal("expected create error")
 	}
 	query.AssertDBMockDone(t, mock)
@@ -484,6 +492,8 @@ func TestSeeder_seedUnits_CreatesWhenMissing(t *testing.T) {
 	}
 
 	for i := 0; i < len(seed.UnitCategories); i++ {
+		mock.ExpectQuery(`SELECT count\(\*\) FROM "unit_groups" WHERE .*`).
+			WillReturnRows(sqlmock.NewRows([]string{"count"}).AddRow(1))
 		mock.ExpectQuery(`SELECT \* FROM "unit_groups" WHERE .*`).
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 	}
@@ -496,7 +506,7 @@ func TestSeeder_seedUnits_CreatesWhenMissing(t *testing.T) {
 			WillReturnRows(sqlmock.NewRows([]string{"id"}).AddRow(1))
 	}
 
-	if err := seeder.seedUnits(context.Background()); err != nil {
+	if err := seeder.seedUnits(context.Background(), 1); err != nil {
 		t.Fatalf("seedUnits error = %v", err)
 	}
 	query.AssertDBMockDone(t, mock)

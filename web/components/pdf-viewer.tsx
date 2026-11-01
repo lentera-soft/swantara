@@ -298,7 +298,7 @@ export function PdfViewer({
               onError?.(error);
             }}
           >
-            <div className="relative bg-card shadow-md border border-border">
+            <div className="relative bg-card border border-border">
               <Page
                 pageNumber={clampedPageNumber}
                 scale={pageWidth === undefined ? scale : undefined}

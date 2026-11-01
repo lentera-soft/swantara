@@ -20,6 +20,7 @@ func (h JournalEntryHandler) Confirm(c fiber.Ctx) error {
 	if err != nil {
 		return writeJournalEntryError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Journal entry posted successfully.", PostJournalEntryResponse{
 		Entry: newJournalEntryResponse(entry),
 	})

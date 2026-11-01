@@ -28,6 +28,7 @@ export function useRegisterForm({
     firstNameRequired: tx("firstNameRequired"),
     invalidEmail: tx("invalidEmail"),
     emailRequired: tx("emailRequired"),
+    invalidPhone: tx("invalidPhone"),
     passwordMinLength: tx("passwordMinLength"),
     confirmPasswordMinLength: tx("confirmPasswordMinLength"),
     passwordMismatch: tx("passwordMismatch"),

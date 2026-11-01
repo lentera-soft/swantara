@@ -66,9 +66,11 @@ func (h PurchaseOrderHandler) ListCreditMemos(c fiber.Ctx) error {
 	}
 
 	if httpx.RequestFormat(c) == httpx.FormatCSV {
+		httpx.RequestLog(c).Info("operation completed")
 		return httpx.ExportCSV(c, fiber.StatusOK, "purchase-credit-memos.csv", items)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponseWithMeta(c, "Credit memos retrieved successfully.", ListCreditMemosResponse{
 		CreditMemos: items,
 	}, httpx.BuildListMeta(parsedQuery, page.Count))
@@ -106,6 +108,7 @@ func (h PurchaseOrderHandler) GetCreditMemo(c fiber.Ctx) error {
 	if err != nil {
 		return writePurchaseOrderError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Credit memo retrieved successfully.", GetCreditMemoResponse{
 		Memo: newCreditMemoResponse(memo),
 	})
@@ -159,9 +162,11 @@ func (h PurchaseOrderHandler) ListDebitMemos(c fiber.Ctx) error {
 	}
 
 	if httpx.RequestFormat(c) == httpx.FormatCSV {
+		httpx.RequestLog(c).Info("operation completed")
 		return httpx.ExportCSV(c, fiber.StatusOK, "purchase-debit-memos.csv", items)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponseWithMeta(c, "Debit memos retrieved successfully.", ListDebitMemosResponse{
 		DebitMemos: items,
 	}, httpx.BuildListMeta(parsedQuery, page.Count))
@@ -199,6 +204,7 @@ func (h PurchaseOrderHandler) GetDebitMemo(c fiber.Ctx) error {
 	if err != nil {
 		return writePurchaseOrderError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Debit memo retrieved successfully.", GetDebitMemoResponse{
 		Memo: newDebitMemoResponse(memo),
 	})

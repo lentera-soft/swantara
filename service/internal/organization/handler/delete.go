@@ -47,5 +47,6 @@ func (h OrganizationHandler) Delete(c fiber.Ctx) error {
 		return httpx.CreateConflictResponse(c, "Organization cannot be deleted because other records reference it.", err)
 	}
 
+	httpx.RequestLog(c).Info("organization deleted", "organization_id", orgID)
 	return httpx.CreateNoContentResponse(c)
 }

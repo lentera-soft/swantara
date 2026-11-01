@@ -36,5 +36,6 @@ func (h OutsideProcessingHandler) Create(c fiber.Ctx) error {
 		return writeSubcontractError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Outside processing order created successfully.", newOutsideProcessingOrderResponse(order))
 }

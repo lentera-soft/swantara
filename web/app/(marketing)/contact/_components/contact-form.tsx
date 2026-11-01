@@ -129,9 +129,9 @@ export function ContactForm() {
         </div>
       ) : null}
 
-      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border/60 pt-4">
+      <div className="flex flex-wrap items-center justify-between gap-4 border-t border-border-subtle pt-4">
         <span className="text-sm text-muted-foreground">{t("responseTime")}</span>
-        <Button type="submit" size="lg" disabled={isSubmitting} className="rounded-full px-6">
+        <Button type="submit" size="lg" shape="pill" disabled={isSubmitting} className="px-6">
           <span>{isSubmitting ? t("sending") : t("submit")}</span>
           <ArrowUpRight aria-hidden="true" className="size-4" />
         </Button>

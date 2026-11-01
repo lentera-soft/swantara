@@ -46,7 +46,7 @@ export function HomeErpShowcase() {
     <div
       data-slot="home-erp-showcase"
       data-gsap="hero-frame"
-      className="overflow-hidden rounded-2xl border border-border/60 bg-surface-raised shadow-xl"
+      className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-raised "
     >
       <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/40 px-5 py-3 sm:px-6">
         <div className="flex items-center gap-3">
@@ -160,7 +160,7 @@ export function HomeErpShowcase() {
                   <p className="truncate text-sm font-medium text-foreground">{t(item.nameKey)}</p>
                   <p className="text-xs text-muted-foreground">{item.code}</p>
                 </div>
-                <span className="shrink-0 rounded-full border border-border/60 px-2.5 py-0.5 text-xs text-foreground tabular-nums">
+                <span className="shrink-0 rounded-full border border-border-subtle px-2.5 py-0.5 text-xs text-foreground tabular-nums">
                   {t(item.valueKey)}
                 </span>
               </li>

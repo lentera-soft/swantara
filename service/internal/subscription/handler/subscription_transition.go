@@ -129,6 +129,7 @@ func (h SubscriptionHandler) transition(c fiber.Ctx, transition func(c fiber.Ctx
 		return writeSubscriptionError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Subscription updated successfully.", TransitionResponseEnvelope{
 		Data: newSubscriptionResponse(updated, nil),
 	})

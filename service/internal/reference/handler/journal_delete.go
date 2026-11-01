@@ -34,5 +34,6 @@ func (h JournalHandler) Delete(c fiber.Ctx) error {
 		return writeJournalError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateNoContentResponse(c)
 }

@@ -46,6 +46,7 @@ func (h PeriodCloseHandler) Close(c fiber.Ctx) error {
 	if err != nil {
 		return writeCloseError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Period closed successfully.", result)
 }
 

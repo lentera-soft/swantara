@@ -31,6 +31,7 @@ func (h OrganizationHandler) Get(c fiber.Ctx) error {
 		return nil
 	}
 
+	httpx.RequestLog(c).Info("organization retrieved", "organization_id", org.ID)
 	return httpx.CreateSuccessResponseWithLinks(c, "Organization retrieved successfully.", GetOrganizationResponse{
 		Organization: newOrganizationResponse(org),
 	}, buildOrganizationLinks(c, org.ID))

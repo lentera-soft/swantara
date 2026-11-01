@@ -67,8 +67,10 @@ func (h ProspectHandler) TransitionStatus(c fiber.Ctx) error {
 	}
 	stages, err := loadStageMap(c, h.stages)
 	if err != nil {
+		httpx.RequestLog(c).Error("failed to update status", "error", err)
 		return httpx.CreateInternalServerErrorResponse(c, "Failed to update status.", err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Status updated successfully.", TransitionStatusResponse{
 		Prospect: newProspectResponse(updated, stages),
 	})
@@ -115,12 +117,14 @@ func (h ProspectHandler) Duplicates(c fiber.Ctx) error {
 	}
 	stages, err := loadStageMap(c, h.stages)
 	if err != nil {
+		httpx.RequestLog(c).Error("failed to load duplicates", "error", err)
 		return httpx.CreateInternalServerErrorResponse(c, "Failed to load duplicates.", err)
 	}
 	items := make([]ProspectResponse, len(duplicates))
 	for i, duplicate := range duplicates {
 		items[i] = newProspectResponse(duplicate, stages)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Duplicates retrieved successfully.", DuplicatesResponse{Duplicates: items})
 }
 
@@ -175,8 +179,10 @@ func (h ProspectHandler) Merge(c fiber.Ctx) error {
 	}
 	stages, err := loadStageMap(c, h.stages)
 	if err != nil {
+		httpx.RequestLog(c).Error("failed to merge prospect", "error", err)
 		return httpx.CreateInternalServerErrorResponse(c, "Failed to merge prospect.", err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Prospect merged successfully.", MergeProspectResponse{
 		Prospect: newProspectResponse(merged, stages),
 	})
@@ -270,6 +276,7 @@ func (h ProspectHandler) stageHistory(c fiber.Ctx) error {
 			CreatedAt:   entry.CreatedAt,
 		}
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "History retrieved successfully.", StageHistoryResponse{History: items})
 }
 
@@ -305,6 +312,7 @@ func (h OpportunityHandler) stageHistory(c fiber.Ctx) error {
 			CreatedAt:   entry.CreatedAt,
 		}
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "History retrieved successfully.", StageHistoryResponse{History: items})
 }
 
@@ -439,6 +447,7 @@ func addBuyer(c fiber.Ctx, svc crm.ProspectService) error {
 	if err != nil {
 		return writeProspectError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Buying contact added successfully.", BuyerResponse{Buyer: newBuyerEntry(buyer)})
 }
 
@@ -459,6 +468,7 @@ func listBuyers(c fiber.Ctx, svc crm.ProspectService) error {
 	for i, buyer := range buyers {
 		items[i] = newBuyerEntry(buyer)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Buying contacts retrieved successfully.", BuyerListResponse{Buyers: items})
 }
 
@@ -488,6 +498,7 @@ func removeBuyer(c fiber.Ctx, svc crm.ProspectService) error {
 	if err := svc.RemoveBuyer(c, organizationID, prospectID, buyerID); err != nil {
 		return writeProspectError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateNoContentResponse(c)
 }
 
@@ -540,6 +551,7 @@ func (h ProspectHandler) ReassignOwner(c fiber.Ctx) error {
 	if err != nil {
 		return httpx.CreateInternalServerErrorResponse(c, "Failed to update owner.", err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Owner updated successfully.", ReassignOwnerResponse{
 		Prospect: newProspectResponse(updated, stages),
 	})
@@ -567,6 +579,7 @@ func (h OpportunityHandler) ReassignOwner(c fiber.Ctx) error {
 	if err != nil {
 		return httpx.CreateInternalServerErrorResponse(c, "Failed to update owner.", err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Owner updated successfully.", ReassignOwnerResponse{
 		Prospect: newProspectResponse(updated, stages),
 	})
@@ -613,6 +626,7 @@ func (h ProspectHandler) ReassignOwners(c fiber.Ctx) error {
 	if err != nil {
 		return writeProspectError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Owners updated successfully.", ReassignOwnersResponse{
 		UpdatedCount: len(updated),
 	})

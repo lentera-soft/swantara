@@ -88,6 +88,7 @@ func (h TrialBalanceHandler) Generate(c fiber.Ctx) error {
 				Balance:     line.Balance,
 			}
 		}
+		httpx.RequestLog(c).Info("operation completed")
 		return httpx.CreateSuccessResponse(c, "Trial balance generated successfully.", TrialBalanceResponse{
 			Lines:       lines,
 			TotalDebit:  tb.TotalDebit,
@@ -124,6 +125,7 @@ func (h TrialBalanceHandler) Generate(c fiber.Ctx) error {
 				Balance:     line.Balance,
 			}
 		}
+		httpx.RequestLog(c).Info("operation completed")
 		return httpx.CreateSuccessResponse(c, "Trial balance generated successfully.", TrialBalanceResponse{
 			Lines:       lines,
 			TotalDebit:  tb.TotalDebit,
@@ -163,6 +165,7 @@ func (h TrialBalanceHandler) Generate(c fiber.Ctx) error {
 		}
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Trial balance generated successfully.", TrialBalanceResponse{
 		Lines:       lines,
 		TotalDebit:  tb.TotalDebit,

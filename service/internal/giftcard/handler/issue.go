@@ -71,6 +71,7 @@ func (h GiftCardHandler) Issue(c fiber.Ctx) error {
 	if err != nil {
 		return writeGiftCardError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Gift card issued successfully.", CreateGiftCardResponse{
 		GiftCard: newGiftCardResponse(created),
 	})

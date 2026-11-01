@@ -35,10 +35,15 @@ const buttonVariants = cva(
           "size-11 rounded-[min(var(--radius-md),12px)] in-data-[slot=button-group]:rounded-lg",
         "icon-lg": "size-12",
       },
+      shape: {
+        default: "",
+        pill: "!rounded-full",
+      },
     },
     defaultVariants: {
       variant: "default",
       size: "default",
+      shape: "default",
     },
   },
 );
@@ -53,6 +58,7 @@ function Button({
   className,
   variant = "default",
   size = "default",
+  shape = "default",
   asChild = false,
   children,
   ...props
@@ -63,7 +69,7 @@ function Button({
     }>;
     return cloneElement(child, {
       "data-slot": "button",
-      className: cn(buttonVariants({ variant, size, className }), child.props.className),
+      className: cn(buttonVariants({ variant, size, shape, className }), child.props.className),
       ...(props as Record<string, unknown>),
     } as React.HTMLAttributes<HTMLElement> & Record<string, unknown>);
   }
@@ -71,7 +77,7 @@ function Button({
   return (
     <ButtonPrimitive
       data-slot="button"
-      className={cn(buttonVariants({ variant, size, className }))}
+      className={cn(buttonVariants({ variant, size, shape, className }))}
       {...props}
     >
       {children}

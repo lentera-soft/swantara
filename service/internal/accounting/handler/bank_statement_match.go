@@ -42,6 +42,7 @@ func (h BankStatementHandler) Match(c fiber.Ctx) error {
 		items[i] = newBankStatementLineResponse(line)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Bank statement matched successfully.", MatchBankStatementResponse{
 		Unreconciled: items,
 	})

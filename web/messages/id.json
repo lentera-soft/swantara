@@ -36,7 +36,9 @@
     "date": "Tanggal",
     "journal": "Jurnal",
     "selectJournal": "Pilih jurnal",
-    "payOnAccount": "Bayar faktur pelanggan lain yang masih terbuka saat pesanan ini tidak punya faktur"
+    "payOnAccount": "Bayar faktur pelanggan lain yang masih terbuka saat pesanan ini tidak punya faktur",
+    "offlineTitle": "Anda sedang offline",
+    "offlineDescription": "Swantara saat ini tidak tersedia. Periksa koneksi Anda dan coba lagi."
   },
   "Auth": {
     "welcomeBackTitle": "Selamat datang kembali",
@@ -56,6 +58,7 @@
     "confirmPassword": "Konfirmasi kata sandi",
     "forgotPassword": "Lupa kata sandi?",
     "loginButton": "Masuk",
+    "rememberMe": "Ingat saya",
     "registerButton": "Daftar",
     "sendResetLink": "Kirim tautan reset",
     "resetButton": "Atur ulang kata sandi",
@@ -101,7 +104,8 @@
     "modules": "Modul",
     "settings": "Pengaturan",
     "dashboard": "Dasbor",
-    "crm": "CRM",
+    "crm": "Pelanggan",
+
     "sales": "Pesanan Penjualan",
     "productionOrders": "Perintah Produksi",
     "planning": "Perencanaan Produksi",
@@ -227,7 +231,7 @@
     "en": "English"
   },
   "NavModules": {
-    "crm": "CRM",
+    "crm": "Pelanggan",
     "products": "Produk",
     "inventory": "Persediaan",
     "procurement": "Pengadaan",
@@ -245,7 +249,7 @@
     "noResults": "Aplikasi tidak ditemukan",
     "noResultsDescription": "Coba kata kunci lain.",
     "launcherLabel": "Peluncur aplikasi",
-    "moduleCrm": "CRM",
+    "moduleCrm": "Pelanggan",
     "moduleProducts": "Produk",
     "moduleInventory": "Persediaan",
     "moduleProcurement": "Pengadaan",
@@ -3784,7 +3788,7 @@
     "headingDesc_procurement": "Aktivitas pengadaan, belanja, dan kinerja pemasok.",
     "headingDesc_manufacturing": "Keluaran produksi, OEE, dan kemajuan pesanan.",
     "headingDesc_operations": "Penggajian, proyek, dan langganan.",
-    "moduleTitle_crm": "CRM",
+    "moduleTitle_crm": "Pelanggan",
     "moduleTitle_sales": "Penjualan",
     "moduleTitle_procurement": "Pengadaan",
     "moduleTitle_inventory": "Persediaan",

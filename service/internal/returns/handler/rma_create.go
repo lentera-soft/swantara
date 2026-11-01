@@ -81,6 +81,7 @@ func (h RMAHandler) Create(c fiber.Ctx) error {
 		return writeRMAError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "RMA created successfully.", CreateRMAResponse{
 		RMA: newRMAResponse(rma),
 	})

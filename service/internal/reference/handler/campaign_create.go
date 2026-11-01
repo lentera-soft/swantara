@@ -66,6 +66,7 @@ func (h CampaignHandler) Create(c fiber.Ctx) error {
 		return writeCampaignError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Campaign created successfully.", CreateCampaignResponse{
 		Campaign: newCampaignResponse(campaign),
 	})

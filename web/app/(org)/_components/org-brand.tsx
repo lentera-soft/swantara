@@ -58,7 +58,7 @@ function OrgLogo({
       <span
         aria-hidden
         className={cn(
-          "grid size-8 shrink-0 place-items-center rounded-lg bg-[#4f46e5] text-xs font-medium text-white",
+          "grid size-8 shrink-0 place-items-center rounded-lg bg-primary text-xs font-medium text-primary-foreground",
           className,
         )}
       >

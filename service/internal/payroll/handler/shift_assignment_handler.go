@@ -76,6 +76,7 @@ func (h ShiftAssignmentHandler) Create(c fiber.Ctx) error {
 	if err != nil {
 		return writeHRError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Shift assignment created successfully.", newShiftAssignmentResponse(assignment))
 }
 
@@ -90,5 +91,6 @@ func (h ShiftAssignmentHandler) Delete(c fiber.Ctx) error {
 	if err := h.svc.DeleteShiftAssignment(c, assignmentID); err != nil {
 		return writeHRError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateNoContentResponse(c)
 }

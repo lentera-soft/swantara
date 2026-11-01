@@ -69,6 +69,7 @@ func (h JournalHandler) Update(c fiber.Ctx) error {
 		return writeJournalError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Journal updated successfully.", UpdateJournalResponse{
 		Journal: newJournalResponse(updated),
 	})

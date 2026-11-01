@@ -74,6 +74,7 @@ func (h ProductionHandler) RecordLabor(c fiber.Ctx) error {
 		return writeProductionError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Labor recorded successfully.", GetShopTaskResponse{
 		ShopTask: newShopTaskResponse(workOrder),
 	})

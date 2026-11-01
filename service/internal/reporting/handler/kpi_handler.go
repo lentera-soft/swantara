@@ -89,5 +89,6 @@ func (h KpiHandler) LeadToCash(c fiber.Ctx) error {
 	if err != nil {
 		return writeKpiError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Lead-to-cash report retrieved successfully.", report)
 }

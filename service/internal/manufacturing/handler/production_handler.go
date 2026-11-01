@@ -105,6 +105,7 @@ func (h ProductionHandler) Start(c fiber.Ctx) error {
 		return writeProductionOrderError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Production order started successfully.", GetProductionOrderResponse{
 		ProductionOrder: newProductionOrderResponse(productionOrder),
 	})

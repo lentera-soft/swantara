@@ -83,6 +83,7 @@ func (h ReconcileHandler) Reconcile(c fiber.Ctx) error {
 	}
 
 	partial := newPartialReconcileResponse(result.Partial)
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Lines reconciled successfully.", ReconcileResponse{
 		Partial:    &partial,
 		Reconciled: result.Reconciled,

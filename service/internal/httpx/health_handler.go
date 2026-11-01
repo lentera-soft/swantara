@@ -57,14 +57,17 @@ func (h HealthHandler) Health(c fiber.Ctx) error {
 
 	sqlDB, err := h.db.DB()
 	if err != nil {
+		RequestLog(c).Error("health check failed", "error", err)
 		return CreateServiceUnavailableErrorResponse(c, "Database is unavailable.", err)
 	}
 
 	if err := sqlDB.PingContext(ctx); err != nil {
+		RequestLog(c).Error("health check failed", "error", err)
 		return CreateServiceUnavailableErrorResponse(c, "Database is unavailable.", err)
 	}
 
 	if err := h.queueHealth.WorkerRunning(); err != nil {
+		RequestLog(c).Error("health check failed", "error", err)
 		return CreateServiceUnavailableErrorResponse(c, "Queue worker is unavailable.", err)
 	}
 

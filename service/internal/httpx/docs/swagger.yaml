@@ -16733,6 +16733,8 @@ definitions:
         type: integer
       name:
         type: string
+      organization_id:
+        type: integer
       updated_at:
         type: string
     type: object
@@ -16748,6 +16750,8 @@ definitions:
         type: integer
       name:
         type: string
+      organization_id:
+        type: integer
       rounding:
         type: number
       unit_type:
@@ -48602,6 +48606,451 @@ paths:
       summary: Get timesheet
       tags:
       - Timesheets
+  /organizations/{organization_id}/unit-groups:
+    get:
+      consumes:
+      - application/json
+      description: Lists unit of measure categories with pagination, sorting, and
+        filtering, automatically scoping results to the caller's organization; the
+        response can be exported as JSON, XML, or CSV.
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page (max 100)
+        in: query
+        name: size
+        type: integer
+      - description: Sort fields (comma separated, e.g. name:asc)
+        in: query
+        name: sort
+        type: string
+      - description: Filters (repeatable, e.g. name:like:Weight)
+        in: query
+        name: filter
+        type: string
+      - description: Response format
+        enum:
+        - json
+        - xml
+        - csv
+        in: query
+        name: format
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: UoM categories retrieved successfully.
+          schema:
+            $ref: '#/definitions/handler.ListUnitCategoriesResponseEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "422":
+          description: Invalid query parameters
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List UoM categories
+      tags:
+      - UoM
+    post:
+      consumes:
+      - application/json
+      description: Creates a unit of measure category with a required name. The name
+        must be provided or validation fails with a 422; on success the new category
+        is returned.
+      parameters:
+      - description: UoM category details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateUnitGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: UoM category created successfully.
+          schema:
+            $ref: '#/definitions/handler.CreateUnitGroupResponseEnvelope'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "422":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create UoM category
+      tags:
+      - UoM
+  /organizations/{organization_id}/unit-groups/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a unit of measure category by id; returns 404 if the category
+        does not exist and 204 No Content on success.
+      parameters:
+      - description: UoM category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "404":
+          description: UoM category not found
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete UoM category
+      tags:
+      - UoM
+    get:
+      consumes:
+      - application/json
+      description: Returns a single unit of measure category by id, including HATEOAS-style
+        links for retrieving, updating, and deleting the category; a 404 is returned
+        if the category does not exist.
+      parameters:
+      - description: UoM category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: UoM category retrieved successfully.
+          schema:
+            $ref: '#/definitions/handler.GetUnitGroupResponseEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "404":
+          description: UoM category not found
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get UoM category
+      tags:
+      - UoM
+    put:
+      consumes:
+      - application/json
+      description: Updates a unit of measure category's name, which remains required.
+        Returns 404 if the category does not exist and 422 when the name is missing;
+        the updated category is returned with its links.
+      parameters:
+      - description: UoM category ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: UoM category details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateUnitGroupRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: UoM category updated successfully.
+          schema:
+            $ref: '#/definitions/handler.UpdateUnitGroupResponseEnvelope'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "404":
+          description: UoM category not found
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "422":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update UoM category
+      tags:
+      - UoM
+  /organizations/{organization_id}/units:
+    get:
+      consumes:
+      - application/json
+      description: Lists units of measure with pagination, sorting, and filtering,
+        automatically scoping results to the caller's organization; the response can
+        be exported as JSON, XML, or CSV.
+      parameters:
+      - default: 1
+        description: Page number
+        in: query
+        name: page
+        type: integer
+      - default: 20
+        description: Items per page (max 100)
+        in: query
+        name: size
+        type: integer
+      - description: Sort fields (comma separated, e.g. name:asc)
+        in: query
+        name: sort
+        type: string
+      - description: Filters (repeatable, e.g. category_id:eq:1)
+        in: query
+        name: filter
+        type: string
+      - description: Response format
+        enum:
+        - json
+        - xml
+        - csv
+        in: query
+        name: format
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: UoMs retrieved successfully.
+          schema:
+            $ref: '#/definitions/handler.ListUnitsResponseEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "422":
+          description: Invalid query parameters
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: List UoMs
+      tags:
+      - UoM
+    post:
+      consumes:
+      - application/json
+      description: Creates a unit of measure within a category, requiring a positive
+        conversion factor and an optional rounding value. The category must exist
+        and the UoM name must be unique within that category, otherwise a 422 is returned.
+      parameters:
+      - description: UoM details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateUnitRequest'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: UoM created successfully.
+          schema:
+            $ref: '#/definitions/handler.CreateUnitResponseEnvelope'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "422":
+          description: Validation error, unknown category, or duplicate name
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create UoM
+      tags:
+      - UoM
+  /organizations/{organization_id}/units/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a unit of measure by id; returns 404 if the UoM does not
+        exist and 204 No Content on success.
+      parameters:
+      - description: UoM ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "404":
+          description: UoM not found
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete UoM
+      tags:
+      - UoM
+    get:
+      consumes:
+      - application/json
+      description: Returns a single unit of measure by id with its category, conversion
+        factor, type, and rounding; a 404 is returned if the UoM does not exist.
+      parameters:
+      - description: UoM ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: UoM retrieved successfully.
+          schema:
+            $ref: '#/definitions/handler.GetUnitResponseEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "404":
+          description: UoM not found
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get UoM
+      tags:
+      - UoM
+    put:
+      consumes:
+      - application/json
+      description: Updates a unit of measure's name, factor, type, and rounding. The
+        factor must remain positive and the name must stay unique within its category;
+        a 404 is returned if the UoM does not exist.
+      parameters:
+      - description: UoM ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: UoM details
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateUnitRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: UoM updated successfully.
+          schema:
+            $ref: '#/definitions/handler.UpdateUnitResponseEnvelope'
+        "400":
+          description: Bad request
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "404":
+          description: UoM not found
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "422":
+          description: Validation error or duplicate name
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update UoM
+      tags:
+      - UoM
   /organizations/{organization_id}/warehouse-transfers:
     get:
       consumes:
@@ -49820,426 +50269,6 @@ paths:
       summary: Quick create organization
       tags:
       - Organizations
-  /unit-groups:
-    get:
-      consumes:
-      - application/json
-      description: Lists unit of measure categories with pagination, sorting, and
-        filtering, returning results as JSON, XML, or CSV.
-      parameters:
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 20
-        description: Items per page (max 100)
-        in: query
-        name: size
-        type: integer
-      - description: Sort fields (comma separated, e.g. name:asc)
-        in: query
-        name: sort
-        type: string
-      - description: Filters (repeatable, e.g. name:like:Weight)
-        in: query
-        name: filter
-        type: string
-      - description: Response format
-        enum:
-        - json
-        - xml
-        - csv
-        in: query
-        name: format
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: UoM categories retrieved successfully.
-          schema:
-            $ref: '#/definitions/handler.ListUnitCategoriesResponseEnvelope'
-        "422":
-          description: Invalid query parameters
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-      summary: List UoM categories
-      tags:
-      - UoM
-    post:
-      consumes:
-      - application/json
-      description: Creates a unit of measure category with a required name. The name
-        must be provided or validation fails with a 422; on success the new category
-        is returned.
-      parameters:
-      - description: UoM category details
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/handler.CreateUnitGroupRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: UoM category created successfully.
-          schema:
-            $ref: '#/definitions/handler.CreateUnitGroupResponseEnvelope'
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "422":
-          description: Validation error
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Create UoM category
-      tags:
-      - UoM
-  /unit-groups/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Deletes a unit of measure category by id; returns 404 if the category
-        does not exist and 204 No Content on success.
-      parameters:
-      - description: UoM category ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "404":
-          description: UoM category not found
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Delete UoM category
-      tags:
-      - UoM
-    get:
-      consumes:
-      - application/json
-      description: Returns a single unit of measure category by id, including HATEOAS-style
-        links for retrieving, updating, and deleting the category; a 404 is returned
-        if the category does not exist.
-      parameters:
-      - description: UoM category ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: UoM category retrieved successfully.
-          schema:
-            $ref: '#/definitions/handler.GetUnitGroupResponseEnvelope'
-        "404":
-          description: UoM category not found
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-      summary: Get UoM category
-      tags:
-      - UoM
-    put:
-      consumes:
-      - application/json
-      description: Updates a unit of measure category's name, which remains required.
-        Returns 404 if the category does not exist and 422 when the name is missing;
-        the updated category is returned with its links.
-      parameters:
-      - description: UoM category ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: UoM category details
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/handler.UpdateUnitGroupRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: UoM category updated successfully.
-          schema:
-            $ref: '#/definitions/handler.UpdateUnitGroupResponseEnvelope'
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "404":
-          description: UoM category not found
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "422":
-          description: Validation error
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Update UoM category
-      tags:
-      - UoM
-  /units:
-    get:
-      consumes:
-      - application/json
-      description: Lists units of measure with pagination, sorting, and filtering,
-        supporting filters such as category and UoM type; the response can be exported
-        as JSON, XML, or CSV.
-      parameters:
-      - default: 1
-        description: Page number
-        in: query
-        name: page
-        type: integer
-      - default: 20
-        description: Items per page (max 100)
-        in: query
-        name: size
-        type: integer
-      - description: Sort fields (comma separated, e.g. name:asc)
-        in: query
-        name: sort
-        type: string
-      - description: Filters (repeatable, e.g. category_id:eq:1)
-        in: query
-        name: filter
-        type: string
-      - description: Response format
-        enum:
-        - json
-        - xml
-        - csv
-        in: query
-        name: format
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: UoMs retrieved successfully.
-          schema:
-            $ref: '#/definitions/handler.ListUnitsResponseEnvelope'
-        "422":
-          description: Invalid query parameters
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-      summary: List UoMs
-      tags:
-      - UoM
-    post:
-      consumes:
-      - application/json
-      description: Creates a unit of measure within a category, requiring a positive
-        conversion factor and an optional rounding value. The category must exist
-        and the UoM name must be unique within that category, otherwise a 422 is returned.
-      parameters:
-      - description: UoM details
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/handler.CreateUnitRequest'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: UoM created successfully.
-          schema:
-            $ref: '#/definitions/handler.CreateUnitResponseEnvelope'
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "422":
-          description: Validation error, unknown category, or duplicate name
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Create UoM
-      tags:
-      - UoM
-  /units/{id}:
-    delete:
-      consumes:
-      - application/json
-      description: Deletes a unit of measure by id; returns 404 if the UoM does not
-        exist and 204 No Content on success.
-      parameters:
-      - description: UoM ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "404":
-          description: UoM not found
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Delete UoM
-      tags:
-      - UoM
-    get:
-      consumes:
-      - application/json
-      description: Returns a single unit of measure by id with its category, conversion
-        factor, type, and rounding; a 404 is returned if the UoM does not exist.
-      parameters:
-      - description: UoM ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: UoM retrieved successfully.
-          schema:
-            $ref: '#/definitions/handler.GetUnitResponseEnvelope'
-        "404":
-          description: UoM not found
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-      summary: Get UoM
-      tags:
-      - UoM
-    put:
-      consumes:
-      - application/json
-      description: Updates a unit of measure's name, factor, type, and rounding. The
-        factor must remain positive and the name must stay unique within its category;
-        a 404 is returned if the UoM does not exist.
-      parameters:
-      - description: UoM ID
-        in: path
-        name: id
-        required: true
-        type: integer
-      - description: UoM details
-        in: body
-        name: body
-        required: true
-        schema:
-          $ref: '#/definitions/handler.UpdateUnitRequest'
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: UoM updated successfully.
-          schema:
-            $ref: '#/definitions/handler.UpdateUnitResponseEnvelope'
-        "400":
-          description: Bad request
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "401":
-          description: Unauthorized
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "404":
-          description: UoM not found
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "422":
-          description: Validation error or duplicate name
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-        "500":
-          description: Internal server error
-          schema:
-            $ref: '#/definitions/httpx.ErrorResponse'
-      security:
-      - BearerAuth: []
-      summary: Update UoM
-      tags:
-      - UoM
   /units/convert:
     post:
       consumes:

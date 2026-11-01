@@ -1,19 +1,29 @@
 import { Card, CardContent, CardHeader } from "@/components/card";
 import { LocaleSwitcher } from "@/components/locale-switcher";
 
+import { cn } from "@/lib/utils";
+
 export type AuthShellProps = {
   title: string;
   subtitle?: string;
   children: React.ReactNode;
+  className?: string;
 };
 
-export default async function AuthShell({ title, subtitle = "", children }: AuthShellProps) {
+export default async function AuthShell({
+  title,
+  subtitle = "",
+  children,
+  className,
+}: AuthShellProps) {
   return (
     <div data-slot="auth-shell" className="relative flex min-h-screen bg-muted/20">
       <div className="absolute top-4 right-4">
         <LocaleSwitcher variant="outline" />
       </div>
-      <div className="mx-auto flex w-full max-w-md flex-col justify-center p-4 sm:p-6">
+      <div
+        className={cn("mx-auto flex w-full max-w-md flex-col justify-center p-4 sm:p-6", className)}
+      >
         <Card>
           <CardHeader className="border-b">
             <h1 className="font-heading text-xl leading-snug">{title.trim()}</h1>

@@ -53,6 +53,7 @@ func (h POSOrderHandler) Invoice(c fiber.Ctx) error {
 	if err != nil {
 		return writePOSError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Invoice generated successfully.", InvoicePOSOrderResponse{
 		InvoiceID: invoice.ID,
 	})

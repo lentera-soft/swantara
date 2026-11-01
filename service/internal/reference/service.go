@@ -163,58 +163,119 @@ func (s CountryService) FindCountry(ctx context.Context, id uint64) (*Country, e
 }
 
 type UnitService struct {
-	categories dao.Base[UnitGroup]
-	units      dao.Base[Unit]
+	categories orgCRUD[UnitGroup]
+	units      orgCRUD[Unit]
 }
 
 func NewUnitService(categories dao.Base[UnitGroup], units dao.Base[Unit]) UnitService {
-	return UnitService{categories: categories, units: units}
+	return UnitService{
+		categories: newOrgCRUD(categories, func(category *UnitGroup, organizationID uint64) bool {
+			return scope.Owns(category.OrganizationID, organizationID)
+		}, ErrUnitGroupNotFound),
+		units: newOrgCRUD(units, func(unit *Unit, organizationID uint64) bool {
+			return scope.Owns(unit.OrganizationID, organizationID)
+		}, ErrUnitNotFound),
+	}
 }
 
-func (s UnitService) ListUnits(ctx context.Context, q *query.Query) (*query.Page[Unit], error) {
-	return s.units.List(ctx, q)
+func (s UnitService) ListUnits(ctx context.Context, q *query.Query, organizationIDs ...uint64) (*query.Page[Unit], error) {
+	if len(organizationIDs) > 0 && organizationIDs[0] != 0 {
+		return s.units.ListInOrg(ctx, q, organizationIDs[0])
+	}
+	return s.units.base.List(ctx, q)
 }
 
-func (s UnitService) FindUnit(ctx context.Context, id uint64) (*Unit, error) {
-	return s.units.Find(ctx, id)
+func (s UnitService) FindUnit(ctx context.Context, id uint64, organizationIDs ...uint64) (*Unit, error) {
+	if len(organizationIDs) > 0 && organizationIDs[0] != 0 {
+		return s.units.FindInOrg(ctx, id, organizationIDs[0])
+	}
+	return s.units.base.Find(ctx, id)
 }
 
-func (s UnitService) DeleteUnit(ctx context.Context, id uint64) error {
-	return s.units.Delete(ctx, id)
+func (s UnitService) ListInOrg(ctx context.Context, q *query.Query, organizationID uint64) (*query.Page[Unit], error) {
+	return s.units.ListInOrg(ctx, q, organizationID)
 }
 
-func (s UnitService) ListCategories(ctx context.Context, q *query.Query) (*query.Page[UnitGroup], error) {
-	return s.categories.List(ctx, q)
+func (s UnitService) FindInOrg(ctx context.Context, id, organizationID uint64) (*Unit, error) {
+	return s.units.FindInOrg(ctx, id, organizationID)
 }
 
-func (s UnitService) FindCategory(ctx context.Context, id uint64) (*UnitGroup, error) {
-	return s.categories.Find(ctx, id)
+func (s UnitService) DeleteUnit(ctx context.Context, args ...uint64) error {
+	if len(args) == 0 {
+		return nil
+	}
+	id := args[len(args)-1]
+	orgID := uint64(0)
+	if len(args) > 1 {
+		orgID = args[0]
+	}
+	if orgID != 0 {
+		return s.units.Delete(ctx, orgID, id)
+	}
+	return s.units.base.Delete(ctx, id)
+}
+
+func (s UnitService) Delete(ctx context.Context, organizationID, id uint64) error {
+	return s.units.Delete(ctx, organizationID, id)
+}
+
+func (s UnitService) ListCategories(ctx context.Context, q *query.Query, organizationIDs ...uint64) (*query.Page[UnitGroup], error) {
+	if len(organizationIDs) > 0 && organizationIDs[0] != 0 {
+		return s.categories.ListInOrg(ctx, q, organizationIDs[0])
+	}
+	return s.categories.base.List(ctx, q)
+}
+
+func (s UnitService) FindCategory(ctx context.Context, id uint64, organizationIDs ...uint64) (*UnitGroup, error) {
+	if len(organizationIDs) > 0 && organizationIDs[0] != 0 {
+		return s.categories.FindInOrg(ctx, id, organizationIDs[0])
+	}
+	return s.categories.base.Find(ctx, id)
+}
+
+func (s UnitService) ListCategoriesInOrg(ctx context.Context, q *query.Query, organizationID uint64) (*query.Page[UnitGroup], error) {
+	return s.categories.ListInOrg(ctx, q, organizationID)
+}
+
+func (s UnitService) FindCategoryInOrg(ctx context.Context, id, organizationID uint64) (*UnitGroup, error) {
+	return s.categories.FindInOrg(ctx, id, organizationID)
+}
+
+func (s UnitService) DeleteCategory(ctx context.Context, args ...uint64) error {
+	if len(args) == 0 {
+		return nil
+	}
+	id := args[len(args)-1]
+	orgID := uint64(0)
+	if len(args) > 1 {
+		orgID = args[0]
+	}
+	if orgID != 0 {
+		return s.categories.Delete(ctx, orgID, id)
+	}
+	return s.categories.base.Delete(ctx, id)
 }
 
 func (s UnitService) CreateCategory(ctx context.Context, category *UnitGroup) (*UnitGroup, error) {
-	return s.categories.Create(ctx, category)
+	return s.categories.base.Create(ctx, category)
 }
 
 func (s UnitService) UpdateCategory(ctx context.Context, category *UnitGroup) (*UnitGroup, error) {
-	return s.categories.Update(ctx, category)
-}
-
-func (s UnitService) DeleteCategory(ctx context.Context, id uint64) error {
-	return s.categories.Delete(ctx, id)
+	return s.categories.base.Update(ctx, category)
 }
 
 func (s UnitService) CreateUnit(ctx context.Context, unit *Unit) (*Unit, error) {
 	if err := s.validateUnit(ctx, unit, 0); err != nil {
 		return nil, err
 	}
-	return s.units.Create(ctx, unit)
+	return s.units.base.Create(ctx, unit)
 }
 
 func (s UnitService) UpdateUnit(ctx context.Context, unit *Unit) (*Unit, error) {
 	if err := s.validateUnit(ctx, unit, unit.ID); err != nil {
 		return nil, err
 	}
-	return s.units.Update(ctx, unit)
+	return s.units.base.Update(ctx, unit)
 }
 
 func (s UnitService) validateUnit(ctx context.Context, unit *Unit, excludeID uint64) error {
@@ -222,26 +283,29 @@ func (s UnitService) validateUnit(ctx context.Context, unit *Unit, excludeID uin
 		return ErrInvalidFactor
 	}
 
-	category, err := s.categories.Find(ctx, unit.CategoryID)
+	category, err := s.categories.base.Find(ctx, unit.CategoryID)
 	if err != nil {
 		return dao.NotFound(err, ErrUnitGroupNotFound)
 	}
 	if category == nil {
 		return ErrUnitGroupNotFound
 	}
+	if category.OrganizationID != nil && unit.OrganizationID != nil && *category.OrganizationID != *unit.OrganizationID {
+		return ErrUnitGroupNotFound
+	}
 
-	existing, err := s.units.Search(ctx, "name", unit.Name)
+	existing, err := s.units.base.Search(ctx, "name", unit.Name)
 	if err != nil {
 		return err
 	}
-	if existing != nil && existing.ID != excludeID && existing.CategoryID == unit.CategoryID {
+	if existing != nil && existing.ID != excludeID && existing.CategoryID == unit.CategoryID && sameOrganization(existing.OrganizationID, unit.OrganizationID) {
 		return ErrUnitNameTaken
 	}
 	return nil
 }
 
 func (s UnitService) Convert(ctx context.Context, qty amount.Amount, fromID, toID uint64) (amount.Amount, error) {
-	from, err := s.units.Find(ctx, fromID)
+	from, err := s.units.base.Find(ctx, fromID)
 	if err != nil {
 		return amount.Amount{}, dao.NotFound(err, ErrUnitNotFound)
 	}
@@ -249,7 +313,7 @@ func (s UnitService) Convert(ctx context.Context, qty amount.Amount, fromID, toI
 		return amount.Amount{}, ErrUnitNotFound
 	}
 
-	to, err := s.units.Find(ctx, toID)
+	to, err := s.units.base.Find(ctx, toID)
 	if err != nil {
 		return amount.Amount{}, dao.NotFound(err, ErrUnitNotFound)
 	}

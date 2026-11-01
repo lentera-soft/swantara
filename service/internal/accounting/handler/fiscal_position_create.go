@@ -51,6 +51,7 @@ func (h TaxRuleHandler) Create(c fiber.Ctx) error {
 		return writeTaxRuleError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Fiscal position created successfully.", CreateTaxRuleResponse{
 		TaxRule: newTaxRuleResponse(position),
 	})

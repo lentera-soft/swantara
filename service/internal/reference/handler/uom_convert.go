@@ -33,6 +33,7 @@ func (h UnitHandler) Convert(c fiber.Ctx) error {
 		return writeUnitError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Quantity converted successfully.", ConvertUnitResponse{
 		Value: converted,
 	})

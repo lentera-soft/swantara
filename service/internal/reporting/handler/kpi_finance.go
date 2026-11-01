@@ -33,6 +33,7 @@ func (h KpiHandler) Finance(c fiber.Ctx) error {
 	if err != nil {
 		return writeKpiError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Finance KPI retrieved successfully.", kpi)
 }
 
@@ -64,6 +65,7 @@ func (h KpiHandler) ArAp(c fiber.Ctx) error {
 	if err != nil {
 		return writeKpiError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "AR/AP KPI retrieved successfully.", kpi)
 }
 
@@ -95,5 +97,6 @@ func (h KpiHandler) Cash(c fiber.Ctx) error {
 	if err != nil {
 		return writeKpiError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Cash KPI retrieved successfully.", kpi)
 }

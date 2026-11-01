@@ -178,6 +178,7 @@ func (h ContactInquiryHandler) Create(c fiber.Ctx) error {
 		return writeInquiryError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(
 		c,
 		"Contact inquiry received.",
@@ -221,6 +222,7 @@ func (h ContactInquiryHandler) List(c fiber.Ctx) error {
 		items[i] = newContactInquiryResponse(entity)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponseWithMeta(c, "Inquiries retrieved successfully.", ListContactInquiriesResponse{
 		Inquiries: items,
 	}, httpx.BuildListMeta(parsedQuery, page.Count))
@@ -252,6 +254,7 @@ func (h ContactInquiryHandler) Get(c fiber.Ctx) error {
 	if err != nil {
 		return writeInquiryError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Inquiry retrieved successfully.", GetContactInquiryResponse{
 		Inquiry: newContactInquiryResponse(entity),
 	})
@@ -289,6 +292,7 @@ func (h ContactInquiryHandler) UpdateStatus(c fiber.Ctx) error {
 	if err != nil {
 		return writeInquiryError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Inquiry updated successfully.", UpdateContactInquiryStatusResponse{
 		Inquiry: newContactInquiryResponse(updated),
 	})
@@ -334,6 +338,7 @@ func (h ContactInquiryHandler) Convert(c fiber.Ctx) error {
 	if err != nil {
 		return writeInquiryError(c, err)
 	}
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateCreatedResponse(c, "Inquiry converted successfully.", ConvertContactInquiryResponse{
 		Inquiry: newContactInquiryResponse(updated),
 		LeadID:  lead.ID,

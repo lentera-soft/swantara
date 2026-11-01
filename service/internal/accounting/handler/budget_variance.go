@@ -30,6 +30,7 @@ func (h BudgetHandler) Variance(c fiber.Ctx) error {
 		return writeBudgetError(c, err)
 	}
 
+	httpx.RequestLog(c).Info("operation completed")
 	return httpx.CreateSuccessResponse(c, "Budget variance retrieved successfully.", BudgetVarianceResponse{
 		Variance: variance,
 	})
