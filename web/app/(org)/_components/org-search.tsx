@@ -26,7 +26,7 @@ export function OrgSearch() {
       >
         <Search aria-hidden />
         <span className="truncate">{t("placeholder")}</span>
-        <kbd className="ml-auto rounded border border-border bg-muted px-1.5 py-0.5 font-sans text-[10px] ">
+        <kbd className="ml-auto rounded border border-border bg-muted px-1.5 py-0.5 font-sans  text-1">
           ⌘K
         </kbd>
       </Button>

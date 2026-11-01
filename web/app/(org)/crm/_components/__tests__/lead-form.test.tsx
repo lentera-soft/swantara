@@ -3,9 +3,9 @@ import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 import { renderWithProviders, server } from "@/lib/tests";
-import { LeadFormDialog } from "../lead-form-dialog";
+import { LeadForm } from "../lead-form";
 
-function useLeadDialogHandlers() {
+function useLeadFormHandlers() {
   server.use(
     http.get("*/api/v1/organizations/:organizationId/contacts", () =>
       HttpResponse.json({ success: true, message: "OK.", data: { contacts: [] } }),
@@ -20,14 +20,12 @@ function useLeadDialogHandlers() {
 }
 
 beforeEach(() => {
-  useLeadDialogHandlers();
+  useLeadFormHandlers();
 });
 
-describe("LeadFormDialog", () => {
-  it("renders the create form when open", async () => {
-    renderWithProviders(
-      <LeadFormDialog open onOpenChange={() => {}} orgId="1" onSave={() => {}} />,
-    );
+describe("LeadForm", () => {
+  it("renders the create form", async () => {
+    renderWithProviders(<LeadForm orgId="1" />);
 
     expect(await screen.findByRole("heading", { name: "Prospek baru" })).toBeInTheDocument();
     expect(screen.getByPlaceholderText("Nama")).toBeInTheDocument();
@@ -35,9 +33,7 @@ describe("LeadFormDialog", () => {
 
   it("accepts a lead name through the name field", async () => {
     const user = userEvent.setup();
-    renderWithProviders(
-      <LeadFormDialog open onOpenChange={() => {}} orgId="1" onSave={() => {}} />,
-    );
+    renderWithProviders(<LeadForm orgId="1" />);
 
     const nameInput = await screen.findByPlaceholderText("Nama");
     await user.type(nameInput, "Acme Website Inquiry");

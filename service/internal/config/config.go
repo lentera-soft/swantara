@@ -84,16 +84,16 @@ type Config struct {
 	AuthEmailVerifyTTLDuration   time.Duration
 	AuthPasswordResetTTLDuration time.Duration
 
-	StorageProvider       string `mapstructure:"STORAGE_PROVIDER" validate:"omitempty,oneof=local s3 rustfs"`
-	StoragePath           string `mapstructure:"STORAGE_PATH" validate:"omitempty"`
-	StorageMaxUploadSize  int64  `mapstructure:"STORAGE_MAX_UPLOAD_SIZE" validate:"required,min=1"`
+	StorageProvider      string `mapstructure:"STORAGE_PROVIDER" validate:"omitempty,oneof=local s3 rustfs"`
+	StoragePath          string `mapstructure:"STORAGE_PATH" validate:"omitempty"`
+	StorageMaxUploadSize int64  `mapstructure:"STORAGE_MAX_UPLOAD_SIZE" validate:"required,min=1"`
 
-	StorageEndpoint       string `mapstructure:"STORAGE_ENDPOINT"`
-	StorageBucket         string `mapstructure:"STORAGE_BUCKET"`
-	StorageAccessKey      string `mapstructure:"STORAGE_ACCESS_KEY"`
-	StorageSecretKey      string `mapstructure:"STORAGE_SECRET_KEY"`
-	StorageRegion         string `mapstructure:"STORAGE_REGION"`
-	StorageUsePathStyle   bool   `mapstructure:"STORAGE_USE_PATH_STYLE"`
+	StorageEndpoint     string `mapstructure:"STORAGE_ENDPOINT"`
+	StorageBucket       string `mapstructure:"STORAGE_BUCKET"`
+	StorageAccessKey    string `mapstructure:"STORAGE_ACCESS_KEY"`
+	StorageSecretKey    string `mapstructure:"STORAGE_SECRET_KEY"`
+	StorageRegion       string `mapstructure:"STORAGE_REGION"`
+	StorageUsePathStyle bool   `mapstructure:"STORAGE_USE_PATH_STYLE"`
 
 	RateLimiterEnabled    bool   `mapstructure:"RATE_LIMITER_ENABLED"`
 	RateLimiterMax        int    `mapstructure:"RATE_LIMITER_MAX" validate:"min=1"`
@@ -341,7 +341,7 @@ func (c *Config) RateLimiterRedisAddress() string {
 }
 
 func (c *Config) TrustedProxyList() []string {
-	if c.TrustedProxies == "" {
+	if strings.TrimSpace(c.TrustedProxies) == "" {
 		return nil
 	}
 

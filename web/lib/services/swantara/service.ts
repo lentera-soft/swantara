@@ -79,6 +79,7 @@ import {
   ApprovalRequests,
   Attachments,
   Attendances,
+  Campaigns,
   Carriers,
   Contracts,
   Countries,
@@ -204,6 +205,7 @@ class SwantaraService {
   readonly journals: Journals;
   readonly taxes: Taxes;
   readonly taxYears: TaxYears;
+  readonly campaigns: Campaigns;
   readonly carriers: Carriers;
   readonly systemConfigs: SystemConfigs;
   readonly integrationEvents: IntegrationEvents;
@@ -395,6 +397,7 @@ class SwantaraService {
     this.journals = new Journals(this.axios);
     this.taxes = new Taxes(this.axios);
     this.taxYears = new TaxYears(this.axios);
+    this.campaigns = new Campaigns(this.axios);
     this.carriers = new Carriers(this.axios);
     this.systemConfigs = new SystemConfigs(this.axios);
     this.integrationEvents = new IntegrationEvents(this.axios);

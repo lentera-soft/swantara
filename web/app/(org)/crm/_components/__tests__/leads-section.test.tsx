@@ -107,14 +107,12 @@ describe("LeadsSection", () => {
     await waitFor(() => expect(screen.queryByText("Acme Website Inquiry")).not.toBeInTheDocument());
   });
 
-  it("opens the lead dialog from the add button", async () => {
-    const user = userEvent.setup();
+  it("links to the new lead page from the add button", async () => {
     renderWithProviders(<LeadsSection orgId="1" />);
 
     await screen.findByText("Acme Website Inquiry");
-    await user.click(screen.getByRole("button", { name: "Tambah Prospek" }));
+    const addButton = screen.getByRole("link", { name: "Tambah Prospek" });
 
-    expect(await screen.findByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Prospek baru" })).toBeInTheDocument();
+    expect(addButton).toHaveAttribute("href", "/crm/leads/new");
   });
 });

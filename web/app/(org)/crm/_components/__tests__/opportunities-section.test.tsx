@@ -107,14 +107,12 @@ describe("OpportunitiesSection", () => {
     await waitFor(() => expect(screen.queryByText("Acme Enterprise Deal")).not.toBeInTheDocument());
   });
 
-  it("opens the opportunity dialog from the add button", async () => {
-    const user = userEvent.setup();
+  it("links to the new opportunity page from the add button", async () => {
     renderWithProviders(<OpportunitiesSection orgId="1" />);
 
     await screen.findByText("Acme Enterprise Deal");
-    await user.click(screen.getByRole("button", { name: "Tambah Peluang" }));
+    const addButton = screen.getByRole("link", { name: "Tambah Peluang" });
 
-    expect(await screen.findByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByRole("heading", { name: "Peluang baru" })).toBeInTheDocument();
+    expect(addButton).toHaveAttribute("href", "/crm/opportunities/new");
   });
 });

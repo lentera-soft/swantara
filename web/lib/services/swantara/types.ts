@@ -716,6 +716,60 @@ export type UpdateCarrierRequest = {
   deliveryItemId?: number | null;
 };
 
+export type Campaign = {
+  id: number;
+  createdAt: Date;
+  updatedAt: Date;
+  deletedAt?: Date | null;
+  organizationId: number | null;
+  code: string | null;
+  name: string;
+  description: string | null;
+  channel: string | null;
+  status: string;
+  startDate: Date | null;
+  endDate: Date | null;
+  budget: number | null;
+};
+
+export type CampaignResponse = {
+  id: number;
+  organizationId: number | null;
+  code: string | null;
+  name: string;
+  description: string | null;
+  channel: string | null;
+  status: string;
+  startDate: string | null;
+  endDate: string | null;
+  budget: number | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type CreateCampaignRequest = {
+  organizationId?: number | null;
+  code?: string | null;
+  name: string;
+  description?: string | null;
+  channel?: string | null;
+  status?: string;
+  startDate?: string | null;
+  endDate?: string | null;
+  budget?: number | null;
+};
+
+export type UpdateCampaignRequest = {
+  code?: string | null;
+  name: string;
+  description?: string | null;
+  channel?: string | null;
+  status?: string;
+  startDate?: string | null;
+  endDate?: string | null;
+  budget?: number | null;
+};
+
 export type SystemConfig = {
   id: number;
   organizationId: number | null;

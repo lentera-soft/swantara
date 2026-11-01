@@ -40,7 +40,7 @@ describe("Form + FormField + SubmitButton", () => {
   it("renders label, description, and submit control", () => {
     renderWithProviders(<DemoForm onSubmit={vi.fn()} />);
     expect(screen.getByText("Name")).toBeInTheDocument();
-    expect(screen.getByText("Display name.")).toBeInTheDocument();
+    expect(screen.getByText("Name").closest("label")).toHaveAttribute("title", "Display name.");
     expect(screen.getByRole("button", { name: "Save" })).toBeInTheDocument();
   });
 

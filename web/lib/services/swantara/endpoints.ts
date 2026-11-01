@@ -155,6 +155,17 @@ const endpoints = {
       `/api/v1/organizations/${organizationId}/carriers/${id}`,
   },
 
+  campaigns: {
+    list: (organizationId: string) => `/api/v1/organizations/${organizationId}/campaigns`,
+    create: (organizationId: string) => `/api/v1/organizations/${organizationId}/campaigns`,
+    get: (organizationId: string, id: string) =>
+      `/api/v1/organizations/${organizationId}/campaigns/${id}`,
+    update: (organizationId: string, id: string) =>
+      `/api/v1/organizations/${organizationId}/campaigns/${id}`,
+    delete: (organizationId: string, id: string) =>
+      `/api/v1/organizations/${organizationId}/campaigns/${id}`,
+  },
+
   systemConfigs: {
     list: (organizationId: string) => `/api/v1/organizations/${organizationId}/system-configs`,
     create: (organizationId: string) => `/api/v1/organizations/${organizationId}/system-configs`,

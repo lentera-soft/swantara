@@ -28,17 +28,28 @@ describe("AppShell", () => {
     expect(screen.getByText("Page content")).toBeInTheDocument();
   });
 
-  it("toggles the desktop sidebar via the trigger", async () => {
+  it("toggles the desktop sidebar between expanded and compact modes", async () => {
     const user = userEvent.setup();
     renderWithProviders(<TestShell />);
 
     const sidebar = document.querySelector("[data-slot='sidebar']");
     expect(sidebar).toHaveAttribute("data-state", "expanded");
 
-    await user.click(screen.getByRole("button", { name: "Toggle sidebar" }));
-    expect(document.querySelector("[data-slot='sidebar']")).not.toBeInTheDocument();
+    const trigger = screen.getByRole("button", { name: "Toggle sidebar" });
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
 
-    await user.click(screen.getByRole("button", { name: "Toggle sidebar" }));
-    expect(document.querySelector("[data-slot='sidebar']")).toBeInTheDocument();
+    await user.click(trigger);
+    expect(document.querySelector("[data-slot='sidebar']")).toHaveAttribute(
+      "data-state",
+      "collapsed",
+    );
+    expect(trigger).toHaveAttribute("aria-expanded", "false");
+
+    await user.click(trigger);
+    expect(document.querySelector("[data-slot='sidebar']")).toHaveAttribute(
+      "data-state",
+      "expanded",
+    );
+    expect(trigger).toHaveAttribute("aria-expanded", "true");
   });
 });

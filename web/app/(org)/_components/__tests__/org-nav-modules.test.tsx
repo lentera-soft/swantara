@@ -26,13 +26,15 @@ describe("OrgNav", () => {
       "href",
       "/reports",
     );
-    expect(screen.getByRole("link", { name: "Data Referensi" })).toHaveAttribute(
+    expect(screen.queryByRole("link", { name: "Data Referensi" })).toBeNull();
+    expect(screen.queryByRole("button", { name: "Other" })).toBeNull();
+    expect(screen.getByRole("link", { name: "Persetujuan" })).toBeInTheDocument();
+    expect(screen.queryByRole("link", { name: "Log Audit" })).toBeNull();
+    await user.click(await screen.findByRole("button", { name: "Referensi" }));
+    expect(await screen.findByRole("link", { name: "Mata Uang" })).toHaveAttribute(
       "href",
       "/reference",
     );
-    expect(screen.queryByRole("button", { name: "Other" })).toBeNull();
-    expect(screen.queryByRole("link", { name: "Persetujuan" })).toBeNull();
-    expect(screen.queryByRole("link", { name: "Log Audit" })).toBeNull();
     expect(screen.getByRole("link", { name: "Pengaturan" })).toHaveAttribute("href", "/settings");
   });
 });

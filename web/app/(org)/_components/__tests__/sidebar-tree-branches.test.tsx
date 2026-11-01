@@ -57,6 +57,15 @@ describe("SidebarTree", () => {
     expect(screen.getByRole("link", { name: "Produk" })).toHaveAttribute("data-active", "false");
   });
 
+  it("highlights only the most specific matching route", () => {
+    navigationMock.setPathname("/products/recipes");
+    renderTree();
+
+    expect(screen.getByRole("link", { name: "Produk" })).toHaveAttribute("data-active", "false");
+    expect(screen.getByRole("link", { name: "Resep" })).toHaveAttribute("data-active", "true");
+    expect(screen.getByRole("link", { name: "Resep" })).toHaveAttribute("aria-current", "page");
+  });
+
   it("renders items in definition order", () => {
     renderTree();
 

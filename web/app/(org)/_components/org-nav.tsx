@@ -39,11 +39,13 @@ export function OrgNav() {
   }
 
   return (
-    <div className="flex flex-col gap-4">
+    <nav aria-label={tNav("primaryNavigation")} className="flex flex-col gap-4">
       {groupOrder.map((group) => {
         if (group !== "modules") {
           const items = group === "overview" ? overviewItems : settingsItems;
-          if (items.length === 0) return null;
+          if (items.length === 0) {
+            return null;
+          }
           return (
             <SidebarGroup key={group}>
               <SidebarGroupLabel>{GROUP_LABELS[group]}</SidebarGroupLabel>
@@ -53,7 +55,6 @@ export function OrgNav() {
             </SidebarGroup>
           );
         }
-        if (moduleGroups.length === 0) return null;
         return (
           <div key={group} className="contents">
             {moduleGroups.map((mod) => (
@@ -62,6 +63,6 @@ export function OrgNav() {
           </div>
         );
       })}
-    </div>
+    </nav>
   );
 }

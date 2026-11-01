@@ -4,6 +4,7 @@ import {
   Briefcase,
   Calculator,
   ChevronDown,
+  Database,
   Handshake,
   type LucideIcon,
   Package,
@@ -34,6 +35,7 @@ export const moduleKey: Record<OrgNavModule, string> = {
   procurement: "Pengadaan",
   hr: "HR",
   finance: "Keuangan",
+  reference: "Referensi",
   projectManagement: "Manajemen Proyek",
   sales: "Penjualan",
   service: "Layanan",
@@ -46,6 +48,7 @@ export const moduleIcons: Record<OrgNavModule, LucideIcon> = {
   procurement: Truck,
   hr: Users,
   finance: Calculator,
+  reference: Database,
   projectManagement: Briefcase,
   sales: Receipt,
   service: Wrench,
@@ -102,21 +105,22 @@ export function ModuleCollapsible({ mod, items }: ModuleCollapsibleProps) {
             aria-label={moduleLabel}
             title={moduleLabel}
             className={cn(
-              "flex w-full cursor-pointer items-center gap-2 rounded-lg px-3 py-1.5 text-sm tracking-wide text-sidebar-foreground/60 uppercase",
+              "flex min-h-11 w-full cursor-pointer items-center gap-2 rounded-lg px-3 text-[13px] font-normal text-sidebar-foreground/70",
               "justify-between",
-              "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
-              "focus-visible:ring-2 ring-offset-2 ring-offset-sidebar focus-visible:ring-sidebar-ring",
+              "hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground",
+              "focus-visible:ring-3 focus-visible:ring-sidebar-ring/50",
               "[data-panel-open]:bg-sidebar-accent/40 [data-panel-open]:text-sidebar-foreground",
             )}
           >
             <span className="flex min-w-0 items-center gap-2">
-              <ModuleIcon className="size-5 shrink-0" />
+              <ModuleIcon className="size-[18px] shrink-0" aria-hidden="true" />
               <span className="truncate">{moduleLabel}</span>
             </span>
             <ChevronDown
               className={cn(
                 "size-4 shrink-0 transition-transform duration-200 [[data-panel-open]>&]:rotate-180",
               )}
+              aria-hidden="true"
             />
           </CollapsibleTrigger>
           <CollapsibleContent

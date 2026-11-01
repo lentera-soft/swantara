@@ -3,11 +3,7 @@
 import { useTranslations } from "next-intl";
 import { OrgSubNav } from "@/app/(org)/_components/org-subnav";
 
-const TEAM_TABS = [
-  { key: "employees", href: "/employees" },
-  { key: "departments", href: "/employees/departments" },
-  { key: "jobPositions", href: "/employees/job-positions" },
-] as const;
+const TEAM_TABS = [{ key: "employees", href: "/employees" }] as const;
 
 export function TeamSubNav() {
   const t = useTranslations("Employees");

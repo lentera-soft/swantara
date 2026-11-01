@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { LegacyColumnDef as ColumnDef } from "@tanstack/react-table/legacy";
 import { Plus, Trophy, XCircle } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -16,15 +17,13 @@ import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { CrmLead, CrmStage } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
 import { formatDate, formatNumber } from "@/lib/utils";
-import { LeadFormDialog } from "./lead-form-dialog";
 import { LostReasonDialog } from "./lost-reason-dialog";
 
 export function OpportunitiesSection({ orgId }: { orgId: string }) {
   const t = useTranslations("Crm");
   const queryClient = useQueryClient();
+  const router = useRouter();
 
-  const [leadDialogOpen, setLeadDialogOpen] = useState(false);
-  const [editingLead, setEditingLead] = useState<CrmLead | null>(null);
   const [loseId, setLoseId] = useState<string | null>(null);
   const [quoteOpportunityId, setQuoteOpportunityId] = useState<string | null>(null);
 
@@ -50,12 +49,6 @@ export function OpportunitiesSection({ orgId }: { orgId: string }) {
     void queryClient.invalidateQueries({ queryKey: ["crmOpportunities"] });
     void queryClient.invalidateQueries({ queryKey: ["crmPipeline"] });
     void queryClient.invalidateQueries({ queryKey: ["crmStages"] });
-  }
-
-  function handleLeadSave() {
-    setLeadDialogOpen(false);
-    setEditingLead(null);
-    refresh();
   }
 
   const winMutation = useMutation({
@@ -227,8 +220,7 @@ export function OpportunitiesSection({ orgId }: { orgId: string }) {
               confirmTitle={t("deleteOpportunityTitle")}
               confirmDescription={t("deleteOpportunityDescription")}
               onEdit={() => {
-                setEditingLead(row.original);
-                setLeadDialogOpen(true);
+                router.push(`/crm/opportunities/${row.original.id}/edit`);
               }}
               onDelete={() => {
                 deleteMutation.mutate(row.original.id);
@@ -269,31 +261,14 @@ export function OpportunitiesSection({ orgId }: { orgId: string }) {
               : undefined
         }
         actions={
-          <Button
-            size="sm"
-            onClick={() => {
-              setEditingLead(null);
-              setLeadDialogOpen(true);
-            }}
-          >
-            <Plus />
-            <span>{t("addOpportunity")}</span>
+          <Button size="sm" asChild>
+            <Link href="/crm/opportunities/new">
+              <Plus />
+              <span>{t("addOpportunity")}</span>
+            </Link>
           </Button>
         }
       />
-      {leadDialogOpen ? (
-        <LeadFormDialog
-          open={leadDialogOpen}
-          onOpenChange={(open) => {
-            if (!open) setEditingLead(null);
-            setLeadDialogOpen(open);
-          }}
-          orgId={orgId}
-          initial={editingLead}
-          type="opportunity"
-          onSave={handleLeadSave}
-        />
-      ) : null}
       {quoteOpportunityId ? (
         <SaleQuoteFormDialog
           open

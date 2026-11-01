@@ -1,5 +1,6 @@
 "use client";
 
+import { useIsRestoring } from "@tanstack/react-query";
 import { Banknote, Receipt, TrendingUp, Wallet } from "lucide-react";
 import { useTranslations } from "next-intl";
 
@@ -18,35 +19,46 @@ export function AccountingStats() {
 
   const kpi = financeData;
   const cashKpi = cashData;
+  const isRestoring = useIsRestoring();
 
   return (
     <MetricGrid>
       <StatCard
         label={t("statRevenue")}
-        value={kpi ? formatMoney(kpi.revenue, { currency: DEFAULT_CURRENCY }) : "—"}
+        value={isRestoring || !kpi ? "—" : formatMoney(kpi.revenue, { currency: DEFAULT_CURRENCY })}
         icon={Banknote}
       />
       <StatCard
         label={t("statExpenses")}
-        value={kpi ? formatMoney(kpi.expenses, { currency: DEFAULT_CURRENCY }) : "—"}
+        value={
+          isRestoring || !kpi ? "—" : formatMoney(kpi.expenses, { currency: DEFAULT_CURRENCY })
+        }
         icon={Receipt}
       />
       <StatCard
         label={t("statNetProfit")}
-        value={kpi ? formatMoney(kpi.ebitda, { currency: DEFAULT_CURRENCY }) : "—"}
+        value={isRestoring || !kpi ? "—" : formatMoney(kpi.ebitda, { currency: DEFAULT_CURRENCY })}
         icon={TrendingUp}
-        trend={kpi ? t("trendMargin", { value: (kpi.netMarginPct * 100).toFixed(0) }) : undefined}
+        trend={
+          isRestoring || !kpi
+            ? undefined
+            : t("trendMargin", { value: (kpi.netMarginPct * 100).toFixed(0) })
+        }
       />
       <StatCard
         label={t("statCashBalance")}
-        value={cashKpi ? formatMoney(cashKpi.position, { currency: DEFAULT_CURRENCY }) : "—"}
+        value={
+          isRestoring || !cashKpi
+            ? "—"
+            : formatMoney(cashKpi.position, { currency: DEFAULT_CURRENCY })
+        }
         icon={Wallet}
         trend={
-          cashKpi
-            ? t("trendForecast", {
+          isRestoring || !cashKpi
+            ? undefined
+            : t("trendForecast", {
                 value: formatMoney(cashKpi.forecast, { currency: DEFAULT_CURRENCY }),
               })
-            : undefined
         }
         trendDirection={cashKpi && cashKpi.burn > 0 ? "down" : undefined}
       />

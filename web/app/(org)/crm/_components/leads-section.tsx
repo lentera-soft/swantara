@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { LegacyColumnDef as ColumnDef } from "@tanstack/react-table/legacy";
 import { Ban, CheckCircle2, Leaf, Plus, Target } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
@@ -16,7 +17,6 @@ import type { CrmLead, CrmLeadStatus, CrmStage } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
 import { formatNumber } from "@/lib/utils";
 import { DisqualifyDialog } from "./disqualify-dialog";
-import { LeadFormDialog } from "./lead-form-dialog";
 import { PromoteDialog } from "./promote-section";
 
 function availableLeadActions(status: CrmLeadStatus): {
@@ -39,9 +39,8 @@ function availableLeadActions(status: CrmLeadStatus): {
 export function LeadsSection({ orgId }: { orgId: string }) {
   const t = useTranslations("Crm");
   const queryClient = useQueryClient();
+  const router = useRouter();
 
-  const [leadDialogOpen, setLeadDialogOpen] = useState(false);
-  const [editingLead, setEditingLead] = useState<CrmLead | null>(null);
   const [promoteId, setPromoteId] = useState<string | null>(null);
   const [disqualifyId, setDisqualifyId] = useState<string | null>(null);
 
@@ -67,12 +66,6 @@ export function LeadsSection({ orgId }: { orgId: string }) {
     void queryClient.invalidateQueries({ queryKey: ["crmLeads"] });
     void queryClient.invalidateQueries({ queryKey: ["crmOpportunities"] });
     void queryClient.invalidateQueries({ queryKey: ["crmStages"] });
-  }
-
-  function handleLeadSave() {
-    setLeadDialogOpen(false);
-    setEditingLead(null);
-    refresh();
   }
 
   const deleteMutation = useMutation({
@@ -249,8 +242,7 @@ export function LeadsSection({ orgId }: { orgId: string }) {
               confirmTitle={t("deleteLeadTitle")}
               confirmDescription={t("deleteLeadDescription")}
               onEdit={() => {
-                setEditingLead(row.original);
-                setLeadDialogOpen(true);
+                router.push(`/crm/leads/${row.original.id}/edit`);
               }}
               onDelete={() => {
                 deleteMutation.mutate(row.original.id);
@@ -293,31 +285,14 @@ export function LeadsSection({ orgId }: { orgId: string }) {
               : undefined
         }
         actions={
-          <Button
-            size="sm"
-            onClick={() => {
-              setEditingLead(null);
-              setLeadDialogOpen(true);
-            }}
-          >
-            <Plus />
-            <span>{t("addLead")}</span>
+          <Button size="sm" asChild>
+            <Link href="/crm/leads/new">
+              <Plus />
+              <span>{t("addLead")}</span>
+            </Link>
           </Button>
         }
       />
-      {leadDialogOpen ? (
-        <LeadFormDialog
-          open={leadDialogOpen}
-          onOpenChange={(open) => {
-            if (!open) setEditingLead(null);
-            setLeadDialogOpen(open);
-          }}
-          orgId={orgId}
-          initial={editingLead}
-          type="prospect"
-          onSave={handleLeadSave}
-        />
-      ) : null}
       {promoteId ? (
         <PromoteDialog
           open={Boolean(promoteId)}

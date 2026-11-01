@@ -4,7 +4,7 @@ import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import type { CrmLead } from "@/lib/services/swantara";
 import { renderWithProviders, server } from "@/lib/tests";
-import { LeadFormDialog } from "../lead-form-dialog";
+import { LeadForm } from "../lead-form";
 
 const baseLead: CrmLead = {
   id: 3,
@@ -81,31 +81,15 @@ beforeEach(() => {
   seedLookups();
 });
 
-describe("LeadFormDialog extra", () => {
+describe("LeadForm extra", () => {
   it("renders the opportunity create title for opportunity type", async () => {
-    renderWithProviders(
-      <LeadFormDialog
-        open
-        onOpenChange={() => {}}
-        orgId="1"
-        type="opportunity"
-        onSave={() => {}}
-      />,
-    );
+    renderWithProviders(<LeadForm orgId="1" type="opportunity" />);
 
     expect(await screen.findByRole("heading", { name: "Peluang baru" })).toBeInTheDocument();
   });
 
   it("renders the edit title with prefilled values", async () => {
-    renderWithProviders(
-      <LeadFormDialog
-        open
-        onOpenChange={() => {}}
-        orgId="1"
-        initial={baseLead}
-        onSave={() => {}}
-      />,
-    );
+    renderWithProviders(<LeadForm orgId="1" initial={baseLead} />);
 
     expect(await screen.findByRole("heading", { name: "Ubah prospek" })).toBeInTheDocument();
     expect(screen.getByDisplayValue("Acme Website Inquiry")).toBeInTheDocument();
@@ -113,24 +97,14 @@ describe("LeadFormDialog extra", () => {
   });
 
   it("renders the edit opportunity title for opportunity initials", async () => {
-    renderWithProviders(
-      <LeadFormDialog
-        open
-        onOpenChange={() => {}}
-        orgId="1"
-        initial={{ ...baseLead, type: "opportunity" }}
-        onSave={() => {}}
-      />,
-    );
+    renderWithProviders(<LeadForm orgId="1" initial={{ ...baseLead, type: "opportunity" }} />);
 
     expect(await screen.findByRole("heading", { name: "Ubah peluang" })).toBeInTheDocument();
   });
 
   it("requires a name before saving", async () => {
     const user = userEvent.setup();
-    renderWithProviders(
-      <LeadFormDialog open onOpenChange={() => {}} orgId="1" onSave={() => {}} />,
-    );
+    renderWithProviders(<LeadForm orgId="1" />);
 
     await screen.findByPlaceholderText("Nama");
     await user.click(screen.getByRole("button", { name: "Buat prospek" }));
@@ -140,9 +114,7 @@ describe("LeadFormDialog extra", () => {
 
   it("rejects an invalid email address", async () => {
     const user = userEvent.setup();
-    renderWithProviders(
-      <LeadFormDialog open onOpenChange={() => {}} orgId="1" onSave={() => {}} />,
-    );
+    renderWithProviders(<LeadForm orgId="1" />);
 
     await user.type(await screen.findByPlaceholderText("Nama"), "Acme Inquiry");
     const emailInput = screen.getByLabelText("Email");
@@ -154,15 +126,7 @@ describe("LeadFormDialog extra", () => {
 
   it("requires a stage for opportunities", async () => {
     const user = userEvent.setup();
-    renderWithProviders(
-      <LeadFormDialog
-        open
-        onOpenChange={() => {}}
-        orgId="1"
-        type="opportunity"
-        onSave={() => {}}
-      />,
-    );
+    renderWithProviders(<LeadForm orgId="1" type="opportunity" />);
 
     await user.type(await screen.findByPlaceholderText("Nama"), "Big deal");
     await user.click(screen.getByRole("button", { name: "Buat peluang" }));
@@ -186,7 +150,7 @@ describe("LeadFormDialog extra", () => {
     );
     const onSave = vi.fn();
     const user = userEvent.setup();
-    renderWithProviders(<LeadFormDialog open onOpenChange={() => {}} orgId="1" onSave={onSave} />);
+    renderWithProviders(<LeadForm orgId="1" onSave={onSave} />);
 
     await user.type(await screen.findByPlaceholderText("Nama"), "Acme Inquiry");
     await user.click(screen.getByRole("button", { name: "Buat prospek" }));
@@ -211,9 +175,7 @@ describe("LeadFormDialog extra", () => {
     );
     const onSave = vi.fn();
     const user = userEvent.setup();
-    renderWithProviders(
-      <LeadFormDialog open onOpenChange={() => {}} orgId="1" initial={baseLead} onSave={onSave} />,
-    );
+    renderWithProviders(<LeadForm orgId="1" initial={baseLead} onSave={onSave} />);
 
     await screen.findByDisplayValue("Acme Website Inquiry");
     await user.click(screen.getByRole("button", { name: "Simpan perubahan" }));

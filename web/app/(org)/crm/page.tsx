@@ -4,6 +4,7 @@ import {
   CalendarCheck2,
   ContactRound,
   Inbox,
+  Megaphone,
   Sparkles,
   Target,
 } from "lucide-react";
@@ -46,6 +47,13 @@ export default async function OrgCrmPage() {
       description: t("workspaceActivitiesDescription"),
       icon: CalendarCheck2,
       iconClassName: "bg-amber-500/10 text-amber-700 dark:text-amber-300",
+    },
+    {
+      href: "/crm/campaigns",
+      title: t("workspaceCampaignsTitle"),
+      description: t("workspaceCampaignsDescription"),
+      icon: Megaphone,
+      iconClassName: "bg-rose-500/10 text-rose-700 dark:text-rose-300",
     },
   ];
 

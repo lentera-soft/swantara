@@ -36,7 +36,6 @@ type SidebarContextValue = {
   state: SidebarState;
   width: number;
   setWidth: (w: number) => void;
-  hidden: boolean;
   openMobile: boolean;
   setOpenMobile: (open: boolean) => void;
   isMobile: boolean;
@@ -96,7 +95,6 @@ function SidebarProvider({
     return readStoredWidth(fallback);
   });
   const [openMobile, setOpenMobile] = useState(false);
-  const [hidden, setHidden] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
 
   const collapsed = width <= SIDEBAR_WIDTH_COLLAPSED;
@@ -118,7 +116,9 @@ function SidebarProvider({
   }, [width, isResizing]);
 
   useEffect(() => {
-    if (!isResizing) return;
+    if (!isResizing) {
+      return;
+    }
     const { body } = document;
     const previousCursor = body.style.cursor;
     const previousUserSelect = body.style.userSelect;
@@ -135,7 +135,9 @@ function SidebarProvider({
       setOpenMobile((open) => !open);
       return;
     }
-    setHidden((current) => !current);
+    setWidthState((current) =>
+      current <= SIDEBAR_WIDTH_COLLAPSED ? SIDEBAR_WIDTH_EXPANDED : SIDEBAR_WIDTH_COLLAPSED,
+    );
   }, [isMobile]);
 
   const value = useMemo<SidebarContextValue>(
@@ -143,7 +145,6 @@ function SidebarProvider({
       state: collapsed ? "collapsed" : "expanded",
       width,
       setWidth,
-      hidden,
       openMobile,
       setOpenMobile,
       isMobile,
@@ -151,7 +152,7 @@ function SidebarProvider({
       setIsResizing,
       toggleSidebar,
     }),
-    [collapsed, width, setWidth, hidden, openMobile, isMobile, isResizing, toggleSidebar],
+    [collapsed, width, setWidth, openMobile, isMobile, isResizing, toggleSidebar],
   );
 
   return (
@@ -167,15 +168,24 @@ function SidebarProvider({
   );
 }
 
-function Sidebar({ className, children, ...props }: ComponentProps<"aside">) {
-  const { isMobile, state, width, hidden, openMobile, setOpenMobile, isResizing } = useSidebar();
+function Sidebar({
+  className,
+  children,
+  resizeLabel,
+  sidebarTitle,
+  ...props
+}: ComponentProps<"aside"> & {
+  resizeLabel?: string;
+  sidebarTitle?: string;
+}) {
+  const { isMobile, state, width, openMobile, setOpenMobile, isResizing } = useSidebar();
 
   if (isMobile) {
     return (
       <Sheet open={openMobile} onOpenChange={setOpenMobile}>
         <SheetContent side="left" showCloseButton={false} className="w-72 p-0">
           <SheetHeader className="sr-only">
-            <SheetTitle>{"Sidebar"}</SheetTitle>
+            <SheetTitle>{sidebarTitle ?? "Sidebar"}</SheetTitle>
           </SheetHeader>
           <div
             data-slot="sidebar"
@@ -193,8 +203,6 @@ function Sidebar({ className, children, ...props }: ComponentProps<"aside">) {
     );
   }
 
-  if (hidden) return null;
-
   return (
     <aside
       data-slot="sidebar"
@@ -208,7 +216,7 @@ function Sidebar({ className, children, ...props }: ComponentProps<"aside">) {
       {...props}
     >
       {children}
-      <SidebarResizeHandle />
+      <SidebarResizeHandle label={resizeLabel ?? "Resize sidebar"} />
     </aside>
   );
 }
@@ -219,7 +227,7 @@ function getResizeDirection(element: HTMLElement): number {
   return getComputedStyle(element).direction === "rtl" ? -1 : 1;
 }
 
-function SidebarResizeHandle() {
+function SidebarResizeHandle({ label }: { label: string }) {
   const { width, setWidth, isResizing, setIsResizing, toggleSidebar } = useSidebar();
   const startX = useRef(0);
   const startWidth = useRef(width);
@@ -299,7 +307,7 @@ function SidebarResizeHandle() {
   return (
     <hr
       aria-orientation="vertical"
-      aria-label="Resize sidebar"
+      aria-label={label}
       aria-valuenow={width}
       aria-valuemin={SIDEBAR_WIDTH_MIN}
       aria-valuemax={SIDEBAR_WIDTH_MAX}
@@ -337,7 +345,7 @@ function SidebarContent({ className, ...props }: ComponentProps<"div">) {
   return (
     <div
       data-slot="sidebar-content"
-      className={cn("flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-2 py-2", className)}
+      className={cn("flex min-h-0 flex-1 flex-col gap-5 overflow-y-auto px-3 py-4", className)}
       {...props}
     />
   );
@@ -365,7 +373,7 @@ function SidebarGroupLabel({ className, ...props }: ComponentProps<"div">) {
     <div
       data-slot="sidebar-group-label"
       className={cn(
-        "px-2.5 py-1 text-[11px] font-medium tracking-wider text-muted-foreground uppercase",
+        "px-2.5 py-1.5 text-xs font-normal tracking-wide text-muted-foreground",
         state === "collapsed" && "sr-only",
         className,
       )}
@@ -416,11 +424,12 @@ function SidebarMenuButton({
   const collapsed = state === "collapsed";
 
   const classes = cn(
-    "flex min-h-11 w-full items-center gap-2.5 rounded-md px-2.5 text-sm text-sidebar-foreground/70 outline-none transition-colors",
-    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
+    "relative flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-[13px] font-normal text-sidebar-foreground/75 outline-none transition-colors",
+    "hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground",
     "focus-visible:ring-3 focus-visible:ring-sidebar-ring/50",
-    "data-[active=true]:bg-sidebar-primary/10 data-[active=true]:font-medium data-[active=true]:text-sidebar-primary",
-    "[&>svg]:size-4 [&>svg]:shrink-0",
+    "data-[active=true]:bg-sidebar-primary/10 data-[active=true]:text-sidebar-primary",
+    "data-[active=true]:before:absolute data-[active=true]:before:inset-y-2.5 data-[active=true]:before:start-0.5 data-[active=true]:before:w-0.5 data-[active=true]:before:rounded-full data-[active=true]:before:bg-sidebar-primary",
+    "[&>svg]:size-[18px] [&>svg]:shrink-0",
     collapsed && "size-11 justify-center px-0",
     className,
   );
@@ -482,13 +491,15 @@ function SidebarTrigger({
   label,
   ...props
 }: ComponentProps<typeof Button> & { label?: string }) {
-  const { toggleSidebar } = useSidebar();
+  const { toggleSidebar, state, openMobile, isMobile } = useSidebar();
   return (
     <Button
       data-slot="sidebar-trigger"
       variant="ghost"
       size="icon-sm"
       aria-label={label ?? "Toggle sidebar"}
+      aria-expanded={isMobile ? openMobile : state === "expanded"}
+      aria-controls="app-sidebar"
       onClick={toggleSidebar}
       className={className}
       {...props}
@@ -539,6 +550,8 @@ export {
 
 export type AppShellLabels = {
   toggleSidebar?: string;
+  resizeSidebar?: string;
+  sidebarTitle?: string;
 };
 
 export type AppShellProps = {
@@ -566,13 +579,22 @@ export function AppShell({
 }: AppShellProps) {
   return (
     <SidebarProvider data-slot="app-shell" defaultCollapsed={defaultCollapsed}>
-      <Sidebar className="sticky top-0 bottom-0">
-        {brand ? <SidebarHeader>{brand}</SidebarHeader> : null}
+      <Sidebar
+        id="app-sidebar"
+        resizeLabel={labels?.resizeSidebar}
+        sidebarTitle={labels?.sidebarTitle}
+        className="sticky top-0 bottom-0"
+      >
+        {brand ? (
+          <SidebarHeader className="border-sidebar-border/70 px-3">
+            {brand}
+          </SidebarHeader>
+        ) : null}
         <SidebarContent>{nav}</SidebarContent>
         {footer ? <SidebarFooter>{footer}</SidebarFooter> : null}
       </Sidebar>
       <SidebarInset className="bg-surface-sunken">
-        <header className="sticky top-0 z-header flex h-[64px] shrink-0 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-xl sm:h-[64px] sm:px-6">
+        <header className="sticky top-0 z-header flex shrink-0 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-xl h-16 sm:px-6">
           <SidebarTrigger label={labels?.toggleSidebar} />
           {search ? (
             <div className="flex min-w-0 flex-1 justify-start">{search}</div>

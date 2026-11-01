@@ -15,11 +15,17 @@ import { OrgUserMenu } from "./org-user-menu";
 
 export function OrgShell({ children }: { children: ReactNode }) {
   const t = useTranslations("Common");
+  const tNav = useTranslations("Nav");
   return (
     <AppShell
       brand={<OrgBrand />}
       nav={<OrgNav />}
       search={<OrgSearch />}
+      labels={{
+        toggleSidebar: tNav("toggleSidebar"),
+        resizeSidebar: tNav("resizeSidebar"),
+        sidebarTitle: tNav("primaryNavigation"),
+      }}
       actions={
         <>
           <NotificationBell tooltip={t("notifications")} />

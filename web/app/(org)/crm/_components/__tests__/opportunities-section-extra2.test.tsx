@@ -2,7 +2,7 @@ import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
-import { renderWithProviders, server } from "@/lib/tests";
+import { navigationMock, renderWithProviders, server } from "@/lib/tests";
 import { OpportunitiesSection } from "../opportunities-section";
 
 const STAMP = "2026-01-01T00:00:00Z";
@@ -129,14 +129,14 @@ describe("OpportunitiesSection extra2", () => {
     await waitFor(() => expect(deleteCalls).toBe(1));
   });
 
-  it("opens the edit dialog from the row actions", async () => {
+  it("navigates to the edit page from the row actions", async () => {
     const user = userEvent.setup();
     renderWithProviders(<OpportunitiesSection orgId="1" />);
 
     await screen.findByText("Deal 11");
     await user.click(screen.getAllByRole("button", { name: "Ubah peluang" })[0]!);
 
-    expect(await screen.findByRole("heading", { name: "Ubah peluang" })).toBeInTheDocument();
+    expect(navigationMock.push).toHaveBeenCalledWith("/crm/opportunities/11/edit");
   });
 
   it("shows the error state with retry", async () => {

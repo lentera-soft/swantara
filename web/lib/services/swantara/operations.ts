@@ -11,6 +11,7 @@ import type {
   Attendance,
   BalanceSheet,
   BillTimeMaterialRequest,
+  Campaign,
   Carrier,
   CashFlow,
   CashKpi,
@@ -24,6 +25,7 @@ import type {
   CreateAccountRequest,
   CreateAccrualRequest,
   CreateApprovalRequestRequest,
+  CreateCampaignRequest,
   CreateCarrierRequest,
   CreateContractRequest,
   CreateDepartmentRequest,
@@ -101,6 +103,7 @@ import type {
   Unit,
   UnitCategory,
   UpdateAccountRequest,
+  UpdateCampaignRequest,
   UpdateCarrierRequest,
   UpdateContractRequest,
   UpdateDimensionRequest,
@@ -1239,6 +1242,52 @@ export class Carriers {
 
   async delete(organizationId: number, id: number): Promise<void> {
     await this.axios.delete(endpoints.carriers.delete(String(organizationId), String(id)));
+  }
+}
+
+export class Campaigns {
+  constructor(private readonly axios: AxiosInstance) {}
+
+  async list(organizationId: number, params?: ListQuery): Promise<{ campaigns: Campaign[] }> {
+    const response = await this.axios.get<SuccessEnvelope<{ campaigns: Campaign[] }>>(
+      endpoints.campaigns.list(String(organizationId)),
+      { params },
+    );
+    return withListMeta(response.data);
+  }
+
+  async get(organizationId: number, id: number): Promise<{ campaign: Campaign }> {
+    const response = await this.axios.get<SuccessEnvelope<{ campaign: Campaign }>>(
+      endpoints.campaigns.get(String(organizationId), String(id)),
+    );
+    return withListMeta(response.data);
+  }
+
+  async create(
+    organizationId: number,
+    request: CreateCampaignRequest,
+  ): Promise<{ campaign: Campaign }> {
+    const response = await this.axios.post<SuccessEnvelope<{ campaign: Campaign }>>(
+      endpoints.campaigns.create(String(organizationId)),
+      request,
+    );
+    return withListMeta(response.data);
+  }
+
+  async update(
+    organizationId: number,
+    id: number,
+    request: UpdateCampaignRequest,
+  ): Promise<{ campaign: Campaign }> {
+    const response = await this.axios.put<SuccessEnvelope<{ campaign: Campaign }>>(
+      endpoints.campaigns.update(String(organizationId), String(id)),
+      request,
+    );
+    return withListMeta(response.data);
+  }
+
+  async delete(organizationId: number, id: number): Promise<void> {
+    await this.axios.delete(endpoints.campaigns.delete(String(organizationId), String(id)));
   }
 }
 

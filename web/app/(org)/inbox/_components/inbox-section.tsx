@@ -141,13 +141,6 @@ export function InboxSection({ orgId }: { orgId: string }) {
 
   return (
     <div className="flex flex-col gap-4 sm:gap-6">
-      <MetricGrid>
-        <StatCard label={t("statNewInquiries")} value={String(newInquiries)} icon={UserRoundPlus} />
-        <StatCard label={t("statMessages")} value={String(messages.length)} icon={MessageSquare} />
-        <StatCard label={t("statReviewed")} value={String(reviewed)} icon={Check} />
-        <StatCard label={t("statArchived")} value={String(archived)} icon={Archive} />
-      </MetricGrid>
-
       <Card>
         <CardHeader className="border-b">
           <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">

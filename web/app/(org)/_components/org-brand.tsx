@@ -4,6 +4,7 @@ import { Building2, Check, ChevronsUpDown, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
+import { useSidebar } from "@/components/app-shell";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -84,6 +85,8 @@ export function OrgBrand() {
   const tOrg = useTranslations("Organization" as unknown as "Common");
   const tx = tOrg as unknown as (key: string) => string;
   const [createOpen, setCreateOpen] = useState(false);
+  const { state, isMobile } = useSidebar();
+  const collapsed = state === "collapsed" && !isMobile;
   const activeOrgId = useOrganizationId();
   const { data, isLoading } = useMeOrganizationsQuery();
   const organizations = (data?.organizations ?? []).filter((org): org is NonNullable<typeof org> =>
@@ -104,16 +107,24 @@ export function OrgBrand() {
         <DropdownMenuTrigger asChild>
           <button
             type="button"
-            className="group/brand flex w-full items-center gap-2.5 rounded-md p-2 text-left outline-none transition-colors hover:bg-sidebar-accent/60 focus-visible:ring-2 ring-offset-2 ring-offset-sidebar focus-visible:ring-sidebar-ring"
+            aria-label={current?.name ?? tx("selectOrganization")}
+            title={current?.name ?? tx("selectOrganization")}
+            className={cn(
+              "group/brand flex min-h-11 w-full items-center gap-2.5 rounded-lg p-2 text-left outline-none transition-colors hover:bg-sidebar-accent/70 focus-visible:ring-3 focus-visible:ring-sidebar-ring/50",
+              collapsed && "justify-center",
+            )}
           >
             <OrgLogo logo={current?.logo} name={current?.name} />
-            <span className="flex min-w-0 flex-1 flex-col gap-0.5">
+            <span className={cn("flex min-w-0 flex-1 flex-col gap-0.5", collapsed && "sr-only")}>
               <span className="truncate text-sm">
                 {current?.name ?? (isLoading ? "…" : tx("selectOrganization"))}
               </span>
               <span className="truncate text-xs text-muted-foreground">{tx("current")}</span>
             </span>
-            <ChevronsUpDown className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+            <ChevronsUpDown
+              className={cn("size-4 shrink-0 text-muted-foreground", collapsed && "sr-only")}
+              aria-hidden
+            />
           </button>
         </DropdownMenuTrigger>
         <DropdownMenuContent className="min-w-56" align="start">

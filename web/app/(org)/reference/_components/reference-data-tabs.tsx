@@ -2,6 +2,7 @@
 
 import { useTranslations } from "next-intl";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/tabs";
+import { CampaignsSection } from "./campaigns-section";
 import { CarriersSection } from "./carriers-section";
 import { CurrenciesSection } from "./currencies-section";
 import { DimensionsSection } from "./dimensions-section";
@@ -17,6 +18,7 @@ const tabs = [
   { id: "dimensions", component: DimensionsSection },
   { id: "paymentTerms", component: PaymentTermsSection },
   { id: "carriers", component: CarriersSection },
+  { id: "campaigns", component: CampaignsSection },
   { id: "localization", component: LocalizationSection },
 ] as const;
 

@@ -51,6 +51,7 @@ const permissionCodes = [
   "quality_check.view",
   "service_order.view",
   "commission_plan.view",
+  "approval_request.view",
 ];
 
 const permissions = permissionCodes.map((code, index) => {

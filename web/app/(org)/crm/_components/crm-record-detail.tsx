@@ -2,6 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Plus, Trash2, UserRoundPlus } from "lucide-react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { type ReactNode, useState } from "react";
 import { toast } from "sonner";
@@ -645,6 +646,13 @@ export function CrmRecordDetail({
           <Badge variant={record.isWon ? "default" : record.isLost ? "outline" : "secondary"}>
             {statusLabel(record.status)}
           </Badge>
+        }
+        actions={
+          <Button size="sm" variant="outline" asChild>
+            <Link href={`${basePath}/${record.id}/edit`}>
+              {isLead ? t("editLead") : t("editOpportunity")}
+            </Link>
+          </Button>
         }
         tabs={tabs}
       />
