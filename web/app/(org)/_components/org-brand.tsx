@@ -86,7 +86,9 @@ export function OrgBrand() {
   const [createOpen, setCreateOpen] = useState(false);
   const activeOrgId = useOrganizationId();
   const { data, isLoading } = useMeOrganizationsQuery();
-  const organizations = data?.organizations ?? [];
+  const organizations = (data?.organizations ?? []).filter((org): org is NonNullable<typeof org> =>
+    Boolean(org),
+  );
 
   const current = organizations.find((org) => org.id === activeOrgId) ?? organizations[0];
 

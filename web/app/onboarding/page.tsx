@@ -21,10 +21,13 @@ export default async function OnboardingPage() {
     }
     throw error;
   }
-  if (organizations.length > 0) {
+  const validOrganizations = (organizations ?? []).filter((org): org is NonNullable<typeof org> =>
+    Boolean(org),
+  );
+  if (validOrganizations.length > 0) {
     return (
       <AuthShell title={t("openingDashboard")} subtitle={t("choosingOrg")}>
-        <AcceptOrganization orgId={organizations[0]!.id} />
+        <AcceptOrganization orgId={validOrganizations[0]!.id} />
       </AuthShell>
     );
   }

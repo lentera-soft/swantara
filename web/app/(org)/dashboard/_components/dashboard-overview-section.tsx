@@ -127,7 +127,9 @@ export function DashboardOverview({ orgId }: { orgId: string }) {
   );
 
   const orgName =
-    (orgList?.organizations ?? []).find((org) => String(org.id) === orgId)?.name ?? `#${orgId}`;
+    (orgList?.organizations ?? [])
+      .filter((org): org is NonNullable<typeof org> => Boolean(org))
+      .find((org) => String(org.id) === orgId)?.name ?? `#${orgId}`;
 
   const firstName = me?.user.firstName ?? "";
   const greeting = firstName ? t("greeting", { firstName }) : "";

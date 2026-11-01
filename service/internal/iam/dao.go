@@ -326,9 +326,11 @@ func (s memberDAO) ListOrganizationsByUser(ctx context.Context, userID uint64) (
 		return nil, err
 	}
 
-	orgs := make([]*reference.Organization, len(members))
-	for i, member := range members {
-		orgs[i] = member.Organization
+	orgs := make([]*reference.Organization, 0, len(members))
+	for _, member := range members {
+		if member.Organization != nil {
+			orgs = append(orgs, member.Organization)
+		}
 	}
 	return orgs, nil
 }

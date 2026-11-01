@@ -259,4 +259,6 @@ const ID_LABELS: Record<string, string> = {
   qualified: "Berkualifikasi",
   won: "Menang",
   lost: "Kalah",
+  integration: "Integrasi",
+  inbox: "Kotak Masuk",
 };

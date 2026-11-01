@@ -26,6 +26,7 @@ import type {
   CreateTaxPeriodRequest,
   CreateTaxReturnRequest,
   CreateTaxRuleRequest,
+  CreateWebhookSubscriptionRequest,
   CreateWithholdingTaxRequest,
   DeferralLine,
   DeferralSchedule,
@@ -70,7 +71,10 @@ import type {
   UpdateExpenseCategoryRequest,
   UpdateSubscriptionPlanRequest,
   UpdateSystemConfigRequest,
+  UpdateWebhookSubscriptionRequest,
   UpsertInterorganizationRuleRequest,
+  WebhookDelivery,
+  WebhookSubscription,
   WithholdingTax,
   WithholdRequest,
 } from "./types";
@@ -1133,6 +1137,78 @@ export class IntegrationEvents {
   ): Promise<{ integrationEvent: IntegrationEvent }> {
     const response = await this.axios.post<SuccessEnvelope<{ integrationEvent: IntegrationEvent }>>(
       endpoints.integrationEvents.dispatch(String(organizationId), String(id)),
+    );
+    return withListMeta(response.data);
+  }
+}
+
+export class WebhookSubscriptions {
+  constructor(private readonly axios: AxiosInstance) {}
+
+  async list(
+    organizationId: number,
+    params?: ListQuery,
+  ): Promise<{ webhookSubscriptions: WebhookSubscription[] }> {
+    const response = await this.axios.get<
+      SuccessEnvelope<{ webhookSubscriptions: WebhookSubscription[] }>
+    >(endpoints.webhookSubscriptions.list(String(organizationId)), { params });
+    return withListMeta(response.data);
+  }
+
+  async get(
+    organizationId: number,
+    id: number,
+  ): Promise<{ webhookSubscription: WebhookSubscription }> {
+    const response = await this.axios.get<
+      SuccessEnvelope<{ webhookSubscription: WebhookSubscription }>
+    >(endpoints.webhookSubscriptions.get(String(organizationId), String(id)));
+    return withListMeta(response.data);
+  }
+
+  async create(
+    organizationId: number,
+    request: CreateWebhookSubscriptionRequest,
+  ): Promise<{ webhookSubscription: WebhookSubscription }> {
+    const response = await this.axios.post<
+      SuccessEnvelope<{ webhookSubscription: WebhookSubscription }>
+    >(endpoints.webhookSubscriptions.create(String(organizationId)), request);
+    return withListMeta(response.data);
+  }
+
+  async update(
+    organizationId: number,
+    id: number,
+    request: UpdateWebhookSubscriptionRequest,
+  ): Promise<{ webhookSubscription: WebhookSubscription }> {
+    const response = await this.axios.put<
+      SuccessEnvelope<{ webhookSubscription: WebhookSubscription }>
+    >(endpoints.webhookSubscriptions.update(String(organizationId), String(id)), request);
+    return withListMeta(response.data);
+  }
+
+  async delete(organizationId: number, id: number): Promise<void> {
+    await this.axios.delete(
+      endpoints.webhookSubscriptions.delete(String(organizationId), String(id)),
+    );
+  }
+}
+
+export class WebhookDeliveries {
+  constructor(private readonly axios: AxiosInstance) {}
+
+  async list(
+    organizationId: number,
+    params?: ListQuery,
+  ): Promise<{ webhookDeliveries: WebhookDelivery[] }> {
+    const response = await this.axios.get<
+      SuccessEnvelope<{ webhookDeliveries: WebhookDelivery[] }>
+    >(endpoints.webhookDeliveries.list(String(organizationId)), { params });
+    return withListMeta(response.data);
+  }
+
+  async get(organizationId: number, id: number): Promise<{ webhookDelivery: WebhookDelivery }> {
+    const response = await this.axios.get<SuccessEnvelope<{ webhookDelivery: WebhookDelivery }>>(
+      endpoints.webhookDeliveries.get(String(organizationId), String(id)),
     );
     return withListMeta(response.data);
   }

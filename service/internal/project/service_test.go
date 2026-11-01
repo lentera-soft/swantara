@@ -8,7 +8,6 @@ import (
 	"github.com/jalusw/swantara/apps/service/internal/accounting"
 	"github.com/jalusw/swantara/apps/service/internal/contacts"
 	"github.com/jalusw/swantara/apps/service/internal/helper"
-	"github.com/jalusw/swantara/apps/service/internal/inventory"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/amount"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/dao"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/model"
@@ -513,7 +512,6 @@ func newProjectTestContext() *projectTestContext {
 		&ctx.dimensions,
 		&ctx.invoices,
 		&ctx.invoiceLookup,
-		inventory.TransactionerMock{},
 	)
 	ctx.svc.now = func() time.Time { return time.Date(2026, 8, 1, 0, 0, 0, 0, time.UTC) }
 	return ctx

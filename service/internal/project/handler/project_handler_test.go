@@ -12,7 +12,6 @@ import (
 	"github.com/jalusw/swantara/apps/service/internal/contacts"
 	"github.com/jalusw/swantara/apps/service/internal/helper"
 	"github.com/jalusw/swantara/apps/service/internal/httpx"
-	"github.com/jalusw/swantara/apps/service/internal/inventory"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/amount"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/dao"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/model"
@@ -55,7 +54,6 @@ func TestProjectHandler_Create(t *testing.T) {
 					dao.CRUDMock[reference.Dimension]{},
 					handlerInvoiceEngine{},
 					handlerInvoiceLineLookup{},
-					inventory.TransactionerMock{},
 				)
 				return projects, svc
 			},
@@ -188,7 +186,6 @@ func TestProjectHandler_BillTimeMaterial(t *testing.T) {
 					dao.CRUDMock[reference.Dimension]{},
 					handlerInvoiceEngine{},
 					handlerInvoiceLineLookup{},
-					inventory.TransactionerMock{},
 				)
 				return projects, svc
 			},
@@ -242,7 +239,6 @@ func TestProjectHandler_Summary(t *testing.T) {
 					dao.CRUDMock[reference.Dimension]{},
 					handlerInvoiceEngine{},
 					handlerInvoiceLineLookup{},
-					inventory.TransactionerMock{},
 				)
 				return projects, svc
 			},
@@ -325,7 +321,6 @@ func projectSvc(projects project.ProjectDAOMock) project.ProjectService {
 		dao.CRUDMock[reference.Dimension]{},
 		handlerInvoiceEngine{},
 		handlerInvoiceLineLookup{},
-		inventory.TransactionerMock{},
 	)
 }
 

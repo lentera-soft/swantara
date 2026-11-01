@@ -39,7 +39,7 @@ func reconcileRuleEngineFixture(rules reconcileRuleDAOFake) ReconcileRuleEngine 
 			},
 		},
 	}
-	return NewReconcileRuleEngine(rules, dao.CRUDMock[ReconcileRuleMatch]{}, lines, AccountPartialReconcileDAOMock{}, nil)
+	return NewReconcileRuleEngine(rules, dao.CRUDMock[ReconcileRuleMatch]{}, lines, AccountPartialReconcileDAOMock{})
 }
 
 func TestReconcileRuleEngine_ApplyMatchesFiltersByMinScore(t *testing.T) {

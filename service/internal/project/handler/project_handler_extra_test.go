@@ -9,7 +9,6 @@ import (
 	"github.com/gofiber/fiber/v3"
 	"github.com/jalusw/swantara/apps/service/internal/contacts"
 	"github.com/jalusw/swantara/apps/service/internal/httpx"
-	"github.com/jalusw/swantara/apps/service/internal/inventory"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/dao"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/model"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/query"
@@ -1244,7 +1243,7 @@ func buildProjectSvc(
 	return project.NewProjectService(
 		projects, tasks, milestones, invoiceLines,
 		timesheets, contracts, contacts, accounts, dimensions,
-		invoices, invoiceLookup, inventory.TransactionerMock{},
+		invoices, invoiceLookup,
 	)
 }
 

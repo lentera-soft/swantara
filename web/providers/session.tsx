@@ -21,7 +21,9 @@ export function SessionProvider({ children }: { children: ReactNode }) {
 
   const value: SessionValue = {
     user: me.data?.user,
-    organizations: organizations.data?.organizations,
+    organizations: organizations.data?.organizations?.filter(
+      (org): org is NonNullable<typeof org> => Boolean(org),
+    ),
     isAuthenticated: !!me.data?.user,
     isLoading: me.isLoading || organizations.isLoading,
   };

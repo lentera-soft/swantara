@@ -314,7 +314,7 @@ func TestReconcileRuleEngine_SuggestMatches(t *testing.T) {
 		},
 	}
 	rules := ruleDAOFake{items: []*ReconcileRule{{Base: model.Base{ID: 3}, Name: helper.Ptr("Contact+Amount"), AccountID: helper.Ptr(uint64(1100)), MatchContact: true, MatchAmount: true, AmountTolerance: 0.01}}}
-	engine := NewReconcileRuleEngine(rules, dao.CRUDMock[ReconcileRuleMatch]{}, lines, AccountPartialReconcileDAOMock{}, nil)
+	engine := NewReconcileRuleEngine(rules, dao.CRUDMock[ReconcileRuleMatch]{}, lines, AccountPartialReconcileDAOMock{})
 
 	proposals, err := engine.SuggestMatches(ctx, 10, 0)
 	if err != nil {

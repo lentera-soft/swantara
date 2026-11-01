@@ -154,7 +154,7 @@ type PeriodCloseService struct {
 	poster          PostingService
 	journalResolver ClosingJournalResolver
 	accounts        AccountFinder
-	txer            db.Transactioner
+	tx              db.Transactioner
 	now             func() time.Time
 }
 
@@ -165,7 +165,7 @@ func NewPeriodCloseService(
 	lines JournalLineDAO,
 	periodCloses PeriodCloseDAO,
 	poster PostingService,
-	txer db.Transactioner,
+	tx db.Transactioner,
 ) PeriodCloseService {
 	return PeriodCloseService{
 		periods:      periods,
@@ -174,7 +174,7 @@ func NewPeriodCloseService(
 		lines:        lines,
 		periodCloses: periodCloses,
 		poster:       poster,
-		txer:         txer,
+		tx:           tx,
 		now:          clock.Now,
 	}
 }
@@ -286,7 +286,7 @@ func (s PeriodCloseService) Close(ctx context.Context, organizationID, periodID 
 
 	if len(closeLines) == 0 {
 		var entry *PeriodCloseEntry
-		err := s.txer.Run(ctx, func(tx *gorm.DB) error {
+		err := s.tx.Run(ctx, func(tx *gorm.DB) error {
 			period.State = TaxPeriodStateClosed
 			if _, err := s.periods.UpdateTx(ctx, tx, period); err != nil {
 				return err
@@ -333,7 +333,7 @@ func (s PeriodCloseService) Close(ctx context.Context, organizationID, periodID 
 	}
 
 	var result *PeriodCloseEntry
-	err = s.txer.Run(ctx, func(tx *gorm.DB) error {
+	err = s.tx.Run(ctx, func(tx *gorm.DB) error {
 		posted, err := s.poster.PostTx(ctx, tx, PostRequest{
 			OrganizationID: organizationID,
 			JournalID:      journalID,

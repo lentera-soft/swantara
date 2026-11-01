@@ -56,6 +56,8 @@ import {
   TaxReturns,
   TaxRules,
   VendorBills,
+  WebhookDeliveries,
+  WebhookSubscriptions,
   WithholdingTaxes,
 } from "./finance";
 import {
@@ -205,6 +207,8 @@ class SwantaraService {
   readonly carriers: Carriers;
   readonly systemConfigs: SystemConfigs;
   readonly integrationEvents: IntegrationEvents;
+  readonly webhookSubscriptions: WebhookSubscriptions;
+  readonly webhookDeliveries: WebhookDeliveries;
   readonly auditLogs: AuditLogs;
   readonly contacts: Contacts;
   readonly productCategories: ProductCategories;
@@ -394,6 +398,8 @@ class SwantaraService {
     this.carriers = new Carriers(this.axios);
     this.systemConfigs = new SystemConfigs(this.axios);
     this.integrationEvents = new IntegrationEvents(this.axios);
+    this.webhookSubscriptions = new WebhookSubscriptions(this.axios);
+    this.webhookDeliveries = new WebhookDeliveries(this.axios);
     this.auditLogs = new AuditLogs(this.axios);
     this.contacts = new Contacts(this.axios);
     this.productCategories = new ProductCategories(this.axios);

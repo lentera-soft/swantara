@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/jalusw/swantara/apps/service/internal/accounting"
-	"github.com/jalusw/swantara/apps/service/internal/db"
 	"github.com/jalusw/swantara/apps/service/internal/helper"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/dao"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/model"
@@ -30,7 +29,6 @@ type ProjectService struct {
 	dimensions    dao.CRUD[reference.Dimension]
 	invoices      InvoiceEngine
 	invoiceLookup InvoiceLineLookup
-	tx            db.Transactioner
 	machine       state.Machine
 	now           func() time.Time
 }
@@ -47,7 +45,6 @@ func NewProjectService(
 	dimensions dao.CRUD[reference.Dimension],
 	invoices InvoiceEngine,
 	invoiceLookup InvoiceLineLookup,
-	tx db.Transactioner,
 ) ProjectService {
 	return ProjectService{
 		projects:      projects,
@@ -61,7 +58,6 @@ func NewProjectService(
 		dimensions:    dimensions,
 		invoices:      invoices,
 		invoiceLookup: invoiceLookup,
-		tx:            tx,
 		machine: state.NewMachine(
 			state.Transition{From: model.Status(ProjectStateDraft), To: model.Status(ProjectStateOpen)},
 			state.Transition{From: model.Status(ProjectStateDraft), To: model.Status(ProjectStateCancelled)},

@@ -56,7 +56,9 @@ export function OrganizationAdminSection({ orgId }: { orgId: string }) {
   const { data: orgList } = orgListQuery;
 
   const organization =
-    (orgList?.organizations ?? []).find((org) => String(org.id) === orgId) ?? null;
+    (orgList?.organizations ?? [])
+      .filter((org): org is NonNullable<typeof org> => Boolean(org))
+      .find((org) => String(org.id) === orgId) ?? null;
 
   const currenciesQuery = useQuery({
     queryKey: ["currencies"],
@@ -74,6 +76,7 @@ export function OrganizationAdminSection({ orgId }: { orgId: string }) {
   }
 
   const parents: ParentOption[] = (orgList?.organizations ?? [])
+    .filter((org): org is NonNullable<typeof org> => Boolean(org))
     .filter((org) => String(org.id) !== orgId)
     .map((org) => ({ id: org.id, name: org.name }));
 

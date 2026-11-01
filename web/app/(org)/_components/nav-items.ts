@@ -20,6 +20,7 @@ import {
   ListTree,
   type LucideIcon,
   Package,
+  Plug,
   Receipt,
   Settings,
   Tag,
@@ -71,6 +72,12 @@ export const orgNavItems: OrgNavItem[] = [
     group: "overview",
     href: "/dashboard",
     icon: LayoutDashboard,
+  },
+  {
+    key: "inbox",
+    group: "overview",
+    href: "/inbox",
+    icon: Inbox,
   },
   {
     key: "pipeline",
@@ -471,6 +478,26 @@ export const orgNavItems: OrgNavItem[] = [
     href: "/reports",
     icon: BarChart3,
     permission: "reporting.view",
+  },
+  {
+    key: "profile",
+    group: "settings",
+    href: "/profile",
+    icon: UserRound,
+  },
+  {
+    key: "integration",
+    group: "settings",
+    href: "/integration",
+    icon: Plug,
+    permission: "organization.view",
+  },
+  {
+    key: "billing",
+    group: "settings",
+    href: "/billing",
+    icon: CreditCard,
+    permission: "organization.view",
   },
   {
     key: "settings",

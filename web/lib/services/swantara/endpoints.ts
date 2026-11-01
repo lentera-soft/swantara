@@ -174,6 +174,25 @@ const endpoints = {
       `/api/v1/organizations/${organizationId}/integration-events/${id}/dispatch`,
   },
 
+  webhookSubscriptions: {
+    list: (organizationId: string) =>
+      `/api/v1/organizations/${organizationId}/webhook-subscriptions`,
+    create: (organizationId: string) =>
+      `/api/v1/organizations/${organizationId}/webhook-subscriptions`,
+    get: (organizationId: string, id: string) =>
+      `/api/v1/organizations/${organizationId}/webhook-subscriptions/${id}`,
+    update: (organizationId: string, id: string) =>
+      `/api/v1/organizations/${organizationId}/webhook-subscriptions/${id}`,
+    delete: (organizationId: string, id: string) =>
+      `/api/v1/organizations/${organizationId}/webhook-subscriptions/${id}`,
+  },
+
+  webhookDeliveries: {
+    list: (organizationId: string) => `/api/v1/organizations/${organizationId}/webhook-deliveries`,
+    get: (organizationId: string, id: string) =>
+      `/api/v1/organizations/${organizationId}/webhook-deliveries/${id}`,
+  },
+
   auditLogs: {
     list: (organizationId: string) => `/api/v1/organizations/${organizationId}/audit-logs`,
     get: (organizationId: string, id: string) =>

@@ -744,6 +744,41 @@ export type IntegrationEvent = {
   updatedAt: Date;
 };
 
+export type WebhookSubscription = {
+  id: number;
+  organizationId: number | null;
+  url: string;
+  enabled: boolean;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+export type CreateWebhookSubscriptionRequest = {
+  url: string;
+  secret?: string;
+  enabled?: boolean;
+};
+
+export type UpdateWebhookSubscriptionRequest = {
+  url: string;
+  secret?: string;
+  enabled?: boolean;
+};
+
+export type WebhookDelivery = {
+  id: number;
+  eventId: number;
+  subscriptionId: number | null;
+  organizationId: number | null;
+  status: "delivered" | "failed";
+  attempt: number;
+  responseCode: number | null;
+  error: string | null;
+  deliveredAt: Date | null;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
 export type AuditLog = {
   id: number;
   tableName: string;

@@ -8,7 +8,6 @@ import (
 	"github.com/jalusw/swantara/apps/service/internal/kernel/amount"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/query"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/scope"
-	"gorm.io/gorm"
 
 	"github.com/jalusw/swantara/apps/service/internal/kernel/dao"
 )
@@ -18,7 +17,6 @@ type ReconcileRuleEngine struct {
 	matches  ReconcileRuleMatchDAO
 	lines    JournalLineDAO
 	partials AccountPartialReconcileDAO
-	tx       *gorm.DB
 }
 
 func NewReconcileRuleEngine(
@@ -26,14 +24,12 @@ func NewReconcileRuleEngine(
 	matches ReconcileRuleMatchDAO,
 	lines JournalLineDAO,
 	partials AccountPartialReconcileDAO,
-	db *gorm.DB,
 ) ReconcileRuleEngine {
 	return ReconcileRuleEngine{
 		rules:    rules,
 		matches:  matches,
 		lines:    lines,
 		partials: partials,
-		tx:       db,
 	}
 }
 

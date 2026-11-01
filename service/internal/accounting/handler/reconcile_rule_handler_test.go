@@ -36,7 +36,7 @@ func reconcileRuleTestApp(t *testing.T, withTenant bool, engine accounting.Recon
 }
 
 func newReconcileRuleEngine(rules accounting.ReconcileRuleDAO, lines accounting.JournalLineDAOMock) accounting.ReconcileRuleEngine {
-	return accounting.NewReconcileRuleEngine(rules, dao.CRUDMock[accounting.ReconcileRuleMatch]{}, lines, accounting.AccountPartialReconcileDAOMock{}, nil)
+	return accounting.NewReconcileRuleEngine(rules, dao.CRUDMock[accounting.ReconcileRuleMatch]{}, lines, accounting.AccountPartialReconcileDAOMock{})
 }
 
 func sampleReconcileRule() *accounting.ReconcileRule {
