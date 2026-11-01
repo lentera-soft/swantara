@@ -64,63 +64,12 @@ export default function RegisterForm() {
   const formState = form.formState;
   const control = form.control;
 
-  const firstNameId = "firstName";
-  const lastNameId = "lastName";
   const emailId = "email";
-  const phoneId = "phone";
 
   return (
     <FormProvider {...form}>
       <form noValidate onSubmit={handleSubmit} className="w-full">
-        <div className="animate-fade-up grid grid-cols-1 gap-x-4 gap-y-4 sm:grid-cols-2">
-          <Controller
-            name="firstName"
-            control={control}
-            render={({ field, fieldState }) => (
-              <Field>
-                <Label htmlFor={firstNameId}>{tx("firstName")}</Label>
-                <Input
-                  id={firstNameId}
-                  type="text"
-                  autoComplete="given-name"
-                  placeholder="John"
-                  aria-invalid={Boolean(fieldState.error)}
-                  {...field}
-                />
-                <FieldFeedback
-                  visible={Boolean(fieldState.error)}
-                  intent="danger"
-                  role={fieldState.error ? "alert" : undefined}
-                >
-                  {fieldState.error?.message}
-                </FieldFeedback>
-              </Field>
-            )}
-          />
-          <Controller
-            name="lastName"
-            control={control}
-            render={({ field, fieldState }) => (
-              <Field>
-                <Label htmlFor={lastNameId}>{tx("lastName")}</Label>
-                <Input
-                  id={lastNameId}
-                  type="text"
-                  autoComplete="family-name"
-                  placeholder="Doe"
-                  aria-invalid={Boolean(fieldState.error)}
-                  {...field}
-                />
-                <FieldFeedback
-                  visible={Boolean(fieldState.error)}
-                  intent="danger"
-                  role={fieldState.error ? "alert" : undefined}
-                >
-                  {fieldState.error?.message}
-                </FieldFeedback>
-              </Field>
-            )}
-          />
+        <div className="animate-fade-up flex flex-col gap-x-4 gap-y-4 sm:grid-cols-2">
           <Controller
             name="email"
             control={control}
@@ -145,31 +94,7 @@ export default function RegisterForm() {
               </Field>
             )}
           />
-          <Controller
-            name="phone"
-            control={control}
-            render={({ field, fieldState }) => (
-              <Field>
-                <Label htmlFor={phoneId}>{t("phone")}</Label>
-                <PhoneInput
-                  id={phoneId}
-                  placeholder="+6281234567890"
-                  aria-invalid={Boolean(fieldState.error)}
-                  value={field.value}
-                  onChange={field.onChange}
-                />
-                <FieldFeedback
-                  visible={Boolean(fieldState.error)}
-                  intent="danger"
-                  role={fieldState.error ? "alert" : undefined}
-                >
-                  {fieldState.error?.message}
-                </FieldFeedback>
-              </Field>
-            )}
-          />
           <PasswordField name="password" label={t("password")} />
-          <PasswordField name="passwordConfirmation" label={t("confirmPassword")} />
         </div>
         <div className="mt-8 flex flex-col">
           <SubmitButton variant="default" size="lg" loading={formState.isSubmitting}>
@@ -196,7 +121,7 @@ export default function RegisterForm() {
                 fill="#EA4335"
               />
             </svg>
-            Continue with Google
+            Google
           </Button>
           <Button type="button" variant="outline" className="w-full">
             <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true">
@@ -205,7 +130,7 @@ export default function RegisterForm() {
                 fill="#1877F2"
               />
             </svg>
-            Continue with Facebook
+            Facebook
           </Button>
         </div>
       </form>

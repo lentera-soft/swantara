@@ -1,6 +1,3 @@
-import { Card, CardContent, CardHeader } from "@/components/card";
-import { LocaleSwitcher } from "@/components/locale-switcher";
-
 import { cn } from "@/lib/utils";
 
 export type AuthShellProps = {
@@ -19,15 +16,19 @@ export default async function AuthShell({
   return (
     <div data-slot="auth-shell" className="flex min-h-screen bg-muted/20">
       <div
-        className={cn("mx-auto flex w-full max-w-lg flex-col justify-center p-4 sm:p-6", className)}
+        className={cn("mx-auto flex w-full max-w-6xl flex-col justify-center sm:p-6", className)}
       >
-        <Card>
-          <CardHeader className="border-b">
-            <h1 className="font-heading text-xl leading-snug">{title.trim()}</h1>
-            <p className="text-sm text-muted-foreground">{subtitle.trim()}</p>
-          </CardHeader>
-          <CardContent className="flex flex-col gap-4">{children}</CardContent>
-        </Card>
+        <div className="p-12 bg-white rounded flex gap-8 items-center border">
+          <div className="flex-1">
+            <div>
+              <h1 className="font-heading text-3xl leading-snug">{title.trim()}</h1>
+              <p className="text-sm text-muted-foreground">{subtitle.trim()}</p>
+            </div>
+            <div className="flex flex-col gap-4 mt-8">{children}</div>
+          </div>
+          <div className="flex-2">
+          </div>
+        </div>
       </div>
     </div>
   );
