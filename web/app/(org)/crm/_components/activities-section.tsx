@@ -108,32 +108,31 @@ export function ActivitiesSection({ orgId }: { orgId: string }) {
       id: "actions",
       header: "",
       cell: ({ row }) => (
-        <div className="flex items-center justify-end gap-1">
-          {!row.original.done ? (
-            <Button
-              size="icon-sm"
-              variant="ghost"
-              aria-label={t("markDone")}
-              onClick={() => doneMutation.mutate(row.original.id)}
-              disabled={doneMutation.isPending}
-            >
-              <Check className="size-4" />
-            </Button>
-          ) : null}
-          <RowActions
-            editLabel={t("editActivity")}
-            deleteLabel={t("deleteActivity")}
-            confirmTitle={t("deleteActivityTitle")}
-            confirmDescription={t("deleteActivityDescription")}
-            onEdit={() => {
-              setEditingActivity(row.original);
-              setActivityDialogOpen(true);
-            }}
-            onDelete={() => {
-              deleteMutation.mutate(row.original.id);
-            }}
-          />
-        </div>
+        <RowActions
+          editLabel={t("editActivity")}
+          deleteLabel={t("deleteActivity")}
+          confirmTitle={t("deleteActivityTitle")}
+          confirmDescription={t("deleteActivityDescription")}
+          items={
+            row.original.done
+              ? undefined
+              : [
+                  {
+                    label: t("markDone"),
+                    icon: <Check aria-hidden />,
+                    disabled: doneMutation.isPending,
+                    onSelect: () => doneMutation.mutate(row.original.id),
+                  },
+                ]
+          }
+          onEdit={() => {
+            setEditingActivity(row.original);
+            setActivityDialogOpen(true);
+          }}
+          onDelete={() => {
+            deleteMutation.mutate(row.original.id);
+          }}
+        />
       ),
     },
   ];

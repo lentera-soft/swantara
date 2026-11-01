@@ -7,17 +7,27 @@ import (
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/jalusw/swantara/apps/service/internal/httpx"
+	"github.com/jalusw/swantara/apps/service/internal/iam"
 	"github.com/jalusw/swantara/apps/service/internal/organization"
 	"github.com/jalusw/swantara/apps/service/internal/reference"
 )
 
 type OrganizationHandler struct {
-	svc organization.Service
-	dao organization.OrganizationDAO
+	svc        organization.Service
+	orgDao     organization.OrganizationDAO
+	membersDao iam.MemberDAO
 }
 
-func NewOrganizationHandler(svc organization.Service, dao organization.OrganizationDAO) OrganizationHandler {
-	return OrganizationHandler{svc: svc, dao: dao}
+func NewOrganizationHandler(
+	svc organization.Service,
+	orgDao organization.OrganizationDAO,
+	membersDao iam.MemberDAO,
+) OrganizationHandler {
+	return OrganizationHandler{
+		svc:        svc,
+		orgDao:     orgDao,
+		membersDao: membersDao,
+	}
 }
 
 type OrganizationResponse struct {
@@ -81,7 +91,7 @@ func (h OrganizationHandler) findOrganization(c fiber.Ctx) (*reference.Organizat
 		return nil, false
 	}
 
-	org, err := h.dao.Find(c, orgID)
+	org, err := h.orgDao.Find(c, orgID)
 	if err != nil {
 		httpx.RequestLog(c).Error("organization lookup failed", "organization_id", orgID, "error", err)
 		_ = httpx.CreateInternalServerErrorResponse(c, "Failed to get organization.", err)

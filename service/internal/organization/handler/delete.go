@@ -30,7 +30,7 @@ func (h OrganizationHandler) Delete(c fiber.Ctx) error {
 		return httpx.CreateUnprocessableEntityErrorResponse(c, "Invalid organization id provided.", nil)
 	}
 
-	existing, err := h.dao.Find(c, orgID)
+	existing, err := h.orgDao.Find(c, orgID)
 	if err != nil {
 		if dao.IsNotFound(err) {
 			return httpx.CreateNotFoundResponse(c, "Organization not found.")
@@ -42,7 +42,7 @@ func (h OrganizationHandler) Delete(c fiber.Ctx) error {
 		return httpx.CreateNotFoundResponse(c, "Organization not found.")
 	}
 
-	if err := h.dao.Delete(c, orgID); err != nil {
+	if err := h.orgDao.Delete(c, orgID); err != nil {
 		httpx.RequestLog(c).Error("organization deletion failed", "organization_id", orgID, "error", err)
 		return httpx.CreateConflictResponse(c, "Organization cannot be deleted because other records reference it.", err)
 	}

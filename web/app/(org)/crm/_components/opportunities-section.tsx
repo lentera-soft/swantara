@@ -186,47 +186,45 @@ export function OpportunitiesSection({ orgId }: { orgId: string }) {
       cell: ({ row }) => {
         const isOpen =
           row.original.closedAt == null && row.original.lostReason == null && !row.original.isWon;
+        const items = [
+          ...(isOpen
+            ? [
+                {
+                  label: t("markWon"),
+                  icon: <Trophy aria-hidden />,
+                  disabled: winMutation.isPending,
+                  onSelect: () => winMutation.mutate(row.original.id),
+                },
+                {
+                  label: t("markLost"),
+                  icon: <XCircle aria-hidden />,
+                  onSelect: () => setLoseId(String(row.original.id)),
+                },
+              ]
+            : []),
+          ...(!row.original.isLost && row.original.lostReason == null
+            ? [
+                {
+                  label: t("createQuote"),
+                  onSelect: () => router.push(`/sale-quotes?opportunity=${row.original.id}`),
+                },
+              ]
+            : []),
+        ];
         return (
-          <div className="flex items-center justify-end gap-1">
-            {isOpen ? (
-              <>
-                <Button
-                  size="icon-sm"
-                  variant="ghost"
-                  aria-label={t("markWon")}
-                  onClick={() => winMutation.mutate(row.original.id)}
-                  disabled={winMutation.isPending}
-                >
-                  <Trophy className="size-4" />
-                </Button>
-                <Button
-                  size="icon-sm"
-                  variant="ghost"
-                  aria-label={t("markLost")}
-                  onClick={() => setLoseId(String(row.original.id))}
-                >
-                  <XCircle className="size-4" />
-                </Button>
-              </>
-            ) : null}
-            {!row.original.isLost && row.original.lostReason == null ? (
-              <Button size="sm" variant="outline" asChild>
-                <a href={`/sale-quotes?opportunity=${row.original.id}`}>{t("createQuote")}</a>
-              </Button>
-            ) : null}
-            <RowActions
-              editLabel={t("editOpportunity")}
-              deleteLabel={t("deleteOpportunity")}
-              confirmTitle={t("deleteOpportunityTitle")}
-              confirmDescription={t("deleteOpportunityDescription")}
-              onEdit={() => {
-                router.push(`/crm/opportunities/${row.original.id}/edit`);
-              }}
-              onDelete={() => {
-                deleteMutation.mutate(row.original.id);
-              }}
-            />
-          </div>
+          <RowActions
+            editLabel={t("editOpportunity")}
+            deleteLabel={t("deleteOpportunity")}
+            confirmTitle={t("deleteOpportunityTitle")}
+            confirmDescription={t("deleteOpportunityDescription")}
+            items={items.length > 0 ? items : undefined}
+            onEdit={() => {
+              router.push(`/crm/opportunities/${row.original.id}/edit`);
+            }}
+            onDelete={() => {
+              deleteMutation.mutate(row.original.id);
+            }}
+          />
         );
       },
     },

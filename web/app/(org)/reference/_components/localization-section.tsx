@@ -101,52 +101,33 @@ export function LocalizationSection({ orgId }: { orgId: string }) {
       id: "actions",
       header: "",
       cell: ({ row }) => (
-        <div className="flex items-center justify-end gap-1">
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => openEdit(row.original)}
-            aria-label={t("actionEdit")}
-          >
-            <PencilIcon />
-          </Button>
-          <Button
-            variant="ghost"
-            size="icon-sm"
-            onClick={() => setTemplateProfile(row.original)}
-            aria-label={t("manageTaxTemplates")}
-          >
-            <Settings2 />
-          </Button>
-          <ConfirmDialog
-            title={t("applyProfileTitle")}
-            description={t("applyProfileDescription")}
-            confirmLabel={t("applyProfile")}
-            variant="neutral"
-            onConfirm={() => handleApply(row.original)}
-            trigger={
-              <Button variant="ghost" size="icon-sm" aria-label={t("applyProfile")}>
-                <CheckCheck />
-              </Button>
-            }
-          />
-          <ConfirmDialog
-            title={t("deleteProfileTitle")}
-            description={t("deleteProfileDescription")}
-            confirmLabel={tCommon("delete")}
-            onConfirm={() => handleDelete(row.original)}
-            trigger={
-              <Button
-                variant="ghost"
-                size="icon-sm"
-                aria-label={t("actionDelete")}
-                className="text-destructive"
-              >
-                <Trash2Icon />
-              </Button>
-            }
-          />
-        </div>
+        <RowActions
+          editLabel={t("actionEdit")}
+          onEdit={() => openEdit(row.original)}
+          items={[
+            {
+              label: t("manageTaxTemplates"),
+              icon: <Settings2 aria-hidden />,
+              onSelect: () => setTemplateProfile(row.original),
+            },
+            {
+              label: t("applyProfile"),
+              icon: <CheckCheck aria-hidden />,
+              onSelect: () => handleApply(row.original),
+              confirm: {
+                title: t("applyProfileTitle"),
+                description: t("applyProfileDescription"),
+                confirmLabel: t("applyProfile"),
+                variant: "neutral",
+              },
+            },
+          ]}
+          deleteLabel={t("actionDelete")}
+          confirmTitle={t("deleteProfileTitle")}
+          confirmDescription={t("deleteProfileDescription")}
+          confirmLabel={tCommon("delete")}
+          onDelete={() => handleDelete(row.original)}
+        />
       ),
     },
   ];

@@ -876,6 +876,7 @@ func main() {
 	orgHandler := organizationHandler.NewOrganizationHandler(
 		organizationSvc,
 		organizationDAO,
+		memberDAO,
 	)
 	memberHandler := handler.NewMemberHandler(memberSvc)
 	contactHandler := contactsHandler.NewContactHandler(contactSvc)

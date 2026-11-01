@@ -171,84 +171,74 @@ export function LeadsSection({ orgId }: { orgId: string }) {
       header: "",
       cell: ({ row }) => {
         const actions = availableLeadActions(row.original.status);
+        const items = [
+          ...(actions.contact
+            ? [
+                {
+                  label: t("actionContact"),
+                  icon: <CheckCircle2 aria-hidden />,
+                  disabled: transitionMutation.isPending,
+                  onSelect: () =>
+                    transitionMutation.mutate({ prospectId: row.original.id, status: "contacted" }),
+                },
+              ]
+            : []),
+          ...(actions.qualify
+            ? [
+                {
+                  label: t("actionQualify"),
+                  icon: <Target aria-hidden />,
+                  disabled: transitionMutation.isPending,
+                  onSelect: () =>
+                    transitionMutation.mutate({ prospectId: row.original.id, status: "qualified" }),
+                },
+              ]
+            : []),
+          ...(actions.nurture
+            ? [
+                {
+                  label: t("actionNurture"),
+                  icon: <Leaf aria-hidden />,
+                  disabled: transitionMutation.isPending,
+                  onSelect: () =>
+                    transitionMutation.mutate({ prospectId: row.original.id, status: "nurtured" }),
+                },
+              ]
+            : []),
+          ...(actions.disqualify
+            ? [
+                {
+                  label: t("actionDisqualify"),
+                  icon: <Ban aria-hidden />,
+                  destructive: true,
+                  disabled: transitionMutation.isPending,
+                  onSelect: () => setDisqualifyId(String(row.original.id)),
+                },
+              ]
+            : []),
+          ...(row.original.type === "prospect" && row.original.closedAt == null
+            ? [
+                {
+                  label: t("promoteToOpportunity"),
+                  onSelect: () => setPromoteId(String(row.original.id)),
+                },
+              ]
+            : []),
+        ];
         return (
-          <div className="flex items-center justify-end gap-1">
-            {actions.contact ? (
-              <Button
-                size="icon-sm"
-                variant="ghost"
-                aria-label={t("actionContact")}
-                title={t("actionContact")}
-                onClick={() =>
-                  transitionMutation.mutate({ prospectId: row.original.id, status: "contacted" })
-                }
-                disabled={transitionMutation.isPending}
-              >
-                <CheckCircle2 className="size-4" />
-              </Button>
-            ) : null}
-            {actions.qualify ? (
-              <Button
-                size="icon-sm"
-                variant="ghost"
-                aria-label={t("actionQualify")}
-                title={t("actionQualify")}
-                onClick={() =>
-                  transitionMutation.mutate({ prospectId: row.original.id, status: "qualified" })
-                }
-                disabled={transitionMutation.isPending}
-              >
-                <Target className="size-4" />
-              </Button>
-            ) : null}
-            {actions.nurture ? (
-              <Button
-                size="icon-sm"
-                variant="ghost"
-                aria-label={t("actionNurture")}
-                title={t("actionNurture")}
-                onClick={() =>
-                  transitionMutation.mutate({ prospectId: row.original.id, status: "nurtured" })
-                }
-                disabled={transitionMutation.isPending}
-              >
-                <Leaf className="size-4" />
-              </Button>
-            ) : null}
-            {actions.disqualify ? (
-              <Button
-                size="icon-sm"
-                variant="ghost"
-                aria-label={t("actionDisqualify")}
-                title={t("actionDisqualify")}
-                onClick={() => setDisqualifyId(String(row.original.id))}
-                disabled={transitionMutation.isPending}
-              >
-                <Ban className="size-4" />
-              </Button>
-            ) : null}
-            {row.original.type === "prospect" && row.original.closedAt == null ? (
-              <Button
-                size="sm"
-                variant="outline"
-                onClick={() => setPromoteId(String(row.original.id))}
-              >
-                {t("promoteToOpportunity")}
-              </Button>
-            ) : null}
-            <RowActions
-              editLabel={t("editLead")}
-              deleteLabel={t("deleteLead")}
-              confirmTitle={t("deleteLeadTitle")}
-              confirmDescription={t("deleteLeadDescription")}
-              onEdit={() => {
-                router.push(`/crm/leads/${row.original.id}/edit`);
-              }}
-              onDelete={() => {
-                deleteMutation.mutate(row.original.id);
-              }}
-            />
-          </div>
+          <RowActions
+            editLabel={t("editLead")}
+            deleteLabel={t("deleteLead")}
+            confirmTitle={t("deleteLeadTitle")}
+            confirmDescription={t("deleteLeadDescription")}
+            items={items.length > 0 ? items : undefined}
+            onEdit={() => {
+              router.push(`/crm/leads/${row.original.id}/edit`);
+            }}
+            onDelete={() => {
+              deleteMutation.mutate(row.original.id);
+            }}
+          />
         );
       },
     },

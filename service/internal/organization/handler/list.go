@@ -35,16 +35,21 @@ func (h OrganizationHandler) List(c fiber.Ctx) error {
 		return httpx.CreateUnprocessableEntityErrorResponse(c, "Invalid query parameters.", nil)
 	}
 
-	page, err := h.dao.List(c, parsedQuery)
+	userID, ok := httpx.CallerID(c)
+	if !ok {
+		return httpx.CreateUnauthorizedErrorResponse(c, "Unauthorized.", httpx.ErrMissingUserInContext)
+	}
+
+	page, err := h.membersDao.ListOrganizationsByUser(c, userID)
 	if err != nil {
 		httpx.RequestLog(c).Error("organization list failed", "error", err)
 		return httpx.CreateInternalServerErrorResponse(c, "Failed to retrieve organizations.", err)
 	}
 
-	httpx.RequestLog(c).Info("organizations listed", "count", len(page.Items))
+	httpx.RequestLog(c).Info("organizations listed", "count", len(page))
 
-	items := make([]OrganizationResponse, len(page.Items))
-	for i, org := range page.Items {
+	items := make([]OrganizationResponse, len(page))
+	for i, org := range page {
 		items[i] = newOrganizationResponse(org)
 	}
 
@@ -54,5 +59,5 @@ func (h OrganizationHandler) List(c fiber.Ctx) error {
 
 	return httpx.CreateSuccessResponseWithMeta(c, "Organizations retrieved successfully.", ListOrganizationsResponse{
 		Organizations: items,
-	}, httpx.BuildListMeta(parsedQuery, page.Count))
+	}, httpx.BuildListMeta(parsedQuery, int64(len(page))))
 }
