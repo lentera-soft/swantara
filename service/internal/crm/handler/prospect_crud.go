@@ -83,10 +83,12 @@ func (h ProspectHandler) List(c fiber.Ctx) error {
 	if err != nil {
 		return httpx.CreateUnprocessableEntityErrorResponse(c, "Invalid query parameters.", nil)
 	}
+
 	organizationID, ok := httpx.CallerOrganizationID(c)
 	if !ok {
 		return httpx.CreateUnauthorizedErrorResponse(c, "Unauthorized.", httpx.ErrMissingOrganizationInContext)
 	}
+
 	parsedQuery.Filters = append(parsedQuery.Filters, query.Filter{
 		Field: "type", Operator: query.Equal, Value: crm.ProspectKindLead,
 	})
