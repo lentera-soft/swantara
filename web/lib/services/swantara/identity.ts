@@ -36,10 +36,7 @@ export type TokenPair = {
 };
 
 export type RegisterRequest = {
-  firstName: string;
-  lastName?: string;
   email: string;
-  phone?: string;
   password: string;
 };
 
