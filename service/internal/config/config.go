@@ -57,6 +57,7 @@ type Config struct {
 	JWTRefreshTokenExpires         string `mapstructure:"JWT_REFRESH_TOKEN_EXPIRES_IN" validate:"required"`
 	JWTRefreshTokenExpiresDuration time.Duration
 	JWTRefreshTokenSigningMethod   jwt.SigningMethod
+	JWTAudience                    string
 
 	QueueRedisHost     string `mapstructure:"QUEUE_REDIS_HOST" validate:"required"`
 	QueueRedisPort     int    `mapstructure:"QUEUE_REDIS_PORT" validate:"required"`
@@ -157,6 +158,7 @@ const (
 	DefaultBcryptPasswordCost              = bcrypt.DefaultCost
 	DefaultJwtAccessTokenExpiresIn         = "30m"
 	DefaultJwtRefreshTokenExpiresIn        = "48h"
+	DefaultJwtAudience                     = "swantara-service"
 	DefaultQueueRedisHost                  = "localhost"
 	DefaultQueueRedisPort                  = 6379
 	DefaultQueueRedisDb                    = 0
@@ -205,7 +207,10 @@ func ConfigFilename() string {
 }
 
 func New(path, filename string) (*Config, error) {
-	var config Config
+	config := Config{
+		JWTAccessTokenSigningMethod:  jwt.SigningMethodHS256,
+		JWTRefreshTokenSigningMethod: jwt.SigningMethodHS256,
+	}
 
 	v := viper.New()
 
@@ -277,6 +282,8 @@ func New(path, filename string) (*Config, error) {
 	v.SetDefault("MAIL_USER_VERIFICATION_REDIRECTION", DefaultMailUserVerificationRedirection)
 	v.SetDefault("MAIL_PASSWORD_RESET_REDIRECTION", DefaultMailPasswordResetRedirection)
 
+	v.SetDefault("JWT_AUDIENCE", DefaultJwtAudience)
+
 	v.SetDefault("AUTH_EMAIL_VERIFY_TTL", DefaultAuthEmailVerifyTtl)
 	v.SetDefault("AUTH_PASSWORD_RESET_TTL", DefaultAuthPasswordResetTtl)
 
@@ -314,26 +321,23 @@ func New(path, filename string) (*Config, error) {
 		}
 	}
 
-	config.JWTAccessTokenSigningMethod = jwt.SigningMethodHS256
-	config.JWTRefreshTokenSigningMethod = jwt.SigningMethodHS256
-
 	if err := config.Validate(); err != nil {
 		return nil, err
 	}
 
-	duration, err := helper.ParseDuration("RATE_LIMITER_EXPIRATION", config.RateLimiterExpiration)
+	duration, err := helper.ParseDuration(config.RateLimiterExpiration)
 	if err != nil {
 		return nil, err
 	}
 	config.RateLimiterDuration = duration
 
-	emailVerifyTTL, err := helper.ParseDuration("AUTH_EMAIL_VERIFY_TTL", config.AuthEmailVerifyTTL)
+	emailVerifyTTL, err := helper.ParseDuration(config.AuthEmailVerifyTTL)
 	if err != nil {
 		return nil, err
 	}
 	config.AuthEmailVerifyTTLDuration = emailVerifyTTL
 
-	passwordResetTTL, err := helper.ParseDuration("AUTH_PASSWORD_RESET_TTL", config.AuthPasswordResetTTL)
+	passwordResetTTL, err := helper.ParseDuration(config.AuthPasswordResetTTL)
 	if err != nil {
 		return nil, err
 	}
@@ -346,25 +350,25 @@ func New(path, filename string) (*Config, error) {
 		config.OAuthHTTPTimeout = DefaultOAuthHTTPTimeout
 	}
 
-	oauthStateTTL, err := helper.ParseDuration("OAUTH_STATE_TTL", config.OAuthStateTTL)
+	oauthStateTTL, err := helper.ParseDuration(config.OAuthStateTTL)
 	if err != nil {
 		return nil, err
 	}
 	config.OAuthStateTTLDuration = oauthStateTTL
 
-	oauthHTTPTimeout, err := helper.ParseDuration("OAUTH_HTTP_TIMEOUT", config.OAuthHTTPTimeout)
+	oauthHTTPTimeout, err := helper.ParseDuration(config.OAuthHTTPTimeout)
 	if err != nil {
 		return nil, err
 	}
 	config.OAuthHTTPTimeoutDuration = oauthHTTPTimeout
 
-	accessTokenExpires, err := helper.ParseDuration("JWT_ACCESS_TOKEN_EXPIRES_IN", config.JWTAccessTokenExpires)
+	accessTokenExpires, err := helper.ParseDuration(config.JWTAccessTokenExpires)
 	if err != nil {
 		return nil, err
 	}
 	config.JWTAccessTokenExpiresDuration = accessTokenExpires
 
-	refreshTokenExpires, err := helper.ParseDuration("JWT_REFRESH_TOKEN_EXPIRES_IN", config.JWTRefreshTokenExpires)
+	refreshTokenExpires, err := helper.ParseDuration(config.JWTRefreshTokenExpires)
 	if err != nil {
 		return nil, err
 	}
@@ -450,7 +454,7 @@ func (c *Config) Validate() error {
 		if d.value == "" {
 			continue
 		}
-		if _, err := helper.ParseDuration(d.name, d.value); err != nil {
+		if _, err := helper.ParseDuration(d.value); err != nil {
 			return err
 		}
 	}
