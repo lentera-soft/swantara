@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 import { renderWithProviders, server } from "@/lib/tests";
-import { CategoryTreeSection } from "../category-tree-section";
+import { CategoryTableSection } from "../category-table-section";
 
 const STAMP = "2026-01-01T00:00:00Z";
 
@@ -84,18 +84,23 @@ function useHandlers(options?: { categories?: unknown[]; failCreate?: boolean })
 
 beforeEach(() => {});
 
-describe("CategoryTreeSection branches", () => {
+function rowFor(name: string): HTMLElement {
+  const cell = screen.getAllByRole("cell").find((item) => item.textContent?.trim() === name);
+  return cell?.closest("tr") as HTMLElement;
+}
+
+describe("CategoryTableSection branches", () => {
   it("renders the empty state without categories", async () => {
     useHandlers({ categories: [] });
-    renderWithProviders(<CategoryTreeSection orgId="1" />);
+    renderWithProviders(<CategoryTableSection orgId="1" />);
     expect(await screen.findByText("Belum ada kategori")).toBeInTheDocument();
   });
 
   it("closes the create dialog through cancel", async () => {
     const user = userEvent.setup();
     useHandlers();
-    renderWithProviders(<CategoryTreeSection orgId="1" />);
-    await screen.findByText("Raw Materials");
+    renderWithProviders(<CategoryTableSection orgId="1" />);
+    await screen.findByText("Metals");
     await user.click(screen.getByRole("button", { name: "Tambah kategori" }));
     await screen.findByRole("dialog");
     await user.click(screen.getByRole("button", { name: "Batal" }));
@@ -105,8 +110,8 @@ describe("CategoryTreeSection branches", () => {
   it("creates a category with null defaults", async () => {
     const user = userEvent.setup();
     const { posted } = useHandlers();
-    renderWithProviders(<CategoryTreeSection orgId="1" />);
-    await screen.findByText("Raw Materials");
+    renderWithProviders(<CategoryTableSection orgId="1" />);
+    await screen.findByText("Metals");
     await user.click(screen.getByRole("button", { name: "Tambah kategori" }));
     await user.type(await screen.findByLabelText("Nama"), "Packaging");
     await user.click(screen.getByRole("button", { name: "Simpan kategori" }));
@@ -121,8 +126,8 @@ describe("CategoryTreeSection branches", () => {
   it("keeps the dialog open when creation fails", async () => {
     const user = userEvent.setup();
     useHandlers({ failCreate: true });
-    renderWithProviders(<CategoryTreeSection orgId="1" />);
-    await screen.findByText("Raw Materials");
+    renderWithProviders(<CategoryTableSection orgId="1" />);
+    await screen.findByText("Metals");
     await user.click(screen.getByRole("button", { name: "Tambah kategori" }));
     await user.type(await screen.findByLabelText("Nama"), "Broken");
     await user.click(screen.getByRole("button", { name: "Simpan kategori" }));
@@ -133,9 +138,9 @@ describe("CategoryTreeSection branches", () => {
   it("edits a category with prefilled values and updates it", async () => {
     const user = userEvent.setup();
     const { put } = useHandlers();
-    renderWithProviders(<CategoryTreeSection orgId="1" />);
+    renderWithProviders(<CategoryTableSection orgId="1" />);
     await screen.findByText("Metals");
-    const metalsRow = screen.getByText("Metals").closest('[role="treeitem"]') as HTMLElement;
+    const metalsRow = rowFor("Metals");
     await user.click(within(metalsRow).getByRole("button", { name: "Aksi" }));
     await user.click(await screen.findByRole("menuitem", { name: "Ubah" }));
     expect(await screen.findByText("Ubah kategori")).toBeInTheDocument();
@@ -147,24 +152,24 @@ describe("CategoryTreeSection branches", () => {
   it("blocks deletion of a parent category", async () => {
     const user = userEvent.setup();
     const { deleted } = useHandlers();
-    renderWithProviders(<CategoryTreeSection orgId="1" />);
-    await screen.findByText("Raw Materials");
-    const parentRow = screen.getByText("Raw Materials").closest('[role="treeitem"]') as HTMLElement;
+    renderWithProviders(<CategoryTableSection orgId="1" />);
+    await screen.findByText("Metals");
+    const parentRow = rowFor("Raw Materials");
     await user.click(within(parentRow).getByRole("button", { name: "Aksi" }));
     await user.click(await screen.findByRole("menuitem", { name: "Hapus" }));
     const confirm = await screen.findByRole("alertdialog");
     await user.click(within(confirm).getByRole("button", { name: "Hapus" }));
     await waitFor(() => expect(screen.queryByRole("alertdialog")).not.toBeInTheDocument());
     expect(deleted.length).toBe(0);
-    expect(screen.getByText("Raw Materials")).toBeInTheDocument();
+    expect(screen.getAllByText("Raw Materials").length).toBeGreaterThan(0);
   });
 
   it("deletes a leaf category", async () => {
     const user = userEvent.setup();
     const { deleted } = useHandlers();
-    renderWithProviders(<CategoryTreeSection orgId="1" />);
+    renderWithProviders(<CategoryTableSection orgId="1" />);
     await screen.findByText("Metals");
-    const leafRow = screen.getByText("Metals").closest('[role="treeitem"]') as HTMLElement;
+    const leafRow = rowFor("Metals");
     await user.click(within(leafRow).getByRole("button", { name: "Aksi" }));
     await user.click(await screen.findByRole("menuitem", { name: "Hapus" }));
     const confirm = await screen.findByRole("alertdialog");

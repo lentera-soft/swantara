@@ -8,19 +8,20 @@ import { InteractiveEntityTable } from "@/app/(org)/_components/interactive-enti
 import { Badge } from "@/components/badge";
 import { Button } from "@/components/button";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
-import type { Rma } from "@/lib/services/swantara";
+import type { ListQuery, Rma } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
 import { formatDate } from "@/lib/utils";
 import { RmaFormDialog } from "./rma-form-dialog";
-import { type RmaState, rmaStateLabel, rmaStateTone, rmaTypeLabel } from "./rma-utils";
+import { type RmaState, type RmaType, rmaStateLabel, rmaStateTone } from "./rma-utils";
 
-export function RmasSection({ orgId }: { orgId: string }) {
+export function RmasSection({ orgId, rmaType }: { orgId: string; rmaType: RmaType }) {
   const t = useTranslations("Sales");
   const [dialogOpen, setDialogOpen] = useState(false);
 
-  const rmasQuery = useOrgListQuery<{ rmas: Rma[] }, Record<string, never>>(
+  const rmasQuery = useOrgListQuery<{ rmas: Rma[] }, ListQuery>(
     "rmas",
-    (organizationId) => getSwantaraService().rmas.list(organizationId),
+    (organizationId, params) => getSwantaraService().rmas.list(organizationId, params),
+    { filter: [`type:eq:${rmaType}`] },
   );
 
   const rmas = rmasQuery.data?.rmas ?? [];
@@ -30,14 +31,6 @@ export function RmasSection({ orgId }: { orgId: string }) {
       return (t as unknown as (k: string) => string)(`rmaState.${state}`);
     } catch {
       return rmaStateLabel(state);
-    }
-  }
-
-  function rmaTypeLabelText(type: Rma["type"]): string {
-    try {
-      return (t as unknown as (k: string) => string)(`rmaType.${type}`);
-    } catch {
-      return rmaTypeLabel(type);
     }
   }
 
@@ -52,13 +45,6 @@ export function RmasSection({ orgId }: { orgId: string }) {
         >
           {row.original.name ?? `RMA-${row.original.id}`}
         </a>
-      ),
-    },
-    {
-      accessorKey: "type",
-      header: t("tableType"),
-      cell: ({ row }) => (
-        <span className="text-muted-foreground text-sm">{rmaTypeLabelText(row.original.type)}</span>
       ),
     },
     {
@@ -144,6 +130,7 @@ export function RmasSection({ orgId }: { orgId: string }) {
           open={dialogOpen}
           onOpenChange={setDialogOpen}
           orgId={orgId}
+          defaultType={rmaType}
           onSave={() => {
             setDialogOpen(false);
             void rmasQuery.refetch();

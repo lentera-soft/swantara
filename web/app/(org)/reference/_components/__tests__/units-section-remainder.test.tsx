@@ -10,7 +10,7 @@ beforeEach(() => {});
 describe("UnitsSection remainder", () => {
   it("shows the empty categories message when no categories exist", async () => {
     server.use(
-      http.get("*/api/v1/unit-groups", () =>
+      http.get("*/api/v1/organizations/:organizationId/unit-groups", () =>
         HttpResponse.json({ success: true, message: "OK.", data: { categories: [] } }),
       ),
     );
@@ -21,7 +21,7 @@ describe("UnitsSection remainder", () => {
 
   it("shows the error state with retry when loading fails", async () => {
     server.use(
-      http.get("*/api/v1/units", () =>
+      http.get("*/api/v1/organizations/:organizationId/units", () =>
         HttpResponse.json({ success: false, message: "UoM load failed." }, { status: 500 }),
       ),
     );
@@ -39,7 +39,7 @@ describe("UnitsSection remainder", () => {
   it("opens the create dialog and saves a new unit", async () => {
     let created: unknown = null;
     server.use(
-      http.post("*/api/v1/units", async ({ request }) => {
+      http.post("*/api/v1/organizations/:organizationId/units", async ({ request }) => {
         created = await request.json();
         return HttpResponse.json(
           {
@@ -86,7 +86,7 @@ describe("UnitsSection remainder", () => {
   it("opens the edit dialog prefilled and updates the unit", async () => {
     let updated: unknown = null;
     server.use(
-      http.put("*/api/v1/units/:unitId", async ({ request }) => {
+      http.put("*/api/v1/organizations/:organizationId/units/:unitId", async ({ request }) => {
         updated = await request.json();
         return HttpResponse.json({ success: true, message: "OK.", data: {} });
       }),
@@ -111,7 +111,7 @@ describe("UnitsSection remainder", () => {
   it("creates a category from the category dialog", async () => {
     let created: unknown = null;
     server.use(
-      http.post("*/api/v1/unit-groups", async ({ request }) => {
+      http.post("*/api/v1/organizations/:organizationId/unit-groups", async ({ request }) => {
         created = await request.json();
         return HttpResponse.json(
           {
@@ -139,7 +139,7 @@ describe("UnitsSection remainder", () => {
   it("deletes a unit through the row actions", async () => {
     let deleted = false;
     server.use(
-      http.delete("*/api/v1/units/:unitId", () => {
+      http.delete("*/api/v1/organizations/:organizationId/units/:unitId", () => {
         deleted = true;
         return HttpResponse.json({ success: true, message: "Deleted." });
       }),

@@ -64,20 +64,26 @@ const endpoints = {
   },
 
   unitGroups: {
-    list: "/api/v1/unit-groups",
-    create: "/api/v1/unit-groups",
-    get: (id: string) => `/api/v1/unit-groups/${id}`,
-    update: (id: string) => `/api/v1/unit-groups/${id}`,
-    delete: (id: string) => `/api/v1/unit-groups/${id}`,
+    list: (organizationId: string) => `/api/v1/organizations/${organizationId}/unit-groups`,
+    create: (organizationId: string) => `/api/v1/organizations/${organizationId}/unit-groups`,
+    get: (organizationId: string, id: string) =>
+      `/api/v1/organizations/${organizationId}/unit-groups/${id}`,
+    update: (organizationId: string, id: string) =>
+      `/api/v1/organizations/${organizationId}/unit-groups/${id}`,
+    delete: (organizationId: string, id: string) =>
+      `/api/v1/organizations/${organizationId}/unit-groups/${id}`,
   },
 
   units: {
-    list: "/api/v1/units",
-    create: "/api/v1/units",
-    convert: "/api/v1/units/convert",
-    get: (id: string) => `/api/v1/units/${id}`,
-    update: (id: string) => `/api/v1/units/${id}`,
-    delete: (id: string) => `/api/v1/units/${id}`,
+    list: (organizationId: string) => `/api/v1/organizations/${organizationId}/units`,
+    create: (organizationId: string) => `/api/v1/organizations/${organizationId}/units`,
+    convert: (organizationId: string) => `/api/v1/organizations/${organizationId}/units/convert`,
+    get: (organizationId: string, id: string) =>
+      `/api/v1/organizations/${organizationId}/units/${id}`,
+    update: (organizationId: string, id: string) =>
+      `/api/v1/organizations/${organizationId}/units/${id}`,
+    delete: (organizationId: string, id: string) =>
+      `/api/v1/organizations/${organizationId}/units/${id}`,
   },
 
   dimensions: {

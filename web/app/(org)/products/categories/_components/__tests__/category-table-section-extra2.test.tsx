@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 import { renderWithProviders, server } from "@/lib/tests";
-import { CategoryTreeSection } from "../category-tree-section";
+import { CategoryTableSection } from "../category-table-section";
 
 const STAMP = "2026-01-01T00:00:00Z";
 
@@ -58,18 +58,25 @@ function seedCategories(list = categories, delayMs = 0) {
 
 beforeEach(() => {});
 
-describe("CategoryTreeSection extra2", () => {
+function rowFor(name: string): HTMLElement {
+  const cell = screen.getAllByRole("cell").find((item) => item.textContent?.trim() === name);
+  return cell?.closest("tr") as HTMLElement;
+}
+
+describe("CategoryTableSection extra2", () => {
   it("shows a loading state while categories load", async () => {
     seedCategories(categories, 50);
-    renderWithProviders(<CategoryTreeSection orgId="1" />);
+    const { container } = renderWithProviders(<CategoryTableSection orgId="1" />);
 
-    expect(await screen.findByText("Memuat...")).toBeInTheDocument();
-    expect(await screen.findByText("Raw Materials")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(container.querySelector('[data-slot="route-loading"]')).toBeInTheDocument(),
+    );
+    expect(await screen.findByText("Metals")).toBeInTheDocument();
   });
 
   it("shows the empty state when no categories exist", async () => {
     seedCategories([]);
-    renderWithProviders(<CategoryTreeSection orgId="1" />);
+    renderWithProviders(<CategoryTableSection orgId="1" />);
 
     expect(await screen.findByText("Belum ada kategori")).toBeInTheDocument();
   });
@@ -77,10 +84,10 @@ describe("CategoryTreeSection extra2", () => {
   it("opens the edit dialog prefilled with the category", async () => {
     seedCategories();
     const user = userEvent.setup();
-    renderWithProviders(<CategoryTreeSection orgId="1" />);
+    renderWithProviders(<CategoryTableSection orgId="1" />);
 
     await screen.findByText("Metals");
-    const metalsRow = screen.getByText("Metals").closest('[role="treeitem"]') as HTMLElement;
+    const metalsRow = rowFor("Metals");
     await user.click(within(metalsRow).getByRole("button", { name: "Aksi" }));
     await user.click(await screen.findByRole("menuitem", { name: "Ubah" }));
     const dialog = await screen.findByRole("dialog");
@@ -99,17 +106,17 @@ describe("CategoryTreeSection extra2", () => {
       }),
     );
     const user = userEvent.setup();
-    renderWithProviders(<CategoryTreeSection orgId="1" />);
+    renderWithProviders(<CategoryTableSection orgId="1" />);
 
-    await screen.findByText("Raw Materials");
-    const parentRow = screen.getByText("Raw Materials").closest('[role="treeitem"]') as HTMLElement;
+    await screen.findByText("Metals");
+    const parentRow = rowFor("Raw Materials");
     await user.click(within(parentRow).getByRole("button", { name: "Aksi" }));
     await user.click(await screen.findByRole("menuitem", { name: "Hapus" }));
     const dialog = await screen.findByRole("alertdialog");
     await user.click(within(dialog).getByRole("button", { name: "Hapus" }));
 
     expect(deleteCalls).toBe(0);
-    expect(screen.getByText("Raw Materials")).toBeInTheDocument();
+    expect(rowFor("Raw Materials")).toBeInTheDocument();
   });
 
   it("deletes a leaf category after confirmation", async () => {
@@ -122,10 +129,10 @@ describe("CategoryTreeSection extra2", () => {
       }),
     );
     const user = userEvent.setup();
-    renderWithProviders(<CategoryTreeSection orgId="1" />);
+    renderWithProviders(<CategoryTableSection orgId="1" />);
 
     await screen.findByText("Metals");
-    const leafRow = screen.getByText("Metals").closest('[role="treeitem"]') as HTMLElement;
+    const leafRow = rowFor("Metals");
     await user.click(within(leafRow).getByRole("button", { name: "Aksi" }));
     await user.click(await screen.findByRole("menuitem", { name: "Hapus" }));
     const dialog = await screen.findByRole("alertdialog");
@@ -144,9 +151,9 @@ describe("CategoryTreeSection extra2", () => {
       }),
     );
     const user = userEvent.setup();
-    renderWithProviders(<CategoryTreeSection orgId="1" />);
+    renderWithProviders(<CategoryTableSection orgId="1" />);
 
-    await screen.findByText("Raw Materials");
+    await screen.findByText("Metals");
     await user.click(screen.getByRole("button", { name: "Tambah kategori" }));
     const dialog = await screen.findByRole("dialog");
     await user.type(within(dialog).getByLabelText("Nama"), "Plastics");
@@ -166,10 +173,10 @@ describe("CategoryTreeSection extra2", () => {
       }),
     );
     const user = userEvent.setup();
-    renderWithProviders(<CategoryTreeSection orgId="1" />);
+    renderWithProviders(<CategoryTableSection orgId="1" />);
 
     await screen.findByText("Metals");
-    const metalsRow = screen.getByText("Metals").closest('[role="treeitem"]') as HTMLElement;
+    const metalsRow = rowFor("Metals");
     await user.click(within(metalsRow).getByRole("button", { name: "Aksi" }));
     await user.click(await screen.findByRole("menuitem", { name: "Ubah" }));
     const dialog = await screen.findByRole("dialog");
@@ -184,9 +191,9 @@ describe("CategoryTreeSection extra2", () => {
   it("requires a name before saving", async () => {
     seedCategories();
     const user = userEvent.setup();
-    renderWithProviders(<CategoryTreeSection orgId="1" />);
+    renderWithProviders(<CategoryTableSection orgId="1" />);
 
-    await screen.findByText("Raw Materials");
+    await screen.findByText("Metals");
     await user.click(screen.getByRole("button", { name: "Tambah kategori" }));
     const dialog = await screen.findByRole("dialog");
     await user.click(within(dialog).getByRole("button", { name: "Simpan kategori" }));

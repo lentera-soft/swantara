@@ -999,3 +999,104 @@ func TestProspectHandler_Promote_ReturnsServerErrorOnStages(t *testing.T) {
 		t.Fatalf("status = %d, want 500", resp.StatusCode)
 	}
 }
+
+func TestProspectHandler_Create_ForwardsAllowUnqualified(t *testing.T) {
+	var created *crm.Prospect
+	leads := crm.ProspectDAOMock{
+		CRUDMock: dao.CRUDMock[crm.Prospect]{
+			CreateFunc: func(_ context.Context, prospect *crm.Prospect) (*crm.Prospect, error) {
+				prospect.ID = 1
+				created = prospect
+				return prospect, nil
+			},
+		},
+	}
+	stages := dao.CRUDMock[reference.PipelineStage]{
+		ListFunc: func(_ context.Context, _ *query.Query) (*query.Page[reference.PipelineStage], error) {
+			return &query.Page[reference.PipelineStage]{Items: []*reference.PipelineStage{samplePipelineStage()}, Count: 1}, nil
+		},
+	}
+	svc := crmLeadTestSvc(leads, stages, dao.CRUDMock[reference.SalesGroup]{}, contacts.ContactDAOMock{})
+	app := crmTestApp(10, func(api fiber.Router, guards httpx.RouteGuards) {
+		NewProspectHandler(newTestPipelineStageService(stages), svc).Register(api, guards)
+	})
+
+	body := `{"name":"Acme Corp","probability":50,"allow_unqualified":true}`
+	resp, err := doRequest(app, http.MethodPost, "/crm/leads/", body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.StatusCode != http.StatusCreated {
+		t.Fatalf("status = %d, want 201", resp.StatusCode)
+	}
+	if created == nil || !created.AllowUnqualified {
+		t.Fatalf("created = %+v, want AllowUnqualified true", created)
+	}
+}
+
+func TestProspectHandler_Get_ReturnsNotFoundForOpportunity(t *testing.T) {
+	leads := crm.ProspectDAOMock{
+		CRUDMock: dao.CRUDMock[crm.Prospect]{
+			FindFunc: func(_ context.Context, _ uint64) (*crm.Prospect, error) {
+				return sampleCRMOpportunity(), nil
+			},
+		},
+	}
+	svc := crmLeadTestSvc(leads, dao.CRUDMock[reference.PipelineStage]{}, dao.CRUDMock[reference.SalesGroup]{}, contacts.ContactDAOMock{})
+	app := crmTestApp(10, func(api fiber.Router, guards httpx.RouteGuards) {
+		NewProspectHandler(newTestPipelineStageService(dao.CRUDMock[reference.PipelineStage]{}), svc).Register(api, guards)
+	})
+
+	resp, err := doRequest(app, http.MethodGet, "/crm/leads/2", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("status = %d, want 404", resp.StatusCode)
+	}
+}
+
+func TestProspectHandler_Update_ReturnsNotFoundForOpportunity(t *testing.T) {
+	leads := crm.ProspectDAOMock{
+		CRUDMock: dao.CRUDMock[crm.Prospect]{
+			FindFunc: func(_ context.Context, _ uint64) (*crm.Prospect, error) {
+				return sampleCRMOpportunity(), nil
+			},
+		},
+	}
+	svc := crmLeadTestSvc(leads, dao.CRUDMock[reference.PipelineStage]{}, dao.CRUDMock[reference.SalesGroup]{}, contacts.ContactDAOMock{})
+	app := crmTestApp(10, func(api fiber.Router, guards httpx.RouteGuards) {
+		NewProspectHandler(newTestPipelineStageService(dao.CRUDMock[reference.PipelineStage]{}), svc).Register(api, guards)
+	})
+
+	body := `{"name":"Acme Corp","probability":50}`
+	resp, err := doRequest(app, http.MethodPut, "/crm/leads/2", body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("status = %d, want 404", resp.StatusCode)
+	}
+}
+
+func TestProspectHandler_Delete_ReturnsNotFoundForOpportunity(t *testing.T) {
+	leads := crm.ProspectDAOMock{
+		CRUDMock: dao.CRUDMock[crm.Prospect]{
+			FindFunc: func(_ context.Context, _ uint64) (*crm.Prospect, error) {
+				return sampleCRMOpportunity(), nil
+			},
+		},
+	}
+	svc := crmLeadTestSvc(leads, dao.CRUDMock[reference.PipelineStage]{}, dao.CRUDMock[reference.SalesGroup]{}, contacts.ContactDAOMock{})
+	app := crmTestApp(10, func(api fiber.Router, guards httpx.RouteGuards) {
+		NewProspectHandler(newTestPipelineStageService(dao.CRUDMock[reference.PipelineStage]{}), svc).Register(api, guards)
+	})
+
+	resp, err := doRequest(app, http.MethodDelete, "/crm/leads/2", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("status = %d, want 404", resp.StatusCode)
+	}
+}

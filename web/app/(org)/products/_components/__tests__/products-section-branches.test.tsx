@@ -30,7 +30,7 @@ function seed(products: unknown[] = [item], categories: unknown[] = []) {
     http.get("*/api/v1/organizations/:organizationId/item-categories", () =>
       HttpResponse.json({ success: true, message: "OK.", data: { categories } }),
     ),
-    http.get("*/api/v1/units", () =>
+    http.get("*/api/v1/organizations/:organizationId/units", () =>
       HttpResponse.json({ success: true, message: "OK.", data: { units: [] } }),
     ),
   );

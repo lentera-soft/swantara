@@ -64,7 +64,7 @@ beforeEach(() => {
     http.get("*/api/v1/organizations/:organizationId/products", () =>
       HttpResponse.json({ success: true, message: "OK.", data: { products: [item] } }),
     ),
-    http.get("*/api/v1/units", () =>
+    http.get("*/api/v1/organizations/:organizationId/units", () =>
       HttpResponse.json({ success: true, message: "OK.", data: { units: [unit] } }),
     ),
   );

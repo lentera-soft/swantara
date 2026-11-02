@@ -1,8 +1,9 @@
 "use client";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Plus, Trash2, UserRoundPlus } from "lucide-react";
+import { ArrowRight, Plus, Target, Trash2, Trophy, UserRoundPlus, XCircle } from "lucide-react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { type ReactNode, useState } from "react";
 import { toast } from "sonner";
@@ -32,6 +33,10 @@ import { getSwantaraService } from "@/lib/services/swantara";
 import { formatDate, formatNumber } from "@/lib/utils";
 import { humanizeKey } from "@/lib/utils/case";
 import { ActivityFormDialog } from "./activity-form-dialog";
+import { AdvanceStageDialog } from "./advance-stage-dialog";
+import { canAdvanceStage, canLose, canPromote, canWin } from "./crm-utils";
+import { LostReasonDialog } from "./lost-reason-dialog";
+import { PromoteDialog } from "./promote-section";
 
 const buyerRoles = [
   "economic_buyer",
@@ -54,6 +59,7 @@ export function CrmRecordDetail({
 }) {
   const t = useTranslations("Crm");
   const queryClient = useQueryClient();
+  const router = useRouter();
   const service = getSwantaraService();
   const numericOrgId = Number(orgId);
   const numericId = Number(id);
@@ -61,6 +67,9 @@ export function CrmRecordDetail({
   const basePath = isLead ? "/crm/leads" : "/crm/opportunities";
 
   const [activityOpen, setActivityOpen] = useState(false);
+  const [promoteOpen, setPromoteOpen] = useState(false);
+  const [loseOpen, setLoseOpen] = useState(false);
+  const [advanceOpen, setAdvanceOpen] = useState(false);
   const [contactId, setContactId] = useState("");
   const [contactSearch, setContactSearch] = useState("");
   const [memberSearch, setMemberSearch] = useState("");
@@ -226,6 +235,15 @@ export function CrmRecordDetail({
       service.crmLeads.merge(numericOrgId, sourceId, { targetId: numericId }),
     onSuccess: () => {
       toast.success(t("merged"));
+      refresh();
+    },
+    onError: () => toast.error(t("saveFailed")),
+  });
+
+  const winMutation = useMutation({
+    mutationFn: () => service.crmOpportunities.win(numericOrgId, numericId),
+    onSuccess: () => {
+      toast.success(t("markedWon"));
       refresh();
     },
     onError: () => toast.error(t("saveFailed")),
@@ -648,14 +666,83 @@ export function CrmRecordDetail({
           </Badge>
         }
         actions={
-          <Button size="sm" variant="outline" asChild>
-            <Link href={`${basePath}/${record.id}/edit`}>
-              {isLead ? t("editLead") : t("editOpportunity")}
-            </Link>
-          </Button>
+          <div className="flex flex-wrap items-center gap-2">
+            {isLead && canPromote(record) ? (
+              <Button size="sm" onClick={() => setPromoteOpen(true)} disabled={promoteOpen}>
+                <Target />
+                <span>{t("promoteToOpportunity")}</span>
+              </Button>
+            ) : null}
+            {!isLead && canAdvanceStage(record) ? (
+              <Button size="sm" variant="outline" onClick={() => setAdvanceOpen(true)}>
+                <ArrowRight />
+                <span>{t("advanceStage")}</span>
+              </Button>
+            ) : null}
+            {!isLead && canWin(record) ? (
+              <Button
+                size="sm"
+                onClick={() => winMutation.mutate()}
+                disabled={winMutation.isPending}
+              >
+                <Trophy />
+                <span>{t("markWon")}</span>
+              </Button>
+            ) : null}
+            {!isLead && canLose(record) ? (
+              <Button size="sm" variant="outline" onClick={() => setLoseOpen(true)}>
+                <XCircle />
+                <span>{t("markLost")}</span>
+              </Button>
+            ) : null}
+            <Button size="sm" variant="outline" asChild>
+              <Link href={`${basePath}/${record.id}/edit`}>
+                {isLead ? t("editLead") : t("editOpportunity")}
+              </Link>
+            </Button>
+          </div>
         }
         tabs={tabs}
       />
+      {promoteOpen ? (
+        <PromoteDialog
+          open={promoteOpen}
+          onOpenChange={setPromoteOpen}
+          orgId={orgId}
+          prospectId={String(record.id)}
+          initial={record}
+          onPromoted={() => {
+            setPromoteOpen(false);
+            refresh();
+            router.push(`/crm/opportunities/${record.id}`);
+          }}
+        />
+      ) : null}
+      {advanceOpen ? (
+        <AdvanceStageDialog
+          open={advanceOpen}
+          onOpenChange={setAdvanceOpen}
+          orgId={orgId}
+          opportunityId={String(record.id)}
+          currentStageId={record.stageId}
+          onDone={() => {
+            setAdvanceOpen(false);
+            refresh();
+          }}
+        />
+      ) : null}
+      {loseOpen ? (
+        <LostReasonDialog
+          open={loseOpen}
+          onOpenChange={setLoseOpen}
+          orgId={orgId}
+          opportunityId={String(record.id)}
+          onDone={() => {
+            setLoseOpen(false);
+            refresh();
+          }}
+        />
+      ) : null}
       {activityOpen ? (
         <ActivityFormDialog
           open={activityOpen}

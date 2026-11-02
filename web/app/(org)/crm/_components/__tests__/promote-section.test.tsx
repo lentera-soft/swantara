@@ -141,4 +141,98 @@ describe("PromoteDialog", () => {
     expect(onOpenChange).toHaveBeenCalledWith(false);
     expect(promoteCalls).toBe(0);
   });
+
+  it("flags configured required fields and blocks submitting without override", async () => {
+    let promoteCalls = 0;
+    server.use(
+      http.get("*/api/v1/organizations/:organizationId/system-configs", () =>
+        HttpResponse.json({
+          success: true,
+          message: "OK.",
+          data: {
+            systemConfigs: [
+              {
+                id: 1,
+                key: "crm.promotion_required_fields",
+                value: ["contact", "need", "budget"],
+                created_at: "2026-01-01T00:00:00Z",
+                updated_at: "2026-01-01T00:00:00Z",
+              },
+            ],
+          },
+        }),
+      ),
+      http.post("*/api/v1/organizations/:organizationId/crm/leads/:id/promote", () => {
+        promoteCalls += 1;
+        return HttpResponse.json({ success: true, message: "OK.", data: {} });
+      }),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(
+      <PromoteDialog
+        open
+        onOpenChange={() => {}}
+        orgId="1"
+        prospectId="5"
+        initial={qualifiedLead}
+        onPromoted={() => {}}
+      />,
+    );
+
+    expect(
+      await screen.findByText(
+        "Belum diisi: konfirmasi anggaran. Lengkapi atau gunakan override yang berwenang.",
+      ),
+    ).toBeInTheDocument();
+
+    await user.click(screen.getByRole("combobox", { name: "Tahap" }));
+    await user.click(await screen.findByRole("option", { name: "Qualified — 30%" }));
+    await user.click(screen.getByRole("button", { name: "Promosikan" }));
+
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(promoteCalls).toBe(0);
+    expect(screen.queryByRole("checkbox")).not.toBeInTheDocument();
+  });
+
+  it("treats email alone as a satisfied contact requirement", async () => {
+    server.use(
+      http.get("*/api/v1/organizations/:organizationId/system-configs", () =>
+        HttpResponse.json({
+          success: true,
+          message: "OK.",
+          data: {
+            systemConfigs: [
+              {
+                id: 1,
+                key: "crm.promotion_required_fields",
+                value: ["contact", "need"],
+                created_at: "2026-01-01T00:00:00Z",
+                updated_at: "2026-01-01T00:00:00Z",
+              },
+            ],
+          },
+        }),
+      ),
+    );
+    renderWithProviders(
+      <PromoteDialog
+        open
+        onOpenChange={() => {}}
+        orgId="1"
+        prospectId="5"
+        initial={
+          {
+            contactId: null,
+            contactName: null,
+            email: "ada@example.com",
+            needSummary: "Needs CRM",
+          } as CrmLead
+        }
+        onPromoted={() => {}}
+      />,
+    );
+
+    await screen.findByText("Promosikan prospek menjadi peluang");
+    expect(screen.queryByText(/Belum diisi:/)).not.toBeInTheDocument();
+  });
 });

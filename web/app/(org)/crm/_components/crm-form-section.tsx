@@ -15,7 +15,7 @@ export function CrmFormSection({
 }) {
   return (
     <fieldset className={cn("grid gap-4 rounded-lg border p-4 sm:grid-cols-2", className)}>
-      <legend className="px-1 text-sm font-semibold text-foreground">{title}</legend>
+      <legend className="px-1 text-sm">{title}</legend>
       {description ? (
         <p className="col-span-full text-xs text-muted-foreground">{description}</p>
       ) : null}

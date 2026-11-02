@@ -1,9 +1,9 @@
-import { screen } from "@testing-library/react";
+import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 import { renderWithProviders, server } from "@/lib/tests";
-import { CategoryTreeSection } from "../category-tree-section";
+import { CategoryTableSection } from "../category-table-section";
 
 const STAMP = "2026-01-01T00:00:00Z";
 
@@ -55,19 +55,30 @@ beforeEach(() => {
   );
 });
 
-describe("CategoryTreeSection", () => {
-  it("renders seeded categories as a tree", async () => {
-    renderWithProviders(<CategoryTreeSection orgId="1" />);
+describe("CategoryTableSection", () => {
+  it("renders seeded categories as indented table rows", async () => {
+    renderWithProviders(<CategoryTableSection orgId="1" />);
 
-    expect(await screen.findByText("Raw Materials")).toBeInTheDocument();
-    expect(screen.getByText("Metals")).toBeInTheDocument();
+    await screen.findByText("Metals");
+    const table = screen.getByRole("table", { name: "Kategori produk" });
+    const rows = within(table).getAllByRole("row");
+    expect(rows).toHaveLength(3);
+
+    const rootRow = rows[1] as HTMLElement;
+    const childRow = rows[2] as HTMLElement;
+
+    expect(within(rootRow).getAllByText("—")).toHaveLength(3);
+    expect(within(childRow).getByText("Rata-rata")).toBeInTheDocument();
+    expect(within(childRow).getByText("Otomatis")).toBeInTheDocument();
+    expect(within(childRow).getByText("Metals")).toHaveStyle({ paddingLeft: "20px" });
+    expect(within(rootRow).getByText("Raw Materials")).toHaveStyle({ paddingLeft: "0px" });
   });
 
   it("opens the create dialog from the add button", async () => {
     const user = userEvent.setup();
-    renderWithProviders(<CategoryTreeSection orgId="1" />);
+    renderWithProviders(<CategoryTableSection orgId="1" />);
 
-    await screen.findByText("Raw Materials");
+    await screen.findByText("Metals");
     await user.click(screen.getByRole("button", { name: "Tambah kategori" }));
 
     expect(await screen.findByRole("dialog")).toBeInTheDocument();

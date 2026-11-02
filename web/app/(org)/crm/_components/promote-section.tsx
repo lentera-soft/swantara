@@ -3,6 +3,7 @@
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useTranslations } from "next-intl";
+import { useMemo } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
@@ -21,6 +22,7 @@ import type {
   CrmStage,
   PromoteLeadRequest,
   SalesGroup,
+  SystemConfig,
 } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
 import { formatNumber } from "@/lib/utils";
@@ -73,14 +75,45 @@ export function PromoteDialog({
     "salesGroups",
     (organizationId) => getSwantaraService().salesGroups.list(organizationId),
   );
+  const configsQuery = useOrgListQuery<{ systemConfigs: SystemConfig[] }, Record<string, never>>(
+    "systemConfigs",
+    (organizationId) => getSwantaraService().systemConfigs.list(organizationId),
+  );
   const stages = (stagesQuery.data?.stages ?? []).filter((stage) => !stage.isWon && !stage.isLost);
   const contacts = contactsQuery.data?.contacts ?? [];
   const teams = teamsQuery.data?.teams ?? [];
   const canOverride = permissions.has("prospect.override");
-  const missingFields = [
-    !(initial?.contactId || initial?.contactName) ? t("promotionMissingContact") : null,
-    !initial?.needSummary ? t("promotionMissingNeed") : null,
-  ].filter((value): value is string => value !== null);
+  const requiredFields = useMemo(() => {
+    const config = (configsQuery.data?.systemConfigs ?? []).find(
+      (item) => item.key === "crm.promotion_required_fields",
+    );
+    const raw = Array.isArray(config?.value)
+      ? config.value.filter((field): field is string => typeof field === "string")
+      : null;
+    const fields = raw && raw.length > 0 ? raw : ["contact", "need"];
+    return Array.from(new Set(fields.map((field) => field.trim().toLowerCase()).filter(Boolean)));
+  }, [configsQuery.data]);
+  const missingFields = useMemo(() => {
+    const labels: Record<string, string> = {
+      contact: t("promotionMissingContact"),
+      need: t("promotionMissingNeed"),
+      budget: t("promotionMissingBudget"),
+      authority: t("promotionMissingAuthority"),
+      timeline: t("promotionMissingTimeline"),
+      consent: t("promotionMissingConsent"),
+    };
+    const satisfied: Record<string, boolean> = {
+      contact: Boolean(initial?.contactId || initial?.contactName || initial?.email),
+      need: Boolean(initial?.needSummary && initial.needSummary.trim() !== ""),
+      budget: Boolean(initial?.budgetConfirmed && initial?.budgetAmount != null),
+      authority: Boolean(initial?.authorityConfirmed),
+      timeline: Boolean(initial?.timelineDate),
+      consent: Boolean(initial?.consentGranted),
+    };
+    return requiredFields
+      .filter((field) => labels[field] !== undefined && !satisfied[field])
+      .map((field) => labels[field]);
+  }, [requiredFields, initial, t]);
 
   const schema = usePromoteFormSchema();
 

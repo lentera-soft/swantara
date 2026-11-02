@@ -2,14 +2,12 @@
 
 import type { LegacyColumnDef as ColumnDef } from "@tanstack/react-table/legacy";
 import { Plus } from "lucide-react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 import { InteractiveEntityTable } from "@/app/(org)/_components/interactive-entity-table";
-import { ContactFormDialog } from "@/app/(org)/contacts/_components/contact-form-dialog";
 import { Badge } from "@/components/badge";
 import { Button } from "@/components/button";
 import { StateBadge } from "@/components/state-badge";
-import { useOrganizationId } from "@/lib/hooks/use-org-context";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { Contact } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
@@ -39,8 +37,6 @@ function toSupplierRow(contact: Contact): SupplierRow {
 
 export function SuppliersTable() {
   const t = useTranslations("Purchases");
-  const orgId = useOrganizationId();
-  const [dialogOpen, setDialogOpen] = useState(false);
   const query = useOrgListQuery<{ contacts: Contact[] }, { size: number }>(
     "suppliers",
     (organizationId, params) => getSwantaraService().contacts.list(organizationId, params),
@@ -104,51 +100,39 @@ export function SuppliersTable() {
   ];
 
   return (
-    <>
-      <InteractiveEntityTable
-        columns={columns}
-        data={suppliers}
-        getRowId={(row) => row.id}
-        searchKeys={["name", "contact", "category", "phone"]}
-        statusKey="status"
-        statusOptions={[
-          { value: "active", label: t("supplierStatusActive") },
-          { value: "inactive", label: t("supplierStatusInactive") },
-        ]}
-        searchPlaceholder={t("searchSuppliersPlaceholder")}
-        filterLabel={t("filterByStatus")}
-        allLabel={t("allStatuses")}
-        ariaLabel={t("allSuppliers")}
-        status={
-          query.isLoading
-            ? { type: "loading" }
-            : query.isError
-              ? {
-                  type: "error",
-                  message: query.error.message,
-                  onRetry: () => void query.refetch(),
-                }
-              : undefined
-        }
-        actions={
-          <Button size="sm" onClick={() => setDialogOpen(true)} disabled={orgId == null}>
+    <InteractiveEntityTable
+      columns={columns}
+      data={suppliers}
+      getRowId={(row) => row.id}
+      searchKeys={["name", "contact", "category", "phone"]}
+      statusKey="status"
+      statusOptions={[
+        { value: "active", label: t("supplierStatusActive") },
+        { value: "inactive", label: t("supplierStatusInactive") },
+      ]}
+      searchPlaceholder={t("searchSuppliersPlaceholder")}
+      filterLabel={t("filterByStatus")}
+      allLabel={t("allStatuses")}
+      ariaLabel={t("allSuppliers")}
+      status={
+        query.isLoading
+          ? { type: "loading" }
+          : query.isError
+            ? {
+                type: "error",
+                message: query.error.message,
+                onRetry: () => void query.refetch(),
+              }
+            : undefined
+      }
+      actions={
+        <Button size="sm" asChild>
+          <Link href="/purchases/suppliers/new">
             <Plus />
             <span>{t("addSupplier")}</span>
-          </Button>
-        }
-      />
-      {orgId != null ? (
-        <ContactFormDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          orgId={String(orgId)}
-          defaultRole="supplier"
-          onSave={() => {
-            setDialogOpen(false);
-            void query.refetch();
-          }}
-        />
-      ) : null}
-    </>
+          </Link>
+        </Button>
+      }
+    />
   );
 }

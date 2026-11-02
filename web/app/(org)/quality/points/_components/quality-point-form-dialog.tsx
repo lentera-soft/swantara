@@ -49,8 +49,8 @@ export function QualityPointFormDialog({
   );
 
   const unitsQuery = useQuery({
-    queryKey: ["units"],
-    queryFn: () => getSwantaraService().units.list(),
+    queryKey: ["units", Number(orgId)],
+    queryFn: () => getSwantaraService().units.list(Number(orgId)),
   });
 
   const productOptions = (productsQuery.data?.products ?? []).map((p) => ({

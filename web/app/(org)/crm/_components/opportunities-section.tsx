@@ -2,7 +2,7 @@
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import type { LegacyColumnDef as ColumnDef } from "@tanstack/react-table/legacy";
-import { Plus, Trophy, XCircle } from "lucide-react";
+import { ArrowRight, Plus, Trophy, XCircle } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
@@ -17,6 +17,8 @@ import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { CrmLead, CrmStage } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
 import { formatDate, formatNumber } from "@/lib/utils";
+import { AdvanceStageDialog } from "./advance-stage-dialog";
+import { canAdvanceStage, canLose, canWin } from "./crm-utils";
 import { LostReasonDialog } from "./lost-reason-dialog";
 
 export function OpportunitiesSection({ orgId }: { orgId: string }) {
@@ -25,6 +27,7 @@ export function OpportunitiesSection({ orgId }: { orgId: string }) {
   const router = useRouter();
 
   const [loseId, setLoseId] = useState<string | null>(null);
+  const [advanceId, setAdvanceId] = useState<string | null>(null);
   const [quoteOpportunityId, setQuoteOpportunityId] = useState<string | null>(null);
 
   const opportunitiesQuery = useOrgListQuery<{ opportunities: CrmLead[] }, Record<string, never>>(
@@ -184,10 +187,17 @@ export function OpportunitiesSection({ orgId }: { orgId: string }) {
       id: "actions",
       header: "",
       cell: ({ row }) => {
-        const isOpen =
-          row.original.closedAt == null && row.original.lostReason == null && !row.original.isWon;
         const items = [
-          ...(isOpen
+          ...(canAdvanceStage(row.original)
+            ? [
+                {
+                  label: t("advanceStage"),
+                  icon: <ArrowRight aria-hidden />,
+                  onSelect: () => setAdvanceId(String(row.original.id)),
+                },
+              ]
+            : []),
+          ...(canWin(row.original)
             ? [
                 {
                   label: t("markWon"),
@@ -195,9 +205,14 @@ export function OpportunitiesSection({ orgId }: { orgId: string }) {
                   disabled: winMutation.isPending,
                   onSelect: () => winMutation.mutate(row.original.id),
                 },
+              ]
+            : []),
+          ...(canLose(row.original)
+            ? [
                 {
                   label: t("markLost"),
                   icon: <XCircle aria-hidden />,
+                  destructive: true,
                   onSelect: () => setLoseId(String(row.original.id)),
                 },
               ]
@@ -277,6 +292,23 @@ export function OpportunitiesSection({ orgId }: { orgId: string }) {
           initialOpportunityId={quoteOpportunityId}
           onSave={() => {
             setQuoteOpportunityId(null);
+            refresh();
+          }}
+        />
+      ) : null}
+      {advanceId ? (
+        <AdvanceStageDialog
+          open={Boolean(advanceId)}
+          onOpenChange={(open) => {
+            if (!open) setAdvanceId(null);
+          }}
+          orgId={orgId}
+          opportunityId={advanceId}
+          currentStageId={
+            opportunities.find((opp) => String(opp.id) === advanceId)?.stageId ?? null
+          }
+          onDone={() => {
+            setAdvanceId(null);
             refresh();
           }}
         />

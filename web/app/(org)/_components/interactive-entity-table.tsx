@@ -1,17 +1,17 @@
 "use client";
 
-import type { ColumnFiltersState, OnChangeFn, RowData } from "@tanstack/react-table";
+import type { RowData } from "@tanstack/react-table";
 import type { LegacyColumnDef as ColumnDef } from "@tanstack/react-table/legacy";
 import { DownloadIcon } from "lucide-react";
 import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
-import { useDeferredValue, useMemo } from "react";
+import { useCallback, useDeferredValue, useMemo } from "react";
 import { Button } from "@/components/button";
 import { TableFilterBar } from "@/components/table-filter-bar";
 import { DataTable, type DataTableStatus } from "@/components/tanstack-table";
 import type { TableFilterConfig } from "@/lib/hooks/use-table-filters";
 import { useTableFilters } from "@/lib/hooks/use-table-filters";
-import { getColumnLabel, getColumnValue } from "@/lib/utils/table";
+import { getColumnLabel, getColumnValue, resolvePath } from "@/lib/utils/table";
 
 export type EntityTableStatusOption = {
   value: string;
@@ -25,7 +25,7 @@ export type InteractiveEntityTableProps<T extends RowData> = {
   searchKeys: string[];
   statusKey?: keyof T;
   statusOptions?: EntityTableStatusOption[];
-  searchPlaceholder: string;
+  searchPlaceholder?: string;
   filterLabel?: string;
   allLabel?: string;
   ariaLabel: string;
@@ -37,6 +37,16 @@ export type InteractiveEntityTableProps<T extends RowData> = {
   status?: DataTableStatus;
 };
 
+function getColumnId<TData extends RowData>(column: ColumnDef<TData, unknown>): string | undefined {
+  if ("accessorKey" in column && column.accessorKey) {
+    return String(column.accessorKey);
+  }
+  if ("id" in column && column.id) {
+    return column.id;
+  }
+  return undefined;
+}
+
 function buildFilterConfig<TData extends RowData>(
   columns: ColumnDef<TData, unknown>[],
   searchKeys: string[],
@@ -44,6 +54,7 @@ function buildFilterConfig<TData extends RowData>(
   statusOptions?: EntityTableStatusOption[],
   searchPlaceholder?: string,
   filterLabel?: string,
+  allLabel?: string,
   searchLabel?: string,
   filterBy?: (label: string) => string,
 ): TableFilterConfig[] {
@@ -64,23 +75,20 @@ function buildFilterConfig<TData extends RowData>(
       label: filterLabel ?? statusKey,
       type: "select",
       columnId: statusKey,
+      placeholder: allLabel,
       options: statusOptions.map((opt) => ({ value: opt.value, label: opt.label })),
     });
   }
 
-  for (const col of columns) {
-    const colId = String(
-      (col as { accessorKey?: string; id?: string }).accessorKey ??
-        (col as { id?: string }).id ??
-        "",
-    );
-    if (!colId || colId === "actions" || colId === "search" || colId === String(statusKey)) {
+  for (const column of columns) {
+    const colId = getColumnId(column);
+    if (!colId || colId === "actions" || colId === "search" || colId === statusKey) {
       continue;
     }
     if (searchKeys.includes(colId)) {
       continue;
     }
-    const label = getColumnLabel(col) || colId;
+    const label = getColumnLabel(column) || colId;
     config.push({
       id: colId,
       label,
@@ -101,7 +109,8 @@ export function InteractiveEntityTable<T extends RowData>({
   statusKey,
   statusOptions = [],
   searchPlaceholder,
-  filterLabel = "",
+  filterLabel,
+  allLabel,
   ariaLabel,
   pageSize = 8,
   actions,
@@ -110,11 +119,8 @@ export function InteractiveEntityTable<T extends RowData>({
   exportFileName,
   status: statusOverride,
 }: InteractiveEntityTableProps<T>) {
-  const tTables = useTranslations("Tables" as unknown as "Common");
-  const tx = tTables as unknown as (
-    key: string,
-    values?: Record<string, string | number>,
-  ) => string;
+  const t = useTranslations("Tables");
+
   const filterConfig = useMemo(
     () =>
       buildFilterConfig(
@@ -124,55 +130,77 @@ export function InteractiveEntityTable<T extends RowData>({
         statusOptions.length > 0 ? statusOptions : undefined,
         searchPlaceholder,
         filterLabel,
-        tx("search"),
-        (label: string) => tx("filterBy", { label }),
+        allLabel,
+        t("search"),
+        (label: string) => t("filterBy", { label }),
       ),
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [columns, searchKeys, statusKey, statusOptions, searchPlaceholder, filterLabel, tx],
+    [columns, searchKeys, statusKey, statusOptions, searchPlaceholder, filterLabel, allLabel, t],
   );
 
   const filters = useTableFilters(filterConfig);
 
   const deferredGlobalFilter = useDeferredValue(filters.globalFilter);
   const deferredColumnFilters = useDeferredValue(filters.columnFilters);
-  const normalized = (deferredGlobalFilter ?? "").trim().toLowerCase();
-  const filtered = useMemo(
-    () =>
-      data.filter((row) => {
-        const matchesQuery =
-          normalized.length === 0 ||
-          searchKeys.some((key) =>
-            String((row as Record<string, unknown>)[key])
-              .toLowerCase()
-              .includes(normalized),
-          );
-        const matchesColumnFilters = deferredColumnFilters.every((f) => {
-          if (String(f.id) === String(statusKey)) {
-            return (
-              String((row as Record<string, unknown>)[String(statusKey)] ?? "") === String(f.value)
-            );
-          }
-          const cell = (row as Record<string, unknown>)[String(f.id)];
-          return String(cell ?? "")
+
+  const normalizedQuery = (deferredGlobalFilter ?? "").trim().toLowerCase();
+
+  const columnsById = useMemo(() => {
+    const map = new Map<string, ColumnDef<T, unknown>>();
+    for (const column of columns) {
+      const id = getColumnId(column);
+      if (id) {
+        map.set(id, column);
+      }
+    }
+    return map;
+  }, [columns]);
+
+  const statusKeyStr = statusKey ? String(statusKey) : undefined;
+
+  const filtered = useMemo(() => {
+    const hasQuery = normalizedQuery.length > 0;
+    const hasFilters = deferredColumnFilters.length > 0;
+
+    if (!hasQuery && !hasFilters) {
+      return data;
+    }
+
+    return data.filter((row) => {
+      if (hasQuery) {
+        const matchesQuery = searchKeys.some((key) => {
+          const value = resolvePath(row, key);
+          return String(value ?? "")
             .toLowerCase()
-            .includes(String(f.value).toLowerCase());
+            .includes(normalizedQuery);
         });
-        return matchesQuery && matchesColumnFilters;
-      }),
-    [data, normalized, deferredColumnFilters, searchKeys, statusKey],
-  );
+        if (!matchesQuery) {
+          return false;
+        }
+      }
 
-  const handleColumnFiltersChange: OnChangeFn<ColumnFiltersState> = (updater) => {
-    const next =
-      typeof updater === "function"
-        ? (updater as (old: ColumnFiltersState) => ColumnFiltersState)(filters.columnFilters)
-        : updater;
-    filters.onColumnFiltersChange(next);
-  };
+      return deferredColumnFilters.every((filter) => {
+        const filterId = String(filter.id);
+        const filterValue = String(filter.value ?? "").toLowerCase();
 
-  function handleResetFilters() {
-    filters.resetFilters();
-  }
+        if (filterId === statusKeyStr) {
+          return String(resolvePath(row, filterId) ?? "") === String(filter.value);
+        }
+
+        const column = columnsById.get(filterId);
+        const cell = column ? getColumnValue(column, row) : resolvePath(row, filterId);
+        return String(cell ?? "")
+          .toLowerCase()
+          .includes(filterValue);
+      });
+    });
+  }, [data, normalizedQuery, deferredColumnFilters, searchKeys, statusKeyStr, columnsById]);
+
+  const handleExport = useCallback(async () => {
+    const { exportCsv } = await import("@/lib/utils/csv");
+    const headers = columns.map((column) => getColumnLabel(column));
+    const rows = filtered.map((row) => columns.map((column) => getColumnValue(column, row)));
+    exportCsv(exportFileName ?? ariaLabel, headers, rows);
+  }, [columns, filtered, exportFileName, ariaLabel]);
 
   return (
     <DataTable
@@ -191,8 +219,8 @@ export function InteractiveEntityTable<T extends RowData>({
         (filtered.length === 0
           ? {
               type: "empty",
-              title: emptyTitle ?? tx("emptyTitle"),
-              description: emptyDescription ?? tx("emptyDescription"),
+              title: emptyTitle ?? t("emptyTitle"),
+              description: emptyDescription ?? t("emptyDescription"),
             }
           : { type: "none" })
       }
@@ -200,27 +228,16 @@ export function InteractiveEntityTable<T extends RowData>({
         <TableFilterBar
           config={filterConfig}
           columnFilters={filters.columnFilters}
-          onColumnFiltersChange={handleColumnFiltersChange}
+          onColumnFiltersChange={filters.onColumnFiltersChange}
           globalFilter={filters.globalFilter}
           onGlobalFilterChange={filters.onGlobalFilterChange}
-          onReset={handleResetFilters}
+          onReset={filters.resetFilters}
           className="w-full"
           actions={
             <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={async () => {
-                  const { exportCsv } = await import("@/lib/utils/csv");
-                  const headers = columns.map((column) => getColumnLabel(column));
-                  const rows = filtered.map((row) =>
-                    columns.map((column) => getColumnValue(column, row)),
-                  );
-                  exportCsv(exportFileName ?? ariaLabel, headers, rows);
-                }}
-              >
+              <Button variant="outline" size="sm" onClick={handleExport}>
                 <DownloadIcon aria-hidden />
-                <span>{tx("export")}</span>
+                <span>{t("export")}</span>
               </Button>
               {actions}
             </>

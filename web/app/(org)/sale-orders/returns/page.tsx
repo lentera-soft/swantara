@@ -8,8 +8,8 @@ export default async function OrgRmasPage() {
   const t = await getTranslations("Sales");
   return (
     <div className="flex flex-col gap-4 sm:gap-6">
-      <PageHeader title={t("rmasTitle")} description={t("rmasSubtitle")} />
-      <RmasSection orgId={id} />
+      <PageHeader title={t("customerReturnsTitle")} description={t("customerReturnsSubtitle")} />
+      <RmasSection orgId={id} rmaType="customer_return" />
     </div>
   );
 }

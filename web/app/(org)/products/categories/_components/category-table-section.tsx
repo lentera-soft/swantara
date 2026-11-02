@@ -1,13 +1,16 @@
 "use client";
 
 import { zodResolver } from "@hookform/resolvers/zod";
+import type { LegacyColumnDef as ColumnDef } from "@tanstack/react-table/legacy";
 import { FolderIcon, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import { z } from "zod";
+import { InteractiveEntityTable } from "@/app/(org)/_components/interactive-entity-table";
 import { RowActions } from "@/app/(org)/_components/row-actions";
+import { Badge } from "@/components/badge";
 import { Button } from "@/components/button";
 import {
   Dialog,
@@ -20,8 +23,6 @@ import {
 import { Form, FormField, SubmitButton } from "@/components/form";
 import { Input } from "@/components/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/select";
-import type { TreeNode } from "@/components/tree-view";
-import { TreeView } from "@/components/tree-view";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { ItemCategory } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
@@ -50,6 +51,18 @@ const accountFields: AccountField[] = [
   "stockOutputAccountId",
   "cogsAccountId",
 ];
+
+type CategoryRow = StubItemCategory & {
+  depth: number;
+  parentName: string;
+  costMethodLabel: string;
+  valuationLabel: string;
+};
+
+function categoryName(rows: StubItemCategory[], id: string | null): string {
+  if (!id) return "";
+  return rows.find((row) => row.id === id)?.name ?? "";
+}
 
 function useCategorySchema() {
   const t = (useTranslations as unknown as (ns: string) => TFn)("Products");
@@ -88,7 +101,44 @@ function toCategoryRow(category: ItemCategory): StubItemCategory {
   };
 }
 
-export function CategoryTreeSection({ orgId }: { orgId: string }) {
+function flattenCategories(rows: StubItemCategory[]): { row: StubItemCategory; depth: number }[] {
+  const childrenByParent = new Map<string, StubItemCategory[]>();
+  const roots: StubItemCategory[] = [];
+
+  for (const row of rows) {
+    if (!row.parentId) {
+      roots.push(row);
+      continue;
+    }
+    const siblings = childrenByParent.get(row.parentId);
+    if (siblings) {
+      siblings.push(row);
+    } else {
+      childrenByParent.set(row.parentId, [row]);
+    }
+  }
+
+  const ordered: { row: StubItemCategory; depth: number }[] = [];
+  const visited = new Set<string>();
+
+  function walk(level: StubItemCategory[], depth: number) {
+    for (const row of level) {
+      if (visited.has(row.id)) continue;
+      visited.add(row.id);
+      ordered.push({ row, depth });
+      walk(childrenByParent.get(row.id) ?? [], depth + 1);
+    }
+  }
+
+  walk(roots, 0);
+  for (const row of rows) {
+    if (!visited.has(row.id)) ordered.push({ row, depth: 0 });
+  }
+
+  return ordered;
+}
+
+export function CategoryTableSection({ orgId }: { orgId: string }) {
   const t = (useTranslations as unknown as (ns: string) => TFn)("Products");
   const tCommon = useTranslations("Common");
   const schema = useCategorySchema();
@@ -101,6 +151,13 @@ export function CategoryTreeSection({ orgId }: { orgId: string }) {
   );
 
   const categories = (categoriesQuery.data?.categories ?? []).map(toCategoryRow);
+  const rows: CategoryRow[] = flattenCategories(categories).map(({ row, depth }) => ({
+    ...row,
+    depth,
+    parentName: categoryName(categories, row.parentId),
+    costMethodLabel: row.costMethod ? t(`costMethod_${row.costMethod}`) : "",
+    valuationLabel: row.valuation ? t(`valuationMode_${row.valuation}`) : "",
+  }));
 
   const accountsQuery = useOrgListQuery<
     { accounts: { id: number; name: string }[] },
@@ -221,38 +278,84 @@ export function CategoryTreeSection({ orgId }: { orgId: string }) {
       });
   }
 
-  const tree: TreeNode[] = buildTree(categories, (category) => (
-    <RowActions
-      editLabel={tCommon("edit")}
-      deleteLabel={tCommon("delete")}
-      confirmTitle={t("deleteCategoryTitle")}
-      confirmDescription={t("deleteCategoryDescription")}
-      confirmLabel={tCommon("delete")}
-      onEdit={() => openEdit(category)}
-      onDelete={() => deleteCategory(category)}
-    />
-  ));
+  const columns: ColumnDef<CategoryRow>[] = [
+    {
+      accessorKey: "name",
+      header: t("fieldName"),
+      cell: ({ row }) => (
+        <span
+          className="inline-flex items-center gap-2"
+          style={{ paddingLeft: `${row.original.depth * 20}px` }}
+        >
+          <FolderIcon className="size-4 shrink-0 text-muted-foreground" aria-hidden />
+          {row.original.name}
+        </span>
+      ),
+    },
+    {
+      accessorKey: "parentName",
+      header: t("fieldParentCategory"),
+      cell: ({ row }) => <Badge variant="secondary">{row.original.parentName || "—"}</Badge>,
+    },
+    {
+      accessorKey: "costMethodLabel",
+      header: t("fieldCostMethod"),
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">{row.original.costMethodLabel || "—"}</span>
+      ),
+    },
+    {
+      accessorKey: "valuationLabel",
+      header: t("fieldValuation"),
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">{row.original.valuationLabel || "—"}</span>
+      ),
+    },
+    {
+      id: "actions",
+      header: "",
+      cell: ({ row }) => (
+        <RowActions
+          editLabel={tCommon("edit")}
+          deleteLabel={tCommon("delete")}
+          confirmTitle={t("deleteCategoryTitle")}
+          confirmDescription={t("deleteCategoryDescription")}
+          confirmLabel={tCommon("delete")}
+          onEdit={() => openEdit(row.original)}
+          onDelete={() => deleteCategory(row.original)}
+        />
+      ),
+    },
+  ];
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="flex justify-end">
-        <Button size="sm" onClick={openCreate}>
-          <Plus />
-          <span>{t("addCategory")}</span>
-        </Button>
-      </div>
-
-      {categoriesQuery.isLoading ? (
-        <p className="text-sm text-muted-foreground">{tCommon("loading")}</p>
-      ) : tree.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t("categoriesEmpty")}</p>
-      ) : (
-        <TreeView
-          items={tree}
-          defaultExpandedIds={categories.map((category) => category.id)}
-          aria-label={t("categoriesTitle")}
-        />
-      )}
+      <InteractiveEntityTable
+        columns={columns}
+        data={rows}
+        getRowId={(row) => row.id}
+        searchKeys={["name"]}
+        searchPlaceholder={t("searchCategories")}
+        ariaLabel={t("categoriesTitle")}
+        emptyTitle={t("categoriesEmpty")}
+        status={
+          categoriesQuery.isLoading
+            ? { type: "loading" }
+            : categoriesQuery.isError
+              ? {
+                  type: "error",
+                  message: categoriesQuery.error.message,
+                  onRetry: () => void categoriesQuery.refetch(),
+                }
+              : undefined
+        }
+        actions={
+          <Button size="sm" onClick={openCreate}>
+            <Plus />
+            <span>{t("addCategory")}</span>
+          </Button>
+        }
+      />
 
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogContent className="max-h-[85vh] overflow-y-auto sm:max-w-xl">
@@ -371,22 +474,4 @@ function emptyValues(): Values {
     stockOutputAccountId: "",
     cogsAccountId: "",
   };
-}
-
-function buildTree(
-  rows: StubItemCategory[],
-  actionsFor: (category: StubItemCategory) => React.ReactNode,
-): TreeNode[] {
-  const childrenOf = (parentId: string | null): TreeNode[] =>
-    rows
-      .filter((row) => row.parentId === parentId)
-      .map((row) => ({
-        id: row.id,
-        icon: <FolderIcon className="size-4 text-muted-foreground" aria-hidden />,
-        label: <span className="">{row.name}</span>,
-        children: childrenOf(row.id),
-        actions: actionsFor(row),
-      }));
-
-  return childrenOf(null);
 }

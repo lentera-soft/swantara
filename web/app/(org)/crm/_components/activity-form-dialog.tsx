@@ -231,7 +231,7 @@ export function ActivityFormDialog({
     >
       <CrmFormSection title={t("sectionActivity")} description={t("sectionActivityDescription")}>
         <fieldset className="sm:col-span-2">
-          <legend className="mb-2 text-sm font-medium">{t("tableType")}</legend>
+          <legend className="mb-2 text-sm">{t("tableType")}</legend>
           <div className="grid grid-cols-5 gap-1.5">
             {activityTypes.map((type) => {
               const Icon = activityMeta[type].icon;

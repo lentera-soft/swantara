@@ -226,6 +226,118 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/oauth/facebook": {
+            "get": {
+                "description": "Redirects the browser to the Facebook consent screen. A CSRF state is stored in a short-lived HttpOnly cookie and validated again on callback. Returns 503 when the provider is not configured.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Start Facebook OAuth login",
+                "responses": {
+                    "302": {
+                        "description": "Redirect to Facebook"
+                    },
+                    "503": {
+                        "description": "Provider not configured",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/oauth/facebook/callback": {
+            "get": {
+                "description": "Exchanges the Facebook authorization code for the user identity, links it to an existing account (when the provider email is verified) or provisions a new user, then issues the session token pair as HttpOnly cookies and redirects to the web client. Failures redirect to the web login page with an oauth error code.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Complete Facebook OAuth login",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization code",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "CSRF state",
+                        "name": "state",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "302": {
+                        "description": "Redirect to the web login page with an error"
+                    }
+                }
+            }
+        },
+        "/auth/oauth/google": {
+            "get": {
+                "description": "Redirects the browser to the Google consent screen. A CSRF state and a PKCE code verifier are stored in short-lived HttpOnly cookies and validated again on callback. Returns 503 when the provider is not configured.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Start Google OAuth login",
+                "responses": {
+                    "302": {
+                        "description": "Redirect to Google"
+                    },
+                    "503": {
+                        "description": "Provider not configured",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/auth/oauth/google/callback": {
+            "get": {
+                "description": "Exchanges the Google authorization code for the user identity, links it to an existing account (when the provider email is verified) or provisions a new user, then issues the session token pair as HttpOnly cookies and redirects to the web client. Failures redirect to the web login page with an oauth error code.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Authentication"
+                ],
+                "summary": "Complete Google OAuth login",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Authorization code",
+                        "name": "code",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "CSRF state",
+                        "name": "state",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "302": {
+                        "description": "Redirect to the web login page with an error"
+                    }
+                }
+            }
+        },
         "/auth/password-reset": {
             "post": {
                 "description": "Sets a new password using a one-time reset token, marks the token as used, and revokes all existing sessions for the user, forcing a fresh sign-in. Invalid or expired tokens are rejected with 400.",
@@ -9341,7 +9453,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Gets a single CRM prospect by id after enforcing tenant ownership, returning 404 when the prospect does not exist or belongs to another organization. The returned record is enriched with its pipeline stage.",
+                "description": "Gets a single CRM lead by id after enforcing tenant ownership, returning 404 when the prospect does not exist, is not typed as a lead, or belongs to another organization. The returned record is enriched with its pipeline stage.",
                 "consumes": [
                     "application/json"
                 ],
@@ -9401,7 +9513,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Updates a CRM prospect or opportunity's attributes after enforcing tenant ownership, returning 404 when the record is missing or not owned by the caller's organization. Reassigning a stage syncs its probability onto the record, and opportunities must always keep a stage assigned.",
+                "description": "Updates a CRM lead's attributes after enforcing tenant ownership, returning 404 when the record does not exist, is not typed as a lead, or is not owned by the caller's organization. Reassigning a stage syncs its probability onto the record, and opportunities must always keep a stage assigned.",
                 "consumes": [
                     "application/json"
                 ],
@@ -9482,7 +9594,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Deletes a CRM prospect by id after enforcing tenant ownership, returning 404 when the prospect does not exist or belongs to another organization. The record is removed permanently and the endpoint responds with 204 No Content on success.",
+                "description": "Deletes a CRM lead by id after enforcing tenant ownership, returning 404 when the prospect does not exist, is not typed as a lead, or belongs to another organization. The record is removed permanently and the endpoint responds with 204 No Content on success.",
                 "consumes": [
                     "application/json"
                 ],
@@ -66919,7 +67031,6 @@ const docTemplate = `{
             "type": "object",
             "required": [
                 "email",
-                "first_name",
                 "password"
             ],
             "properties": {

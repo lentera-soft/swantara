@@ -16,6 +16,7 @@ import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { CrmLead, CrmLeadStatus, CrmStage } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
 import { formatNumber } from "@/lib/utils";
+import { canPromote } from "./crm-utils";
 import { DisqualifyDialog } from "./disqualify-dialog";
 import { PromoteDialog } from "./promote-section";
 
@@ -216,7 +217,7 @@ export function LeadsSection({ orgId }: { orgId: string }) {
                 },
               ]
             : []),
-          ...(row.original.type === "prospect" && row.original.closedAt == null
+          ...(canPromote(row.original)
             ? [
                 {
                   label: t("promoteToOpportunity"),
@@ -293,8 +294,10 @@ export function LeadsSection({ orgId }: { orgId: string }) {
           prospectId={promoteId}
           initial={leads.find((lead) => String(lead.id) === promoteId) ?? null}
           onPromoted={() => {
+            const promotedId = promoteId;
             setPromoteId(null);
             refresh();
+            if (promotedId) router.push(`/crm/opportunities/${promotedId}`);
           }}
         />
       ) : null}

@@ -584,6 +584,9 @@ export const handlers = [
   http.get("*/api/v1/organizations/:organizationId/crm/opportunities", () =>
     HttpResponse.json({ success: true, message: "OK.", data: { opportunities: [] } }),
   ),
+  http.get("*/api/v1/organizations/:organizationId/system-configs", () =>
+    HttpResponse.json({ success: true, message: "OK.", data: { systemConfigs: [] } }),
+  ),
   http.get("*/api/v1/organizations/:organizationId/contacts", () => {
     const initial = [
       {
@@ -925,14 +928,14 @@ export const handlers = [
       message: "Deleted.",
     });
   }),
-  http.get("*/api/v1/unit-groups", () =>
+  http.get("*/api/v1/organizations/:organizationId/unit-groups", () =>
     HttpResponse.json({
       success: true,
       message: "OK.",
       data: { categories: unitGroupFixtures },
     }),
   ),
-  http.post("*/api/v1/unit-groups", async ({ request }) => {
+  http.post("*/api/v1/organizations/:organizationId/unit-groups", async ({ request }) => {
     const body = (await request.json()) as { name: string };
     const category = {
       id: nextFixtureId(unitGroupFixtures),
@@ -950,14 +953,14 @@ export const handlers = [
       { status: 201 },
     );
   }),
-  http.get("*/api/v1/units", () =>
+  http.get("*/api/v1/organizations/:organizationId/units", () =>
     HttpResponse.json({
       success: true,
       message: "OK.",
       data: { units: uomFixtures },
     }),
   ),
-  http.post("*/api/v1/units", async ({ request }) => {
+  http.post("*/api/v1/organizations/:organizationId/units", async ({ request }) => {
     const body = (await request.json()) as {
       category_id: number;
       name: string;
@@ -985,7 +988,7 @@ export const handlers = [
       { status: 201 },
     );
   }),
-  http.put("*/api/v1/units/:unitId", async ({ request, params }) => {
+  http.put("*/api/v1/organizations/:organizationId/units/:unitId", async ({ request, params }) => {
     const body = (await request.json()) as {
       name?: string;
       factor?: number;
@@ -1006,7 +1009,7 @@ export const handlers = [
       data: { unit },
     });
   }),
-  http.delete("*/api/v1/units/:unitId", ({ params }) => {
+  http.delete("*/api/v1/organizations/:organizationId/units/:unitId", ({ params }) => {
     uomFixtures = uomFixtures.filter((item) => item.id !== Number(params.unitId));
     return HttpResponse.json({
       success: true,

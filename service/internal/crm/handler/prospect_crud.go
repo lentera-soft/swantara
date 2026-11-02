@@ -128,7 +128,7 @@ type GetProspectResponse struct {
 }
 
 // @Summary Get prospect
-// @Description Gets a single CRM prospect by id after enforcing tenant ownership, returning 404 when the prospect does not exist or belongs to another organization. The returned record is enriched with its pipeline stage.
+// @Description Gets a single CRM lead by id after enforcing tenant ownership, returning 404 when the prospect does not exist, is not typed as a lead, or belongs to another organization. The returned record is enriched with its pipeline stage.
 // @Tags CRM Leads
 // @Accept json
 // @Produce json
@@ -160,6 +160,9 @@ func (h ProspectHandler) Get(c fiber.Ctx) error {
 		return httpx.CreateInternalServerErrorResponse(c, "Failed to get prospect.", err)
 	}
 	if prospect == nil {
+		return httpx.CreateNotFoundResponse(c, "Prospect not found.")
+	}
+	if prospect.Type != crm.ProspectKindLead {
 		return httpx.CreateNotFoundResponse(c, "Prospect not found.")
 	}
 
@@ -307,6 +310,7 @@ func (h ProspectHandler) Create(c fiber.Ctx) error {
 		ConsentAt:         consentAt,
 		DoNotContact:      request.DoNotContact,
 		AllowDuplicate:    request.AllowDuplicate,
+		AllowUnqualified:  request.AllowUnqualified,
 		LostReason:        request.LostReason,
 		LostReasonCode:    request.LostReasonCode,
 		ExpectedClose:     expectedClose,
@@ -382,7 +386,7 @@ type UpdateProspectResponse struct {
 }
 
 // @Summary Update prospect
-// @Description Updates a CRM prospect or opportunity's attributes after enforcing tenant ownership, returning 404 when the record is missing or not owned by the caller's organization. Reassigning a stage syncs its probability onto the record, and opportunities must always keep a stage assigned.
+// @Description Updates a CRM lead's attributes after enforcing tenant ownership, returning 404 when the record does not exist, is not typed as a lead, or is not owned by the caller's organization. Reassigning a stage syncs its probability onto the record, and opportunities must always keep a stage assigned.
 // @Tags CRM Leads
 // @Accept json
 // @Produce json
@@ -422,6 +426,9 @@ func (h ProspectHandler) Update(c fiber.Ctx) error {
 		return httpx.CreateInternalServerErrorResponse(c, "Failed to update prospect.", err)
 	}
 	if prospect == nil {
+		return httpx.CreateNotFoundResponse(c, "Prospect not found.")
+	}
+	if prospect.Type != crm.ProspectKindLead {
 		return httpx.CreateNotFoundResponse(c, "Prospect not found.")
 	}
 
@@ -503,7 +510,7 @@ func (h ProspectHandler) Update(c fiber.Ctx) error {
 }
 
 // @Summary Delete prospect
-// @Description Deletes a CRM prospect by id after enforcing tenant ownership, returning 404 when the prospect does not exist or belongs to another organization. The record is removed permanently and the endpoint responds with 204 No Content on success.
+// @Description Deletes a CRM lead by id after enforcing tenant ownership, returning 404 when the prospect does not exist, is not typed as a lead, or belongs to another organization. The record is removed permanently and the endpoint responds with 204 No Content on success.
 // @Tags CRM Leads
 // @Accept json
 // @Produce json
@@ -535,6 +542,9 @@ func (h ProspectHandler) Delete(c fiber.Ctx) error {
 		return httpx.CreateInternalServerErrorResponse(c, "Failed to delete prospect.", err)
 	}
 	if prospect == nil {
+		return httpx.CreateNotFoundResponse(c, "Prospect not found.")
+	}
+	if prospect.Type != crm.ProspectKindLead {
 		return httpx.CreateNotFoundResponse(c, "Prospect not found.")
 	}
 

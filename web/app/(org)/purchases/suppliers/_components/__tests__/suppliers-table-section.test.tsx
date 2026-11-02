@@ -86,14 +86,12 @@ describe("SuppliersTable", () => {
     await waitFor(() => expect(screen.queryByText("Acme Corp")).not.toBeInTheDocument());
   });
 
-  it("opens the create contact dialog from the add button", async () => {
-    const user = userEvent.setup();
+  it("links the add button to the create supplier page", async () => {
     renderWithProviders(<SuppliersTable />);
 
     await screen.findByText("Acme Corp");
-    await user.click(screen.getByRole("button", { name: /Tambah Pemasok/ }));
-
-    expect(await screen.findByText("Kontak baru")).toBeInTheDocument();
+    const link = screen.getByRole("link", { name: /Tambah Pemasok/ });
+    expect(link).toHaveAttribute("href", "/purchases/suppliers/new");
   });
 
   it("shows the empty state when there are no suppliers", async () => {

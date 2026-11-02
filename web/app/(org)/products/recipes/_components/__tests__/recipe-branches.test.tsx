@@ -56,7 +56,7 @@ const units = [
 
 function seedLists() {
   server.use(
-    http.get("*/api/v1/units", () =>
+    http.get("*/api/v1/organizations/:organizationId/units", () =>
       HttpResponse.json({ success: true, message: "OK.", data: { units } }),
     ),
   );

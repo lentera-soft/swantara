@@ -84,7 +84,7 @@ function useUnitCategorySchema() {
 }
 type UnitCategoryValues = z.infer<ReturnType<typeof useUnitCategorySchema>>;
 
-export function UnitsSection(_props: { orgId: string }) {
+export function UnitsSection({ orgId }: { orgId: string }) {
   const t = useTranslations("Reference");
   const [editing, setEditing] = useState<UnitRow | null>(null);
   const [open, setOpen] = useState(false);
@@ -92,11 +92,12 @@ export function UnitsSection(_props: { orgId: string }) {
 
   const categoriesQuery = useOrgListQuery<{ categories: UnitCategory[] }, Record<string, never>>(
     "uomCategories",
-    () => getSwantaraService().uomCategories.list(),
+    (organizationId) => getSwantaraService().uomCategories.list(organizationId),
   );
 
-  const unitsQuery = useOrgListQuery<{ units: Unit[] }, Record<string, never>>("units", () =>
-    getSwantaraService().units.list(),
+  const unitsQuery = useOrgListQuery<{ units: Unit[] }, Record<string, never>>(
+    "units",
+    (organizationId) => getSwantaraService().units.list(organizationId),
   );
 
   const categories = (categoriesQuery.data?.categories ?? []).map(toCategoryRow);
@@ -157,7 +158,7 @@ export function UnitsSection(_props: { orgId: string }) {
 
     if (editing) {
       return getSwantaraService()
-        .units.update(Number(editing.id), payload)
+        .units.update(Number(orgId), Number(editing.id), payload)
         .then(() => {
           toast.success(t("unitSaved"));
           setOpen(false);
@@ -170,7 +171,7 @@ export function UnitsSection(_props: { orgId: string }) {
         });
     } else {
       return getSwantaraService()
-        .units.create(payload)
+        .units.create(Number(orgId), payload)
         .then(() => {
           toast.success(t("unitSaved"));
           setOpen(false);
@@ -186,7 +187,7 @@ export function UnitsSection(_props: { orgId: string }) {
 
   function handleCategorySubmit(values: UnitCategoryValues) {
     return getSwantaraService()
-      .uomCategories.create({ name: values.name })
+      .uomCategories.create(Number(orgId), { name: values.name })
       .then(() => {
         toast.success(t("categorySaved"));
         setCategoryOpen(false);
@@ -251,7 +252,7 @@ export function UnitsSection(_props: { orgId: string }) {
           onEdit={() => openEdit(row.original)}
           onDelete={() =>
             void getSwantaraService()
-              .units.delete(Number(row.original.id))
+              .units.delete(Number(orgId), Number(row.original.id))
               .then(() => void unitsQuery.refetch())
               .catch((error) => {
                 logger.error("Failed to delete Unit", error);

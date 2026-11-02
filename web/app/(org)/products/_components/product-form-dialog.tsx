@@ -84,8 +84,9 @@ export function ProductFormDialog({
   const t = (useTranslations as unknown as (ns: string) => TFn)("Products");
   const tCommon = useTranslations("Common");
   const schema = useProductSchema();
-  const unitsQuery = useOrgListQuery<{ units: Unit[] }, Record<string, never>>("units", () =>
-    getSwantaraService().units.list(),
+  const unitsQuery = useOrgListQuery<{ units: Unit[] }, Record<string, never>>(
+    "units",
+    (organizationId) => getSwantaraService().units.list(organizationId),
   );
   const uomOptions = (unitsQuery.data?.units ?? []).map((unit) => ({
     id: String(unit.id),

@@ -156,7 +156,10 @@ type userEmailVerificationDAO struct {
 }
 
 func NewUserEmailVerificationDAO(db *gorm.DB) UserEmailVerificationDAO {
-	return userEmailVerificationDAO{Base: dao.NewBase[UserEmailVerification](db), db: db}
+	return userEmailVerificationDAO{
+		Base: dao.NewBase[UserEmailVerification](db),
+		db:   db,
+	}
 }
 
 func (s userEmailVerificationDAO) FindByToken(ctx context.Context, tokenHash string) (*UserEmailVerification, error) {

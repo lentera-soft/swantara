@@ -61,7 +61,13 @@ beforeEach(() => {
 describe("RmaFormDialog", () => {
   it("renders the create form when open", () => {
     renderWithProviders(
-      <RmaFormDialog open={true} onOpenChange={vi.fn()} orgId="1" onSave={vi.fn()} />,
+      <RmaFormDialog
+        open={true}
+        onOpenChange={vi.fn()}
+        orgId="1"
+        defaultType="customer_return"
+        onSave={vi.fn()}
+      />,
     );
 
     expect(screen.getByRole("heading", { name: "Retur baru" })).toBeInTheDocument();
@@ -71,7 +77,13 @@ describe("RmaFormDialog", () => {
   it("appends another line through the add line button", async () => {
     const user = userEvent.setup();
     renderWithProviders(
-      <RmaFormDialog open={true} onOpenChange={vi.fn()} orgId="1" onSave={vi.fn()} />,
+      <RmaFormDialog
+        open={true}
+        onOpenChange={vi.fn()}
+        orgId="1"
+        defaultType="customer_return"
+        onSave={vi.fn()}
+      />,
     );
 
     await user.click(screen.getByRole("button", { name: "Tambah baris" }));

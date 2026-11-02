@@ -116,7 +116,7 @@ export function CustomerFormDialog({
     >
       <div className="flex flex-col gap-6">
         <fieldset className="flex flex-col gap-4">
-          <legend className="text-sm font-medium">{t("sectionIdentity")}</legend>
+          <legend className="text-sm">{t("sectionIdentity")}</legend>
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField name="name" label={`${t("fieldName")} *`}>
               {({ field, id }) => (
@@ -144,7 +144,7 @@ export function CustomerFormDialog({
         </fieldset>
 
         <fieldset className="flex flex-col gap-4">
-          <legend className="text-sm font-medium">{t("sectionContact")}</legend>
+          <legend className="text-sm">{t("sectionContact")}</legend>
           <div className="grid gap-4 sm:grid-cols-2">
             <FormField name="email" label={t("fieldEmail")}>
               {({ field, id }) => (
@@ -174,7 +174,7 @@ export function CustomerFormDialog({
         </fieldset>
 
         <fieldset className="flex flex-col gap-4">
-          <legend className="text-sm font-medium">{t("sectionStatus")}</legend>
+          <legend className="text-sm">{t("sectionStatus")}</legend>
           <FormField
             name="active"
             label={t("statusActive")}

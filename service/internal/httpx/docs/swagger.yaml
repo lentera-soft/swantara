@@ -14639,7 +14639,6 @@ definitions:
         type: string
     required:
     - email
-    - first_name
     - password
     type: object
   handler.RegisterResponse:
@@ -20342,6 +20341,92 @@ paths:
           schema:
             $ref: '#/definitions/httpx.ErrorResponse'
       summary: Log out user
+      tags:
+      - Authentication
+  /auth/oauth/facebook:
+    get:
+      description: Redirects the browser to the Facebook consent screen. A CSRF state
+        is stored in a short-lived HttpOnly cookie and validated again on callback.
+        Returns 503 when the provider is not configured.
+      produces:
+      - application/json
+      responses:
+        "302":
+          description: Redirect to Facebook
+        "503":
+          description: Provider not configured
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      summary: Start Facebook OAuth login
+      tags:
+      - Authentication
+  /auth/oauth/facebook/callback:
+    get:
+      description: Exchanges the Facebook authorization code for the user identity,
+        links it to an existing account (when the provider email is verified) or provisions
+        a new user, then issues the session token pair as HttpOnly cookies and redirects
+        to the web client. Failures redirect to the web login page with an oauth error
+        code.
+      parameters:
+      - description: Authorization code
+        in: query
+        name: code
+        required: true
+        type: string
+      - description: CSRF state
+        in: query
+        name: state
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "302":
+          description: Redirect to the web login page with an error
+      summary: Complete Facebook OAuth login
+      tags:
+      - Authentication
+  /auth/oauth/google:
+    get:
+      description: Redirects the browser to the Google consent screen. A CSRF state
+        and a PKCE code verifier are stored in short-lived HttpOnly cookies and validated
+        again on callback. Returns 503 when the provider is not configured.
+      produces:
+      - application/json
+      responses:
+        "302":
+          description: Redirect to Google
+        "503":
+          description: Provider not configured
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      summary: Start Google OAuth login
+      tags:
+      - Authentication
+  /auth/oauth/google/callback:
+    get:
+      description: Exchanges the Google authorization code for the user identity,
+        links it to an existing account (when the provider email is verified) or provisions
+        a new user, then issues the session token pair as HttpOnly cookies and redirects
+        to the web client. Failures redirect to the web login page with an oauth error
+        code.
+      parameters:
+      - description: Authorization code
+        in: query
+        name: code
+        required: true
+        type: string
+      - description: CSRF state
+        in: query
+        name: state
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "302":
+          description: Redirect to the web login page with an error
+      summary: Complete Google OAuth login
       tags:
       - Authentication
   /auth/password-reset:
@@ -26380,10 +26465,10 @@ paths:
     delete:
       consumes:
       - application/json
-      description: Deletes a CRM prospect by id after enforcing tenant ownership,
-        returning 404 when the prospect does not exist or belongs to another organization.
-        The record is removed permanently and the endpoint responds with 204 No Content
-        on success.
+      description: Deletes a CRM lead by id after enforcing tenant ownership, returning
+        404 when the prospect does not exist, is not typed as a lead, or belongs to
+        another organization. The record is removed permanently and the endpoint responds
+        with 204 No Content on success.
       parameters:
       - description: CRM prospect ID
         in: path
@@ -26420,9 +26505,10 @@ paths:
     get:
       consumes:
       - application/json
-      description: Gets a single CRM prospect by id after enforcing tenant ownership,
-        returning 404 when the prospect does not exist or belongs to another organization.
-        The returned record is enriched with its pipeline stage.
+      description: Gets a single CRM lead by id after enforcing tenant ownership,
+        returning 404 when the prospect does not exist, is not typed as a lead, or
+        belongs to another organization. The returned record is enriched with its
+        pipeline stage.
       parameters:
       - description: CRM prospect ID
         in: path
@@ -26461,10 +26547,10 @@ paths:
     put:
       consumes:
       - application/json
-      description: Updates a CRM prospect or opportunity's attributes after enforcing
-        tenant ownership, returning 404 when the record is missing or not owned by
-        the caller's organization. Reassigning a stage syncs its probability onto
-        the record, and opportunities must always keep a stage assigned.
+      description: Updates a CRM lead's attributes after enforcing tenant ownership,
+        returning 404 when the record does not exist, is not typed as a lead, or is
+        not owned by the caller's organization. Reassigning a stage syncs its probability
+        onto the record, and opportunities must always keep a stage assigned.
       parameters:
       - description: CRM prospect ID
         in: path

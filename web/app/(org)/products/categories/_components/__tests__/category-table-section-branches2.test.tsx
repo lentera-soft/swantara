@@ -3,7 +3,7 @@ import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 import { renderWithProviders, server } from "@/lib/tests";
-import { CategoryTreeSection } from "../category-tree-section";
+import { CategoryTableSection } from "../category-table-section";
 
 const STAMP = "2026-01-01T00:00:00Z";
 
@@ -42,7 +42,7 @@ function seedCategories(list: unknown[] = categories) {
 
 beforeEach(() => {});
 
-describe("CategoryTreeSection branches2", () => {
+describe("CategoryTableSection branches2", () => {
   it("creates a category with none optionals branch", async () => {
     seedCategories([]);
     let createBody: unknown = null;
@@ -53,7 +53,7 @@ describe("CategoryTreeSection branches2", () => {
       }),
     );
     const user = userEvent.setup();
-    renderWithProviders(<CategoryTreeSection orgId="1" />);
+    renderWithProviders(<CategoryTableSection orgId="1" />);
 
     await user.click(await screen.findByRole("button", { name: "Tambah kategori" }));
     const dialog = await screen.findByRole("dialog");
@@ -77,7 +77,7 @@ describe("CategoryTreeSection branches2", () => {
       ),
     );
     const user = userEvent.setup();
-    renderWithProviders(<CategoryTreeSection orgId="1" />);
+    renderWithProviders(<CategoryTableSection orgId="1" />);
 
     await screen.findByText("Raw Materials");
     await user.click(screen.getByRole("button", { name: "Aksi" }));
@@ -97,8 +97,9 @@ describe("CategoryTreeSection branches2", () => {
         HttpResponse.json({ success: true, message: "OK.", data: { accounts: [] } }),
       ),
     );
-    renderWithProviders(<CategoryTreeSection orgId="1" />);
+    renderWithProviders(<CategoryTableSection orgId="1" />);
 
-    expect(await screen.findByText("Belum ada kategori")).toBeInTheDocument();
+    expect(await screen.findByText("Categories down.")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Coba lagi" })).toBeInTheDocument();
   });
 });

@@ -39,7 +39,7 @@ beforeEach(() => {
 
 describe("RmasSection", () => {
   it("renders seeded RMAs", async () => {
-    renderWithProviders(<RmasSection orgId="1" />);
+    renderWithProviders(<RmasSection orgId="1" rmaType="customer_return" />);
 
     expect(await screen.findByText("RMA-0001")).toBeInTheDocument();
     expect(screen.getByText("SALE_ORDER-7")).toBeInTheDocument();
@@ -47,7 +47,7 @@ describe("RmasSection", () => {
 
   it("opens the create dialog from the add button", async () => {
     const user = userEvent.setup();
-    renderWithProviders(<RmasSection orgId="1" />);
+    renderWithProviders(<RmasSection orgId="1" rmaType="customer_return" />);
 
     await screen.findByText("RMA-0001");
     await user.click(screen.getByRole("button", { name: "Retur baru" }));

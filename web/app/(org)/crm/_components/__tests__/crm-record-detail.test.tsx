@@ -2,7 +2,7 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
-import { renderWithProviders, server } from "@/lib/tests";
+import { navigationMock, renderWithProviders, server } from "@/lib/tests";
 import { CrmRecordDetail } from "../crm-record-detail";
 
 const lead = {
@@ -277,5 +277,68 @@ describe("CrmRecordDetail", () => {
     await user.click(within(dialog).getByRole("button", { name: "Gabungkan ke data ini" }));
 
     await waitFor(() => expect(body).toEqual({ target_id: 1 }));
+  });
+
+  it("promotes a lead from the detail actions and navigates to the opportunity", async () => {
+    server.use(
+      http.get("*/api/v1/organizations/:organizationId/crm/teams", () =>
+        HttpResponse.json({ success: true, message: "OK.", data: { teams: [] } }),
+      ),
+      http.get("*/api/v1/organizations/:organizationId/system-configs", () =>
+        HttpResponse.json({ success: true, message: "OK.", data: { systemConfigs: [] } }),
+      ),
+      http.post("*/api/v1/organizations/:organizationId/crm/leads/1/promote", () =>
+        HttpResponse.json({
+          success: true,
+          message: "OK.",
+          data: { prospect: { ...lead, type: "opportunity", status: "converted" } },
+        }),
+      ),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<CrmRecordDetail kind="lead" orgId="1" id="1" />);
+
+    await screen.findByRole("heading", { name: "Acme Website Inquiry" });
+    await user.click(screen.getByRole("button", { name: "Promosikan ke peluang" }));
+
+    const dialog = await screen.findByRole("dialog");
+    await user.click(within(dialog).getByRole("combobox", { name: "Tahap" }));
+    await user.click(await screen.findByRole("option", { name: "Qualified — 30%" }));
+    await user.click(within(dialog).getByRole("button", { name: "Promosikan" }));
+
+    await waitFor(() => expect(navigationMock.push).toHaveBeenCalledWith("/crm/opportunities/1"));
+  });
+
+  it("shows win, lose, and stage actions for an open opportunity", async () => {
+    let winCalls = 0;
+    server.use(
+      http.get("*/api/v1/organizations/:organizationId/crm/opportunities/1", () =>
+        HttpResponse.json({
+          success: true,
+          message: "OK.",
+          data: { opportunity: { ...lead, type: "opportunity", status: "qualified" } },
+        }),
+      ),
+      http.get("*/api/v1/organizations/:organizationId/crm/opportunities/1/history", () =>
+        HttpResponse.json({ success: true, message: "OK.", data: { history: [] } }),
+      ),
+      http.get("*/api/v1/organizations/:organizationId/crm/opportunities/1/buyers", () =>
+        HttpResponse.json({ success: true, message: "OK.", data: { buyers: [] } }),
+      ),
+      http.post("*/api/v1/organizations/:organizationId/crm/opportunities/1/win", () => {
+        winCalls += 1;
+        return HttpResponse.json({ success: true, message: "OK.", data: { opportunity: lead } });
+      }),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(<CrmRecordDetail kind="opportunity" orgId="1" id="1" />);
+
+    await screen.findByRole("heading", { name: "Acme Website Inquiry" });
+    expect(screen.queryByRole("button", { name: "Promosikan ke peluang" })).not.toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Pindahkan tahap" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Tandai kalah" })).toBeInTheDocument();
+
+    await user.click(screen.getByRole("button", { name: "Tandai menang" }));
+    await waitFor(() => expect(winCalls).toBe(1));
   });
 });

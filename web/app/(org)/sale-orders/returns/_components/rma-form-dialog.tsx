@@ -16,12 +16,13 @@ import { Textarea } from "@/components/textarea";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { Contact, CreateRmaRequest, Item } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
-import { type Disposition, dispositionLabel, dispositionValues } from "./rma-utils";
+import { type Disposition, dispositionLabel, dispositionValues, type RmaType } from "./rma-utils";
 
 type RmaFormDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   orgId: string;
+  defaultType: RmaType;
   onSave: () => void;
 };
 
@@ -44,7 +45,13 @@ function useRmaFormSchema() {
   });
 }
 
-export function RmaFormDialog({ open, onOpenChange, orgId, onSave }: RmaFormDialogProps) {
+export function RmaFormDialog({
+  open,
+  onOpenChange,
+  orgId,
+  defaultType,
+  onSave,
+}: RmaFormDialogProps) {
   const t = useTranslations("Sales");
   const tCommon = useTranslations("Common");
   const queryClient = useQueryClient();
@@ -68,9 +75,9 @@ export function RmaFormDialog({ open, onOpenChange, orgId, onSave }: RmaFormDial
   const form = useForm<Values>({
     resolver: zodResolver(schema),
     defaultValues: {
-      rmaType: "customer_return",
+      rmaType: defaultType,
       contactId: "",
-      originOrderType: "sale_order",
+      originOrderType: defaultType === "customer_return" ? "sale_order" : "purchase_order",
       originOrderId: "",
       reason: "",
       lines: [{ id: "1", itemId: "", qty: "1", disposition: "restock" }],
@@ -115,14 +122,6 @@ export function RmaFormDialog({ open, onOpenChange, orgId, onSave }: RmaFormDial
     });
   }
 
-  function rmaTypeLabel(key: string): string {
-    try {
-      return (t as unknown as (k: string) => string)(`rmaType.${key}`);
-    } catch {
-      return key;
-    }
-  }
-
   function dispositionOptionLabel(value: string): string {
     try {
       return (t as unknown as (k: string) => string)(`disposition.${value}`);
@@ -130,11 +129,6 @@ export function RmaFormDialog({ open, onOpenChange, orgId, onSave }: RmaFormDial
       return dispositionLabel(value as Disposition);
     }
   }
-
-  const originOrderTypes = [
-    { value: "sale_order", label: t("originSaleOrder") },
-    { value: "purchase_order", label: t("originPurchaseOrder") },
-  ] as const;
 
   const dispositionOptions = dispositionValues.map((value) => ({
     value,
@@ -156,19 +150,6 @@ export function RmaFormDialog({ open, onOpenChange, orgId, onSave }: RmaFormDial
     >
       <div className="flex flex-col gap-4">
         <div className="grid gap-4 sm:grid-cols-2">
-          <FormField name="rmaType" label={t("fieldRmaType")}>
-            {({ field, id }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger id={id} aria-label={t("fieldRmaType")}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="customer_return">{rmaTypeLabel("customer_return")}</SelectItem>
-                  <SelectItem value="vendor_return">{rmaTypeLabel("vendor_return")}</SelectItem>
-                </SelectContent>
-              </Select>
-            )}
-          </FormField>
           <FormField name="contactId" label={t("fieldContact")}>
             {({ field, id }) => (
               <Select value={field.value} onValueChange={field.onChange}>
@@ -179,24 +160,6 @@ export function RmaFormDialog({ open, onOpenChange, orgId, onSave }: RmaFormDial
                   {contacts.map((p) => (
                     <SelectItem key={p.id} value={String(p.id)}>
                       {p.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            )}
-          </FormField>
-        </div>
-        <div className="grid gap-4 sm:grid-cols-2">
-          <FormField name="originOrderType" label={t("fieldOriginOrderType")}>
-            {({ field, id }) => (
-              <Select value={field.value} onValueChange={field.onChange}>
-                <SelectTrigger id={id} aria-label={t("fieldOriginOrderType")}>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {originOrderTypes.map((ot) => (
-                    <SelectItem key={ot.value} value={ot.value}>
-                      {ot.label}
                     </SelectItem>
                   ))}
                 </SelectContent>

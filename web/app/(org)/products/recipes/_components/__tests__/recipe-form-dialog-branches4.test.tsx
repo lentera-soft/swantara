@@ -46,7 +46,7 @@ function seed() {
   created.length = 0;
   updated.length = 0;
   server.use(
-    http.get("*/api/v1/units", () =>
+    http.get("*/api/v1/organizations/:organizationId/units", () =>
       HttpResponse.json({
         success: true,
         message: "OK.",

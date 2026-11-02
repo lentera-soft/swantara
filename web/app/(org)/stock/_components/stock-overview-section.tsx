@@ -1,7 +1,7 @@
 "use client";
 
 import type { LegacyColumnDef as ColumnDef } from "@tanstack/react-table/legacy";
-import { Plus } from "lucide-react";
+import { ArrowLeftRight, Boxes, Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
@@ -21,6 +21,11 @@ import type {
 } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
 import { formatDate, formatNumber } from "@/lib/utils";
+
+const STOCK_TABS = [
+  { value: "onhand", labelKey: "onHandTab", icon: Boxes },
+  { value: "movements", labelKey: "movementsTab", icon: ArrowLeftRight },
+] as const;
 
 type OnHandRow = {
   id: string;
@@ -303,11 +308,21 @@ export function StockOverviewSection({ orgId: _orgId }: { orgId: string }) {
         </Button>
       </div>
 
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <TabsList>
-          <TabsTrigger value="onhand">{t("onHandTab")}</TabsTrigger>
-          <TabsTrigger value="movements">{t("movementsTab")}</TabsTrigger>
-        </TabsList>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="gap-5 sm:gap-6">
+        <div className="-mx-4 overflow-x-auto border-b border-border px-4 sm:mx-0 sm:overflow-visible sm:px-0">
+          <TabsList variant="line" className="min-w-max gap-5 sm:min-w-full sm:gap-6">
+            {STOCK_TABS.map(({ value, labelKey, icon: Icon }) => (
+              <TabsTrigger
+                key={value}
+                value={value}
+                className="gap-2 px-2 text-xs sm:px-3 sm:text-sm"
+              >
+                <Icon aria-hidden="true" className="size-4" />
+                {t(labelKey)}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        </div>
 
         <TabsContent value="onhand">
           <Card>

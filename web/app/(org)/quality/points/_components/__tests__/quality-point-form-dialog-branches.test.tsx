@@ -15,7 +15,7 @@ function useLocalOptions() {
         data: { products: [{ id: 5, name: "Widget" }] },
       }),
     ),
-    http.get("*/api/v1/units", () =>
+    http.get("*/api/v1/organizations/:organizationId/units", () =>
       HttpResponse.json({
         success: true,
         message: "OK.",

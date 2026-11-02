@@ -119,4 +119,22 @@ describe("OpportunitiesSection", () => {
 
     expect(addButton).toHaveAttribute("href", "/crm/opportunities/new");
   });
+
+  it("offers stage, won, and lost actions only for open opportunities", async () => {
+    const user = userEvent.setup();
+    renderWithProviders(<OpportunitiesSection orgId="1" />);
+
+    await screen.findByText("Acme Enterprise Deal");
+    const menus = screen.getAllByRole("button", { name: "Aksi" });
+    await user.click(menus[0]!);
+    expect(await screen.findByRole("menuitem", { name: "Pindahkan tahap" })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Tandai menang" })).toBeInTheDocument();
+    expect(screen.getByRole("menuitem", { name: "Tandai kalah" })).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+
+    await user.click(menus[1]!);
+    await screen.findByRole("menuitem", { name: "Buat penawaran" });
+    expect(screen.queryByRole("menuitem", { name: "Pindahkan tahap" })).toBeNull();
+    expect(screen.queryByRole("menuitem", { name: "Tandai menang" })).toBeNull();
+  });
 });

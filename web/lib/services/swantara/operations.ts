@@ -834,51 +834,55 @@ export class Countries {
 export class UnitCategories {
   constructor(private readonly axios: AxiosInstance) {}
 
-  async list(params?: ListQuery): Promise<{ categories: UnitCategory[] }> {
+  async list(organizationId: number, params?: ListQuery): Promise<{ categories: UnitCategory[] }> {
     const response = await this.axios.get<SuccessEnvelope<{ categories: UnitCategory[] }>>(
-      endpoints.unitGroups.list,
+      endpoints.unitGroups.list(String(organizationId)),
       { params },
     );
     return withListMeta(response.data);
   }
 
-  async get(id: number): Promise<{ category: UnitCategory }> {
+  async get(organizationId: number, id: number): Promise<{ category: UnitCategory }> {
     const response = await this.axios.get<SuccessEnvelope<{ category: UnitCategory }>>(
-      endpoints.unitGroups.get(String(id)),
+      endpoints.unitGroups.get(String(organizationId), String(id)),
     );
     return withListMeta(response.data);
   }
 
-  async create(request: CreateUnitCategoryRequest): Promise<{ category: UnitCategory }> {
+  async create(
+    organizationId: number,
+    request: CreateUnitCategoryRequest,
+  ): Promise<{ category: UnitCategory }> {
     const response = await this.axios.post<SuccessEnvelope<{ category: UnitCategory }>>(
-      endpoints.unitGroups.create,
+      endpoints.unitGroups.create(String(organizationId)),
       request,
     );
     return withListMeta(response.data);
   }
 
   async update(
+    organizationId: number,
     id: number,
     request: CreateUnitCategoryRequest,
   ): Promise<{ category: UnitCategory }> {
     const response = await this.axios.put<SuccessEnvelope<{ category: UnitCategory }>>(
-      endpoints.unitGroups.update(String(id)),
+      endpoints.unitGroups.update(String(organizationId), String(id)),
       request,
     );
     return withListMeta(response.data);
   }
 
-  async delete(id: number): Promise<void> {
-    await this.axios.delete(endpoints.unitGroups.delete(String(id)));
+  async delete(organizationId: number, id: number): Promise<void> {
+    await this.axios.delete(endpoints.unitGroups.delete(String(organizationId), String(id)));
   }
 }
 
 export class Units {
   constructor(private readonly axios: AxiosInstance) {}
 
-  async list(params?: ListQuery): Promise<{ units: Unit[] }> {
+  async list(organizationId: number, params?: ListQuery): Promise<{ units: Unit[] }> {
     const response = await this.axios.get<SuccessEnvelope<{ units: Unit[] }>>(
-      endpoints.units.list,
+      endpoints.units.list(String(organizationId)),
       {
         params,
       },
@@ -886,36 +890,40 @@ export class Units {
     return withListMeta(response.data);
   }
 
-  async get(id: number): Promise<{ unit: Unit }> {
+  async get(organizationId: number, id: number): Promise<{ unit: Unit }> {
     const response = await this.axios.get<SuccessEnvelope<{ unit: Unit }>>(
-      endpoints.units.get(String(id)),
+      endpoints.units.get(String(organizationId), String(id)),
     );
     return withListMeta(response.data);
   }
 
-  async create(request: CreateUnitRequest): Promise<{ unit: Unit }> {
+  async create(organizationId: number, request: CreateUnitRequest): Promise<{ unit: Unit }> {
     const response = await this.axios.post<SuccessEnvelope<{ unit: Unit }>>(
-      endpoints.units.create,
+      endpoints.units.create(String(organizationId)),
       request,
     );
     return withListMeta(response.data);
   }
 
-  async update(id: number, request: UpdateUnitRequest): Promise<{ unit: Unit }> {
+  async update(
+    organizationId: number,
+    id: number,
+    request: UpdateUnitRequest,
+  ): Promise<{ unit: Unit }> {
     const response = await this.axios.put<SuccessEnvelope<{ unit: Unit }>>(
-      endpoints.units.update(String(id)),
+      endpoints.units.update(String(organizationId), String(id)),
       request,
     );
     return withListMeta(response.data);
   }
 
-  async delete(id: number): Promise<void> {
-    await this.axios.delete(endpoints.units.delete(String(id)));
+  async delete(organizationId: number, id: number): Promise<void> {
+    await this.axios.delete(endpoints.units.delete(String(organizationId), String(id)));
   }
 
-  async convert(request: ConvertUnitRequest): Promise<{ value: number }> {
+  async convert(organizationId: number, request: ConvertUnitRequest): Promise<{ value: number }> {
     const response = await this.axios.post<SuccessEnvelope<{ value: number }>>(
-      endpoints.units.convert,
+      endpoints.units.convert(String(organizationId)),
       request,
     );
     return withListMeta(response.data);
