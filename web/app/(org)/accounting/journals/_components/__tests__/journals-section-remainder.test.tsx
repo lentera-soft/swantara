@@ -130,7 +130,8 @@ describe("JournalsSection remainder", () => {
 
     await screen.findByText("Sales Journal");
     const table = screen.getByRole("table");
-    await user.click(within(table).getAllByRole("button", { name: "Ubah" })[0]!);
+    await user.click(within(table).getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Ubah" }));
 
     const dialog = await screen.findByRole("dialog");
     expect(within(dialog).getByText("Ubah jurnal")).toBeInTheDocument();
@@ -150,7 +151,8 @@ describe("JournalsSection remainder", () => {
 
     await screen.findByText("Sales Journal");
     const table = screen.getByRole("table");
-    await user.click(within(table).getAllByRole("button", { name: "Hapus" })[0]!);
+    await user.click(within(table).getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Hapus" }));
 
     const confirm = await screen.findByRole("alertdialog");
     await user.click(within(confirm).getByRole("button", { name: "Hapus" }));

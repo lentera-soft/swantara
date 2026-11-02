@@ -80,12 +80,14 @@ describe("LeadsSection extra2", () => {
     renderWithProviders(<LeadsSection orgId="1" />);
 
     await screen.findByText("Lead 1");
-    await user.click(screen.getAllByRole("button", { name: "Promosikan ke peluang" })[0]!);
+    await user.click(screen.getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Promosikan ke peluang" }));
 
     expect(await screen.findByText("Promosikan prospek menjadi peluang")).toBeInTheDocument();
   });
 
   it("hides the promote action for closed or non-lead rows", async () => {
+    const user = userEvent.setup();
     seedLeads([
       lead(1, {}),
       lead(3, { type: "opportunity" }),
@@ -94,7 +96,23 @@ describe("LeadsSection extra2", () => {
     renderWithProviders(<LeadsSection orgId="1" />);
 
     await screen.findByText("Lead 3");
-    expect(screen.getAllByRole("button", { name: "Promosikan ke peluang" })).toHaveLength(1);
+    const menus = screen.getAllByRole("button", { name: "Aksi" });
+    expect(menus).toHaveLength(3);
+
+    await user.click(menus[0]!);
+    expect(
+      await screen.findByRole("menuitem", { name: "Promosikan ke peluang" }),
+    ).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+
+    await user.click(menus[1]!);
+    await screen.findByRole("menuitem", { name: "Diskualifikasi" });
+    expect(screen.queryByRole("menuitem", { name: "Promosikan ke peluang" })).toBeNull();
+    await user.keyboard("{Escape}");
+
+    await user.click(menus[2]!);
+    await screen.findByRole("menuitem", { name: "Diskualifikasi" });
+    expect(screen.queryByRole("menuitem", { name: "Promosikan ke peluang" })).toBeNull();
   });
 
   it("deletes a lead from the row actions", async () => {
@@ -109,10 +127,8 @@ describe("LeadsSection extra2", () => {
     renderWithProviders(<LeadsSection orgId="1" />);
 
     await screen.findByText("Lead 1");
-    const deleteTriggers = screen
-      .getAllByRole("button", { name: "Hapus prospek" })
-      .filter((el) => el.getAttribute("aria-haspopup") === "dialog");
-    await user.click(deleteTriggers[0]!);
+    await user.click(screen.getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Hapus prospek" }));
     await user.click(await screen.findByRole("button", { name: "Hapus" }));
 
     await waitFor(() => expect(deleteCalls).toBe(1));
@@ -123,7 +139,8 @@ describe("LeadsSection extra2", () => {
     renderWithProviders(<LeadsSection orgId="1" />);
 
     await screen.findByText("Lead 1");
-    await user.click(screen.getAllByRole("button", { name: "Ubah prospek" })[0]!);
+    await user.click(screen.getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Ubah prospek" }));
 
     expect(navigationMock.push).toHaveBeenCalledWith("/crm/leads/1/edit");
   });

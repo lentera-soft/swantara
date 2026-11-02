@@ -80,7 +80,8 @@ describe("CategoryTreeSection branches2", () => {
     renderWithProviders(<CategoryTreeSection orgId="1" />);
 
     await screen.findByText("Raw Materials");
-    await user.click(screen.getByRole("button", { name: "Ubah" }));
+    await user.click(screen.getByRole("button", { name: "Aksi" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Ubah" }));
     const dialog = await screen.findByRole("dialog");
     await user.click(within(dialog).getByRole("button", { name: "Simpan kategori" }));
 

@@ -88,12 +88,16 @@ beforeEach(() => {
 
 describe("OpportunitiesSection", () => {
   it("renders opportunities with stage badges", async () => {
+    const user = userEvent.setup();
     renderWithProviders(<OpportunitiesSection orgId="1" />);
 
     expect(await screen.findByText("Acme Enterprise Deal")).toBeInTheDocument();
     expect(screen.getByText("Nusantara Rollout")).toBeInTheDocument();
     expect(screen.getByText("Proposal")).toBeInTheDocument();
-    expect(screen.getAllByText("Buat penawaran")).toHaveLength(2);
+    const menus = screen.getAllByRole("button", { name: "Aksi" });
+    expect(menus).toHaveLength(2);
+    await user.click(menus[0]!);
+    expect(await screen.findByRole("menuitem", { name: "Buat penawaran" })).toBeInTheDocument();
   });
 
   it("filters opportunities through the search box", async () => {

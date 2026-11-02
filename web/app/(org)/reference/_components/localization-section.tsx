@@ -1,14 +1,14 @@
 "use client";
 
 import type { LegacyColumnDef as ColumnDef } from "@tanstack/react-table/legacy";
-import { CheckCheck, PencilIcon, Plus, Settings2, Trash2Icon } from "lucide-react";
+import { CheckCheck, Plus, Settings2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 import { InteractiveEntityTable } from "@/app/(org)/_components/interactive-entity-table";
+import { RowActions } from "@/app/(org)/_components/row-actions";
 import { Badge } from "@/components/badge";
 import { Button } from "@/components/button";
-import { ConfirmDialog } from "@/components/confirm-dialog";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { LocalizationProfile } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";

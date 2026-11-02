@@ -72,7 +72,8 @@ describe("LeadsSection lifecycle actions", () => {
     renderWithProviders(<LeadsSection orgId="1" />);
 
     await screen.findByText("Acme Website Inquiry");
-    await user.click(screen.getByRole("button", { name: "Tandai dihubungi" }));
+    await user.click(screen.getByRole("button", { name: "Aksi" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Tandai dihubungi" }));
 
     await waitFor(() => expect(body).toEqual({ status: "contacted" }));
   });
@@ -96,7 +97,8 @@ describe("LeadsSection lifecycle actions", () => {
     renderWithProviders(<LeadsSection orgId="1" />);
 
     await screen.findByText("Acme Website Inquiry");
-    await user.click(screen.getByRole("button", { name: "Diskualifikasi" }));
+    await user.click(screen.getByRole("button", { name: "Aksi" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Diskualifikasi" }));
 
     const dialog = await screen.findByRole("dialog");
     await user.type(within(dialog).getByLabelText("Alasan kalah"), "No budget");

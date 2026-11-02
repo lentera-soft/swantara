@@ -80,8 +80,9 @@ describe("CategoryTreeSection extra2", () => {
     renderWithProviders(<CategoryTreeSection orgId="1" />);
 
     await screen.findByText("Metals");
-    const editButtons = screen.getAllByRole("button", { name: "Ubah" });
-    await user.click(editButtons[1]!);
+    const metalsRow = screen.getByText("Metals").closest('[role="treeitem"]') as HTMLElement;
+    await user.click(within(metalsRow).getByRole("button", { name: "Aksi" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Ubah" }));
     const dialog = await screen.findByRole("dialog");
 
     expect(within(dialog).getByText("Ubah kategori")).toBeInTheDocument();
@@ -101,8 +102,9 @@ describe("CategoryTreeSection extra2", () => {
     renderWithProviders(<CategoryTreeSection orgId="1" />);
 
     await screen.findByText("Raw Materials");
-    const deleteButtons = screen.getAllByRole("button", { name: "Hapus" });
-    await user.click(deleteButtons[0]!);
+    const parentRow = screen.getByText("Raw Materials").closest('[role="treeitem"]') as HTMLElement;
+    await user.click(within(parentRow).getByRole("button", { name: "Aksi" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Hapus" }));
     const dialog = await screen.findByRole("alertdialog");
     await user.click(within(dialog).getByRole("button", { name: "Hapus" }));
 
@@ -123,8 +125,9 @@ describe("CategoryTreeSection extra2", () => {
     renderWithProviders(<CategoryTreeSection orgId="1" />);
 
     await screen.findByText("Metals");
-    const deleteButtons = screen.getAllByRole("button", { name: "Hapus" });
-    await user.click(deleteButtons[1]!);
+    const leafRow = screen.getByText("Metals").closest('[role="treeitem"]') as HTMLElement;
+    await user.click(within(leafRow).getByRole("button", { name: "Aksi" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Hapus" }));
     const dialog = await screen.findByRole("alertdialog");
     await user.click(within(dialog).getByRole("button", { name: "Hapus" }));
 
@@ -166,8 +169,9 @@ describe("CategoryTreeSection extra2", () => {
     renderWithProviders(<CategoryTreeSection orgId="1" />);
 
     await screen.findByText("Metals");
-    const editButtons = screen.getAllByRole("button", { name: "Ubah" });
-    await user.click(editButtons[1]!);
+    const metalsRow = screen.getByText("Metals").closest('[role="treeitem"]') as HTMLElement;
+    await user.click(within(metalsRow).getByRole("button", { name: "Aksi" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Ubah" }));
     const dialog = await screen.findByRole("dialog");
     const nameInput = within(dialog).getByLabelText("Nama");
     await user.clear(nameInput);

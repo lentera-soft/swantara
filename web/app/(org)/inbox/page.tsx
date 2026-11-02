@@ -1,4 +1,3 @@
-import { getTranslations } from "next-intl/server";
 import { requireActiveOrgId } from "@/lib/server/active-org";
 import { InboxSection } from "./_components/inbox-section";
 

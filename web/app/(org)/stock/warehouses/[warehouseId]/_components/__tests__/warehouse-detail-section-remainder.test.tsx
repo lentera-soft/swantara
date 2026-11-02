@@ -95,7 +95,8 @@ describe("WarehouseDetail remainder", () => {
     renderWithProviders(<WarehouseDetail orgId="1" warehouseId="1" />);
 
     await screen.findByText("WH/Stock");
-    await user.click(screen.getAllByRole("button", { name: "Ubah" })[0]!);
+    await user.click(screen.getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Ubah" }));
 
     expect(await screen.findByText("Ubah lokasi")).toBeInTheDocument();
   });
@@ -122,7 +123,8 @@ describe("WarehouseDetail remainder", () => {
     renderWithProviders(<WarehouseDetail orgId="1" warehouseId="1" />);
 
     await screen.findByText("WH/Stock");
-    await user.click(screen.getAllByRole("button", { name: "Hapus" })[0]!);
+    await user.click(screen.getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Hapus" }));
 
     const confirm = await screen.findByRole("alertdialog");
     await user.click(within(confirm).getByRole("button", { name: "Hapus" }));
@@ -140,7 +142,8 @@ describe("WarehouseDetail remainder", () => {
     renderWithProviders(<WarehouseDetail orgId="1" warehouseId="1" />);
 
     await screen.findByText("WH/Stock");
-    await user.click(screen.getAllByRole("button", { name: "Hapus" })[0]!);
+    await user.click(screen.getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Hapus" }));
 
     const confirm = await screen.findByRole("alertdialog");
     await user.click(within(confirm).getByRole("button", { name: "Hapus" }));

@@ -80,7 +80,8 @@ describe("OpportunitiesSection extra2", () => {
     renderWithProviders(<OpportunitiesSection orgId="1" />);
 
     await screen.findByText("Deal 11");
-    await user.click(screen.getAllByRole("button", { name: "Tandai menang" })[0]!);
+    await user.click(screen.getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Tandai menang" }));
 
     await waitFor(() => expect(winCalls).toBe(1));
   });
@@ -90,13 +91,15 @@ describe("OpportunitiesSection extra2", () => {
     renderWithProviders(<OpportunitiesSection orgId="1" />);
 
     await screen.findByText("Deal 11");
-    await user.click(screen.getAllByRole("button", { name: "Tandai kalah" })[0]!);
+    await user.click(screen.getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Tandai kalah" }));
 
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
     expect(screen.getByText("Jelaskan mengapa peluang ini kalah.")).toBeInTheDocument();
   });
 
   it("hides win and lose actions for closed opportunities", async () => {
+    const user = userEvent.setup();
     seedOpportunities([
       lead(11, {}),
       lead(13, { lost_reason: "Too expensive", closed_at: "2026-03-01T00:00:00Z" }),
@@ -104,8 +107,18 @@ describe("OpportunitiesSection extra2", () => {
     renderWithProviders(<OpportunitiesSection orgId="1" />);
 
     await screen.findByText("Deal 13");
-    expect(screen.getAllByRole("button", { name: "Tandai menang" })).toHaveLength(1);
-    expect(screen.getAllByRole("button", { name: "Tandai kalah" })).toHaveLength(1);
+    const menus = screen.getAllByRole("button", { name: "Aksi" });
+    expect(menus).toHaveLength(2);
+
+    await user.click(menus[0]!);
+    await screen.findByRole("menuitem", { name: "Tandai menang" });
+    expect(screen.getByRole("menuitem", { name: "Tandai kalah" })).toBeInTheDocument();
+    await user.keyboard("{Escape}");
+
+    await user.click(menus[1]!);
+    await screen.findByRole("menuitem", { name: "Ubah peluang" });
+    expect(screen.queryByRole("menuitem", { name: "Tandai menang" })).toBeNull();
+    expect(screen.queryByRole("menuitem", { name: "Tandai kalah" })).toBeNull();
   });
 
   it("deletes an opportunity from the row actions", async () => {
@@ -120,10 +133,8 @@ describe("OpportunitiesSection extra2", () => {
     renderWithProviders(<OpportunitiesSection orgId="1" />);
 
     await screen.findByText("Deal 11");
-    const deleteTriggers = screen
-      .getAllByRole("button", { name: "Hapus peluang" })
-      .filter((el) => el.getAttribute("aria-haspopup") === "dialog");
-    await user.click(deleteTriggers[0]!);
+    await user.click(screen.getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Hapus peluang" }));
     await user.click(await screen.findByRole("button", { name: "Hapus" }));
 
     await waitFor(() => expect(deleteCalls).toBe(1));
@@ -134,7 +145,8 @@ describe("OpportunitiesSection extra2", () => {
     renderWithProviders(<OpportunitiesSection orgId="1" />);
 
     await screen.findByText("Deal 11");
-    await user.click(screen.getAllByRole("button", { name: "Ubah peluang" })[0]!);
+    await user.click(screen.getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Ubah peluang" }));
 
     expect(navigationMock.push).toHaveBeenCalledWith("/crm/opportunities/11/edit");
   });

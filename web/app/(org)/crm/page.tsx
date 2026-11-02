@@ -14,7 +14,6 @@ import { Button } from "@/components/button";
 import { requireActiveOrgId } from "@/lib/server/active-org";
 import { PipelineSection } from "./_components/pipeline-section";
 
-
 export default async function OrgCrmPage() {
   const id = String(await requireActiveOrgId());
   const t = await getTranslations("Crm");

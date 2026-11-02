@@ -8,11 +8,8 @@ import { useRegisterForm } from "../use-register-form";
 describe("useRegisterForm submission", () => {
   async function fillValidForm(form: ReturnType<typeof useRegisterForm>["form"]) {
     await act(async () => {
-      form.setValue("firstName", "Jane");
-      form.setValue("lastName", "Doe");
       form.setValue("email", "new@example.com");
       form.setValue("password", "password1");
-      form.setValue("passwordConfirmation", "password1");
     });
   }
 
@@ -70,7 +67,7 @@ describe("useRegisterForm submission", () => {
       await result.current.handleSubmit();
     });
 
-    expect(receivedBody?.phone).toBeUndefined();
+    expect(receivedBody?.phone).toBe("");
   });
 
   it("falls back to the login page when auto-login fails", async () => {

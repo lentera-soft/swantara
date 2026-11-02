@@ -1,5 +1,4 @@
 import { redirect } from "next/navigation";
-import { getTranslations } from "next-intl/server";
 
 import { createServerSwantaraService } from "@/lib/server/api-client";
 import { SwantaraError } from "@/lib/services/swantara/errors";
@@ -9,7 +8,6 @@ import OnboardingForm from "./_components/onboarding-form";
 export const dynamic = "force-dynamic";
 
 export default async function OnboardingPage() {
-  const t = await getTranslations("Onboarding");
   const service = await createServerSwantaraService();
   let organizations: Awaited<ReturnType<typeof service.me.organizations>>["organizations"];
   try {
@@ -25,8 +23,8 @@ export default async function OnboardingPage() {
   );
 
   if (validOrganizations.length > 0) {
-    return (<AcceptOrganization orgId={validOrganizations[0]!.id} />);
+    return <AcceptOrganization orgId={validOrganizations[0]!.id} />;
   }
 
-  return (<OnboardingForm />);
+  return <OnboardingForm />;
 }

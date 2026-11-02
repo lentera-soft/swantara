@@ -110,7 +110,8 @@ describe("SupplierCatalogSection branches4", () => {
     renderWithProviders(<SupplierCatalogSection orgId="1" />);
 
     await screen.findByText("VEN-TOTE-001");
-    await user.click(screen.getByRole("button", { name: "Ubah produk pemasok" }));
+    await user.click(screen.getByRole("button", { name: "Aksi" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Ubah produk pemasok" }));
     const dialog = await screen.findByRole("dialog");
 
     expect(within(dialog).getByLabelText("SKU pemasok")).toHaveValue("VEN-TOTE-001");
@@ -123,10 +124,11 @@ describe("SupplierCatalogSection branches4", () => {
     renderWithProviders(<SupplierCatalogSection orgId="1" />);
 
     await screen.findByText("Ceramic Mug");
-    const edits = screen.getAllByRole("button", { name: "Ubah produk pemasok" });
-    const edit = edits[edits.length - 1];
-    if (!edit) throw new Error("Expected edit button");
-    await user.click(edit);
+    const menus = screen.getAllByRole("button", { name: "Aksi" });
+    const menu = menus[menus.length - 1];
+    if (!menu) throw new Error("Expected row menu button");
+    await user.click(menu);
+    await user.click(await screen.findByRole("menuitem", { name: "Ubah produk pemasok" }));
     const dialog = await screen.findByRole("dialog");
 
     expect(within(dialog).getByLabelText("SKU pemasok")).toHaveValue("");

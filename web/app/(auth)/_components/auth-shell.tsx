@@ -26,8 +26,7 @@ export default async function AuthShell({
             </div>
             <div className="flex flex-col gap-4 mt-8">{children}</div>
           </div>
-          <div className="flex-2">
-          </div>
+          <div className="flex-2"></div>
         </div>
       </div>
     </div>

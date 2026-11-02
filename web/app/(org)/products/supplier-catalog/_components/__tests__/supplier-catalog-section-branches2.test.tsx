@@ -90,7 +90,8 @@ describe("SupplierCatalogSection branches2", () => {
     renderWithProviders(<SupplierCatalogSection orgId="1" />);
 
     await screen.findByText("VEN-TOTE-001");
-    await user.click(screen.getByRole("button", { name: "Ubah produk pemasok" }));
+    await user.click(screen.getByRole("button", { name: "Aksi" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Ubah produk pemasok" }));
     const dialog = await screen.findByRole("dialog");
     await user.click(within(dialog).getByRole("button", { name: "Simpan" }));
 
@@ -110,7 +111,8 @@ describe("SupplierCatalogSection branches2", () => {
     renderWithProviders(<SupplierCatalogSection orgId="1" />);
 
     await screen.findByText("VEN-TOTE-001");
-    await user.click(screen.getByRole("button", { name: "Hapus" }));
+    await user.click(screen.getByRole("button", { name: "Aksi" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Hapus" }));
     await user.click(await screen.findByRole("button", { name: "Konfirmasi" }));
 
     await waitFor(() => expect(deleteCalls).toBe(1));

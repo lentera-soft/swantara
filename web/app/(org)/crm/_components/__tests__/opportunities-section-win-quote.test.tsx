@@ -79,7 +79,8 @@ describe("OpportunitiesSection win action", () => {
     renderWithProviders(<OpportunitiesSection orgId="1" />);
 
     await screen.findByText("Deal 11");
-    await user.click(screen.getAllByRole("button", { name: "Tandai menang" })[0]!);
+    await user.click(screen.getByRole("button", { name: "Aksi" }));
+    await user.click(await screen.findByRole("menuitem", { name: "Tandai menang" }));
 
     await waitFor(() => expect(toastSuccess).toHaveBeenCalled());
     const options = toastSuccess.mock.calls[0]?.[1] as

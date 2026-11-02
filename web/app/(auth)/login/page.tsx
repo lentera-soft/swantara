@@ -14,10 +14,7 @@ export const metadata: Metadata = {
 export default async function LoginPage() {
   const t = await getTranslations("Auth");
   return (
-    <AuthShell 
-      title={t("welcomeBackTitle")} 
-      subtitle={t("welcomeBackSubtitle")}
-    >
+    <AuthShell title={t("welcomeBackTitle")} subtitle={t("welcomeBackSubtitle")}>
       <LoginForm />
       <p className="text-sm text-muted-foreground">
         {t("newHere")}{" "}

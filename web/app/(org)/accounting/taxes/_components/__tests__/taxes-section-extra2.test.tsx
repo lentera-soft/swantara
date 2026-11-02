@@ -82,7 +82,8 @@ describe("TaxesSection extra2", () => {
     renderWithProviders(<TaxesSection orgId="1" />);
 
     await screen.findByText("PPN 11%");
-    await user.click(screen.getAllByRole("button", { name: "Hapus" })[0]!);
+    await user.click(screen.getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Hapus" }));
     await user.click(await screen.findByRole("button", { name: "Hapus" }));
 
     await waitFor(() => expect(deleteCalls).toBe(1));
@@ -133,7 +134,8 @@ describe("TaxesSection extra2", () => {
     renderWithProviders(<TaxesSection orgId="1" />);
 
     await screen.findByText("PPN 11%");
-    await user.click(screen.getAllByRole("button", { name: "Ubah" })[0]!);
+    await user.click(screen.getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Ubah" }));
 
     expect(await screen.findByText("Ubah pajak")).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Simpan" }));
@@ -147,7 +149,8 @@ describe("TaxesSection extra2", () => {
     renderWithProviders(<TaxesSection orgId="1" />);
 
     await screen.findByText("Group Tax");
-    await user.click(screen.getAllByRole("button", { name: "Ubah" })[0]!);
+    await user.click(screen.getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Ubah" }));
     const dialog = await screen.findByRole("dialog");
 
     expect(screen.getAllByText("Kelompok").length).toBeGreaterThan(1);

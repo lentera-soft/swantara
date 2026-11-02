@@ -106,16 +106,35 @@ describe("ActivitiesSection remainder", () => {
 
     await screen.findAllByText("Intro call with Acme");
     const table = screen.getByRole("table");
-    await user.click(within(table).getByRole("button", { name: "Tandai selesai" }));
+    for (const menu of within(table).getAllByRole("button", { name: "Aksi" })) {
+      await user.click(menu);
+      const done = await screen
+        .findByRole("menuitem", { name: "Tandai selesai" })
+        .catch(() => null);
+      if (done) {
+        await user.click(done);
+        break;
+      }
+      await user.click(menu);
+    }
 
     await waitFor(() => expect(doneId).toBe(1));
   });
 
   it("does not offer mark-done for completed activities", async () => {
+    const user = userEvent.setup();
     renderWithProviders(<ActivitiesSection orgId="1" />);
 
     await screen.findAllByText("Intro call with Acme");
-    expect(screen.getAllByRole("button", { name: "Tandai selesai" })).toHaveLength(1);
+    const table = screen.getByRole("table");
+    let doneOffers = 0;
+    for (const menu of within(table).getAllByRole("button", { name: "Aksi" })) {
+      await user.click(menu);
+      await screen.findByRole("menuitem", { name: "Ubah aktivitas" });
+      if (screen.queryByRole("menuitem", { name: "Tandai selesai" })) doneOffers += 1;
+      await user.click(menu);
+    }
+    expect(doneOffers).toBe(1);
   });
 
   it("deletes an activity and shows a success toast", async () => {
@@ -131,10 +150,8 @@ describe("ActivitiesSection remainder", () => {
 
     await screen.findAllByText("Intro call with Acme");
     const table = screen.getByRole("table");
-    const deleteTriggers = within(table)
-      .getAllByRole("button", { name: "Hapus aktivitas" })
-      .filter((el) => el.getAttribute("aria-haspopup") === "dialog");
-    await user.click(deleteTriggers[0]!);
+    await user.click(within(table).getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Hapus aktivitas" }));
 
     const confirm = await screen.findByRole("alertdialog");
     await user.click(within(confirm).getByRole("button", { name: "Hapus" }));
@@ -148,7 +165,8 @@ describe("ActivitiesSection remainder", () => {
 
     await screen.findAllByText("Intro call with Acme");
     const table = screen.getByRole("table");
-    await user.click(within(table).getAllByRole("button", { name: "Ubah aktivitas" })[0]!);
+    await user.click(within(table).getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Ubah aktivitas" }));
 
     expect(await screen.findByRole("dialog")).toBeInTheDocument();
   });

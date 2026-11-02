@@ -112,7 +112,7 @@ export default function LoginForm() {
             {t("loginButton")}
           </SubmitButton>
           <Button className="w-full" variant="outline">
-              {t("emailLink")}
+            {t("emailLink")}
           </Button>
         </div>
         <div className="my-6">

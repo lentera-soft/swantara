@@ -50,8 +50,9 @@ describe("FxRatesSection", () => {
     renderWithProviders(<FxRatesSection orgId="1" />);
 
     await screen.findByText("IDR");
-    await user.click(screen.getAllByRole("button", { name: "Hapus" })[0]!);
-    const dialog = screen.getByRole("alertdialog");
+    await user.click(screen.getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Hapus" }));
+    const dialog = await screen.findByRole("alertdialog");
     await user.click(within(dialog).getByRole("button", { name: "Hapus" }));
 
     await waitFor(() => expect(screen.queryByText("IDR")).not.toBeInTheDocument());

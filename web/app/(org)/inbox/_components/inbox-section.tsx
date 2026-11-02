@@ -28,8 +28,6 @@ import {
 } from "@/components/dialog";
 import { EmptyState } from "@/components/empty-state";
 import { Input } from "@/components/input";
-import { MetricGrid } from "@/components/metric-grid";
-import { StatCard } from "@/components/stat-card";
 import { Tabs, TabsList, TabsTrigger } from "@/components/tabs";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import { usePermissions } from "@/lib/hooks/use-permissions";
@@ -83,10 +81,6 @@ export function InboxSection({ orgId }: { orgId: string }) {
   const messages = messagesQuery.data?.messages ?? [];
   const items = buildInboxItems(inquiries, messages);
   const visible = filterInboxItems(items, tab, query);
-
-  const newInquiries = inquiries.filter((inquiry) => inquiry.status === "new").length;
-  const reviewed = inquiries.filter((inquiry) => inquiry.status === "reviewed").length;
-  const archived = inquiries.filter((inquiry) => inquiry.status === "archived").length;
 
   const isLoading = inquiriesQuery.isLoading || messagesQuery.isLoading;
   const isFetching = inquiriesQuery.isFetching || messagesQuery.isFetching;

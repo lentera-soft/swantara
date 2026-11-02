@@ -586,9 +586,7 @@ export function AppShell({
         className="sticky top-0 bottom-0"
       >
         {brand ? (
-          <SidebarHeader className="border-sidebar-border/70 px-3">
-            {brand}
-          </SidebarHeader>
+          <SidebarHeader className="border-sidebar-border/70 px-3">{brand}</SidebarHeader>
         ) : null}
         <SidebarContent>{nav}</SidebarContent>
         {footer ? <SidebarFooter>{footer}</SidebarFooter> : null}

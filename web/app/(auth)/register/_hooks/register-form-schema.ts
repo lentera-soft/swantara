@@ -23,23 +23,22 @@ const registerFormDefaultMessages: RegisterFormMessages = {
 export function useRegisterFormSchema(
   messages: RegisterFormMessages = registerFormDefaultMessages,
 ) {
-  return z
-    .object({
-      email: z
-        .email({
-          message: messages.invalidEmail,
-        })
-        .min(1, {
-          message: messages.emailRequired,
-        }),
-      phone: z
-        .string()
-        .optional()
-        .refine((value) => !value || /^\+[1-9]\d{1,14}$/.test(value), messages.invalidPhone),
-      password: z.string().min(8, {
-        message: messages.passwordMinLength,
+  return z.object({
+    email: z
+      .email({
+        message: messages.invalidEmail,
       })
-    });
+      .min(1, {
+        message: messages.emailRequired,
+      }),
+    phone: z
+      .string()
+      .optional()
+      .refine((value) => !value || /^\+[1-9]\d{1,14}$/.test(value), messages.invalidPhone),
+    password: z.string().min(8, {
+      message: messages.passwordMinLength,
+    }),
+  });
 }
 
 export type RegisterFormSchema = z.infer<ReturnType<typeof useRegisterFormSchema>>;

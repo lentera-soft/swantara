@@ -67,8 +67,9 @@ describe("PaymentTermsSection", () => {
     renderWithProviders(<PaymentTermsSection orgId="1" />);
 
     await screen.findByText("Net 30");
-    await user.click(screen.getAllByRole("button", { name: "Hapus" })[0]!);
-    const dialog = screen.getByRole("alertdialog");
+    await user.click(screen.getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Hapus" }));
+    const dialog = await screen.findByRole("alertdialog");
     await user.click(within(dialog).getByRole("button", { name: "Hapus" }));
 
     await waitFor(() => expect(screen.queryByText("Net 30")).not.toBeInTheDocument());

@@ -1,19 +1,13 @@
 "use client";
 
 import type { LegacyColumnDef as ColumnDef } from "@tanstack/react-table/legacy";
-import { MoreHorizontal, PencilIcon, Plus, Trash2Icon } from "lucide-react";
+import { Plus } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useState } from "react";
 import { toast } from "sonner";
 import { InteractiveEntityTable } from "@/app/(org)/_components/interactive-entity-table";
+import { RowActions } from "@/app/(org)/_components/row-actions";
 import { Button } from "@/components/button";
-import { ConfirmDialog } from "@/components/confirm-dialog";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/dropdown";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { Department } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
@@ -21,11 +15,8 @@ import { DepartmentFormDialog } from "./department-form-dialog";
 
 export function DepartmentsSection({ orgId }: { orgId: string }) {
   const t = useTranslations("Employees");
-  const tCommon = useTranslations("Common");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editDepartment, setEditDepartment] = useState<Department | null>(null);
-  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
-  const [deleteDepartment, setDeleteDepartment] = useState<Department | null>(null);
 
   const departmentsQuery = useOrgListQuery<{ departments: Department[] }, Record<string, never>>(
     "departments",
@@ -45,9 +36,13 @@ export function DepartmentsSection({ orgId }: { orgId: string }) {
     setDialogOpen(true);
   }
 
-  function handleDeleteClick(department: Department) {
-    setDeleteDepartment(department);
-    setDeleteDialogOpen(true);
+  function handleDelete(department: Department) {
+    void getSwantaraService()
+      .departments.delete(Number(orgId), department.id)
+      .then(() => {
+        void departmentsQuery.refetch();
+      })
+      .catch(() => toast.error(t("deleteFailed")));
   }
 
   const columns: ColumnDef<Department>[] = [
@@ -66,23 +61,12 @@ export function DepartmentsSection({ orgId }: { orgId: string }) {
       id: "actions",
       header: "",
       cell: ({ row }) => (
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button variant="ghost" size="icon-sm">
-              <MoreHorizontal />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() => handleEdit(row.original)}>
-              <PencilIcon />
-              {tCommon("edit")}
-            </DropdownMenuItem>
-            <DropdownMenuItem variant="destructive" onClick={() => handleDeleteClick(row.original)}>
-              <Trash2Icon />
-              {tCommon("delete")}
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+        <RowActions
+          onEdit={() => handleEdit(row.original)}
+          onDelete={() => handleDelete(row.original)}
+          confirmTitle={t("deleteDepartmentTitle")}
+          confirmDescription={t("deleteDepartmentDescription")}
+        />
       ),
     },
   ];
@@ -133,22 +117,6 @@ export function DepartmentsSection({ orgId }: { orgId: string }) {
           onSave={handleSave}
         />
       ) : null}
-      <ConfirmDialog
-        open={deleteDialogOpen}
-        onOpenChange={setDeleteDialogOpen}
-        title={t("deleteDepartmentTitle")}
-        description={t("deleteDepartmentDescription")}
-        onConfirm={() => {
-          if (!deleteDepartment) return;
-          void getSwantaraService()
-            .departments.delete(Number(orgId), deleteDepartment.id)
-            .then(() => {
-              setDeleteDepartment(null);
-              void departmentsQuery.refetch();
-            })
-            .catch(() => toast.error(t("deleteFailed")));
-        }}
-      />
     </div>
   );
 }

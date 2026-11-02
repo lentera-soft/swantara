@@ -93,7 +93,7 @@ describe("DepartmentsSection remainder", () => {
     await user.click(await screen.findByRole("menuitem", { name: /hapus/i }));
 
     expect(await screen.findByRole("alertdialog")).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: /konfirmasi/i, hidden: false }));
+    await user.click(screen.getByRole("button", { name: /^hapus$/i, hidden: false }));
 
     await waitFor(() => expect(deletedId).toBe(2));
   });

@@ -15,7 +15,6 @@ import { useRegisterForm } from "../_hooks/use-register-form";
 export default function RegisterForm() {
   const { form, handleSubmit } = useRegisterForm({});
   const t = useTranslations("Auth");
-  const tx = t as unknown as (key: string) => string;
   const formState = form.formState;
   const control = form.control;
 
@@ -30,7 +29,7 @@ export default function RegisterForm() {
             control={control}
             render={({ field, fieldState }) => (
               <Field>
-                <Label htmlFor={emailId}>{tx("email")}</Label>
+                <Label htmlFor={emailId}>{t("email")}</Label>
                 <Input
                   id={emailId}
                   type="email"
@@ -49,28 +48,29 @@ export default function RegisterForm() {
               </Field>
             )}
           />
-        <Controller 
-         name="password"
-         control={control}
-         render={({ field, fieldState}) => (
-        <Field>
-            <Label htmlFor="password">Password</Label>
-            <Password
-              id="password"
-              autoComplete="new-password"
-              aria-invalid={Boolean(fieldState.error)}
-              {...field}
-            />
-            <FieldFeedback
-              visible={Boolean(fieldState.error)}
-              intent="danger"
-              role={fieldState.error ? "alert" : undefined}
-            >
-              {fieldState.error?.message}
-            </FieldFeedback>
-              <p className="text-sm text-muted-foreground">{tx("passwordMinLengthHint")}</p>
-          </Field>
-        )}/>
+          <Controller
+            name="password"
+            control={control}
+            render={({ field, fieldState }) => (
+              <Field>
+                <Label htmlFor="password">Password</Label>
+                <Password
+                  id="password"
+                  autoComplete="new-password"
+                  aria-invalid={Boolean(fieldState.error)}
+                  {...field}
+                />
+                <FieldFeedback
+                  visible={Boolean(fieldState.error)}
+                  intent="danger"
+                  role={fieldState.error ? "alert" : undefined}
+                >
+                  {fieldState.error?.message}
+                </FieldFeedback>
+                <p className="text-sm text-muted-foreground">{t("passwordMinLengthHint")}</p>
+              </Field>
+            )}
+          />
         </div>
         <div className="mt-8 flex flex-col">
           <SubmitButton variant="default" size="lg" loading={formState.isSubmitting}>

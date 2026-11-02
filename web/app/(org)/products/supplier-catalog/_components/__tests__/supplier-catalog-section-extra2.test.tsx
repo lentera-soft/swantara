@@ -119,7 +119,8 @@ describe("SupplierCatalogSection extra2", () => {
     renderWithProviders(<SupplierCatalogSection orgId="1" />);
 
     await screen.findByText("VEN-TOTE-001");
-    await user.click(screen.getByRole("button", { name: "Ubah produk pemasok" }));
+    await user.click(screen.getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Ubah produk pemasok" }));
     const dialog = await screen.findByRole("dialog");
 
     expect(within(dialog).getByText("Ubah produk pemasok")).toBeInTheDocument();
@@ -139,7 +140,8 @@ describe("SupplierCatalogSection extra2", () => {
     renderWithProviders(<SupplierCatalogSection orgId="1" />);
 
     await screen.findByText("VEN-TOTE-001");
-    await user.click(screen.getByRole("button", { name: "Ubah produk pemasok" }));
+    await user.click(screen.getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Ubah produk pemasok" }));
     const dialog = await screen.findByRole("dialog");
     await user.click(within(dialog).getByRole("button", { name: "Simpan" }));
 
@@ -159,7 +161,8 @@ describe("SupplierCatalogSection extra2", () => {
     renderWithProviders(<SupplierCatalogSection orgId="1" />);
 
     await screen.findByText("VEN-TOTE-001");
-    await user.click(screen.getByRole("button", { name: "Hapus" }));
+    await user.click(screen.getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Hapus" }));
     const confirmDialog = await screen.findByRole("alertdialog");
     await user.click(within(confirmDialog).getByRole("button", { name: "Konfirmasi" }));
 

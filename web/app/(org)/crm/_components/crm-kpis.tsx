@@ -1,7 +1,7 @@
 "use client";
 
-import { useTranslations } from "next-intl";
 import { useIsRestoring } from "@tanstack/react-query";
+import { useTranslations } from "next-intl";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
 import type { CrmLead, PipelineForecast } from "@/lib/services/swantara";
 import { formatNumber } from "@/lib/utils";
@@ -43,9 +43,7 @@ export function CrmKpis({
           <CardTitle className="text-sm text-muted-foreground">{t("kpiWeighted")}</CardTitle>
         </CardHeader>
         <CardContent>
-          <p className="text-2xl tabular-nums">
-            {isRestoring ? "—" : formatNumber(weighted)}
-          </p>
+          <p className="text-2xl tabular-nums">{isRestoring ? "—" : formatNumber(weighted)}</p>
           <p className="text-xs text-muted-foreground">{t("kpiWeightedHint")}</p>
         </CardContent>
       </Card>
@@ -93,12 +91,10 @@ export function CrmKpis({
             </div>
             <div className="min-w-0 text-xs">
               <p className="truncate">
-                {t("kpiWon")}:{" "}
-                <span className="tabular-nums">{isRestoring ? "—" : won}</span>
+                {t("kpiWon")}: <span className="tabular-nums">{isRestoring ? "—" : won}</span>
               </p>
               <p className="mt-1 truncate text-muted-foreground">
-                {t("kpiLost")}:{" "}
-                <span className="tabular-nums">{isRestoring ? "—" : lost}</span>
+                {t("kpiLost")}: <span className="tabular-nums">{isRestoring ? "—" : lost}</span>
               </p>
             </div>
           </div>
@@ -128,8 +124,7 @@ export function CrmKpis({
             {isRestoring ? "—" : formatNumber(pipeline?.commitRevenue ?? 0)}
           </p>
           <p className="text-xs text-muted-foreground">
-            {t("kpiWeighted")}:{" "}
-            {isRestoring ? "—" : formatNumber(pipeline?.weightedCommit ?? 0)}
+            {t("kpiWeighted")}: {isRestoring ? "—" : formatNumber(pipeline?.weightedCommit ?? 0)}
           </p>
         </CardContent>
       </Card>
@@ -142,8 +137,7 @@ export function CrmKpis({
             {isRestoring ? "—" : formatNumber(pipeline?.bestCaseRevenue ?? 0)}
           </p>
           <p className="text-xs text-muted-foreground">
-            {t("kpiWeighted")}:{" "}
-            {isRestoring ? "—" : formatNumber(pipeline?.weightedBestCase ?? 0)}
+            {t("kpiWeighted")}: {isRestoring ? "—" : formatNumber(pipeline?.weightedBestCase ?? 0)}
           </p>
         </CardContent>
       </Card>
@@ -170,8 +164,7 @@ export function CrmKpis({
             {isRestoring ? "—" : formatNumber(pipeline?.averageSalesCycleDays ?? 0)}
           </p>
           <p className="text-xs text-muted-foreground">
-            {t("kpiAvgDeal")}:{" "}
-            {isRestoring ? "—" : formatNumber(pipeline?.averageDealSize ?? 0)}
+            {t("kpiAvgDeal")}: {isRestoring ? "—" : formatNumber(pipeline?.averageDealSize ?? 0)}
           </p>
         </CardContent>
       </Card>
