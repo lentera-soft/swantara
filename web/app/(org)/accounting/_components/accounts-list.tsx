@@ -3,6 +3,7 @@
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/card";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/table";
 import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
 import { useReportPeriod, useTrialBalance } from "@/lib/hooks/use-report-queries";
 import { formatMoney } from "@/lib/utils";
@@ -33,32 +34,37 @@ export function AccountsList() {
         ) : accounts.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t("accountsEmpty")}</p>
         ) : (
-          <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-            {accounts.map((account) => (
-              <div
-                key={account.accountId}
-                className="flex items-center justify-between rounded-lg border border-border p-3"
-              >
-                <div className="flex min-w-0 flex-col">
-                  <span className="truncate text-sm">{account.name}</span>
-                  <span className="font-mono text-xs text-muted-foreground">{account.code}</span>
-                </div>
-                <div className="flex items-baseline gap-2">
-                  <Badge variant="outline" className="text-xs">
-                    {account.accountType}
-                  </Badge>
-                  <span
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-24 font-medium">{t("fieldCode")}</TableHead>
+                <TableHead className="font-medium">{t("fieldName")}</TableHead>
+                <TableHead className="w-32 font-medium">{t("fieldType")}</TableHead>
+                <TableHead className="w-36 text-right font-medium">{t("colBalance")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {accounts.map((account) => (
+                <TableRow key={account.accountId}>
+                  <TableCell className="font-mono">{account.code}</TableCell>
+                  <TableCell className="max-w-40 truncate">{account.name}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-xs">
+                      {account.accountType}
+                    </Badge>
+                  </TableCell>
+                  <TableCell
                     className={cn(
-                      "text-sm tabular-nums",
+                      "text-right text-sm tabular-nums",
                       account.balance >= 0 ? "text-success" : "text-destructive",
                     )}
                   >
                     {formatMoney(account.balance, { currency: DEFAULT_CURRENCY })}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         )}
       </CardContent>
     </Card>

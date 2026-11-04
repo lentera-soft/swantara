@@ -1,6 +1,6 @@
 import { screen, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   Combobox,
   ComboboxContent,
@@ -97,5 +97,68 @@ describe("regression: combobox filtering", () => {
     expect(screen.queryAllByRole("option").map((option) => option.textContent)).toEqual([
       "Singapore",
     ]);
+  });
+});
+
+describe("combobox deselect", () => {
+  const fruits = ["Apple", "Banana"];
+
+  function renderCombobox(onValueChange: () => void) {
+    return renderWithProviders(
+      <Combobox items={fruits} onValueChange={onValueChange}>
+        <ComboboxInput placeholder="Pick a fruit" />
+        <ComboboxContent>
+          <ComboboxList>
+            {(fruit: string) => (
+              <ComboboxItem key={fruit} value={fruit}>
+                {fruit}
+              </ComboboxItem>
+            )}
+          </ComboboxList>
+        </ComboboxContent>
+      </Combobox>,
+    );
+  }
+
+  it("deselects when clicking the already selected item again", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn(() => {});
+    renderCombobox(onValueChange);
+
+    const input = screen.getByPlaceholderText("Pick a fruit");
+    await user.click(input);
+    await user.click(await screen.findByRole("option", { name: "Apple" }));
+    expect(onValueChange).toHaveBeenLastCalledWith(
+      "Apple",
+      expect.objectContaining({ reason: "item-press" }),
+    );
+
+    await user.click(input);
+    await user.click(await screen.findByRole("option", { name: "Apple" }));
+    expect(onValueChange).toHaveBeenLastCalledWith(
+      null,
+      expect.objectContaining({ reason: "item-press" }),
+    );
+    expect(input).toHaveValue("");
+  });
+
+  it("clears the selection via the clear button", async () => {
+    const user = userEvent.setup();
+    const onValueChange = vi.fn(() => {});
+    const { container } = renderCombobox(onValueChange);
+
+    const input = screen.getByPlaceholderText("Pick a fruit");
+    await user.click(input);
+    await user.click(await screen.findByRole("option", { name: "Apple" }));
+
+    const clearButton = container.querySelector("[data-slot='combobox-clear']");
+    expect(clearButton).toBeInTheDocument();
+
+    await user.click(clearButton as HTMLElement);
+    expect(onValueChange).toHaveBeenLastCalledWith(
+      null,
+      expect.objectContaining({ reason: "clear-press" }),
+    );
+    expect(input).toHaveValue("");
   });
 });

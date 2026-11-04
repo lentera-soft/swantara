@@ -46,6 +46,8 @@ export function ProfileForm() {
     address: z.string(),
     city: z.string(),
     postalCode: z.string(),
+    country: z.string(),
+    countryCode: z.string(),
   });
 
   type Values = z.infer<typeof schema>;
@@ -61,6 +63,8 @@ export function ProfileForm() {
       address: user?.address ?? "",
       city: user?.city ?? "",
       postalCode: user?.postalCode ?? "",
+      country: user?.country ?? "",
+      countryCode: user?.countryCode ?? "",
     },
     values: {
       firstName: user?.firstName ?? "",
@@ -71,6 +75,8 @@ export function ProfileForm() {
       address: user?.address ?? "",
       city: user?.city ?? "",
       postalCode: user?.postalCode ?? "",
+      country: user?.country ?? "",
+      countryCode: user?.countryCode ?? "",
     },
   });
 
@@ -124,6 +130,8 @@ export function ProfileForm() {
         address: values.address || undefined,
         city: values.city || undefined,
         postalCode: values.postalCode || undefined,
+        country: values.country || undefined,
+        countryCode: values.countryCode || undefined,
       });
     },
     onSuccess: async () => {
@@ -248,6 +256,12 @@ export function ProfileForm() {
                 {({ field, id }) => <Input {...field} id={id} />}
               </FormField>
               <FormField name="postalCode" label={t("postalCode")}>
+                {({ field, id }) => <Input {...field} id={id} />}
+              </FormField>
+              <FormField name="country" label={t("country")}>
+                {({ field, id }) => <Input {...field} id={id} />}
+              </FormField>
+              <FormField name="countryCode" label={t("countryCode")}>
                 {({ field, id }) => <Input {...field} id={id} />}
               </FormField>
             </CardContent>

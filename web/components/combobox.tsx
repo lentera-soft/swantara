@@ -12,7 +12,62 @@ import {
 } from "@/components/input-group";
 import { cn } from "@/lib/utils/index";
 
-const Combobox = ComboboxPrimitive.Root;
+type ComboboxSelection<Value> = Value | readonly Value[] | null;
+
+type ComboboxRootProps<
+  Value,
+  Multiple extends boolean | undefined = false,
+  Item = Value,
+> = ComboboxPrimitive.Root.Props<Value, Multiple, Item>;
+
+function Combobox<Value, Multiple extends boolean | undefined = false, Item = Value>({
+  toggleDeselect = true,
+  multiple,
+  value,
+  defaultValue,
+  isItemEqualToValue,
+  onValueChange,
+  ...rest
+}: ComboboxRootProps<Value, Multiple, Item> & {
+  toggleDeselect?: boolean;
+}) {
+  const isControlled = value !== undefined;
+  const [uncontrolledValue, setUncontrolledValue] = React.useState<ComboboxSelection<Value>>(
+    (defaultValue as ComboboxSelection<Value> | undefined) ?? null,
+  );
+  const selectedValue = (isControlled ? value : uncontrolledValue) ?? null;
+
+  const selectedRef = React.useRef<ComboboxSelection<Value>>(selectedValue);
+  selectedRef.current = selectedValue;
+
+  return (
+    <ComboboxPrimitive.Root
+      multiple={multiple}
+      isItemEqualToValue={isItemEqualToValue}
+      value={selectedValue as ComboboxRootProps<Value, Multiple, Item>["value"]}
+      onValueChange={(next, details) => {
+        let resolved: unknown = next;
+        if (
+          toggleDeselect &&
+          !multiple &&
+          details.reason === "item-press" &&
+          selectedRef.current != null &&
+          (isItemEqualToValue
+            ? isItemEqualToValue(selectedRef.current as Value, next as Value)
+            : selectedRef.current === next)
+        ) {
+          resolved = null;
+        }
+        selectedRef.current = resolved as ComboboxSelection<Value>;
+        if (!isControlled) {
+          setUncontrolledValue(resolved as ComboboxSelection<Value>);
+        }
+        onValueChange?.(resolved as Parameters<NonNullable<typeof onValueChange>>[0], details);
+      }}
+      {...rest}
+    />
+  );
+}
 
 function ComboboxValue({ ...props }: ComboboxPrimitive.Value.Props) {
   return <ComboboxPrimitive.Value data-slot="combobox-value" {...props} />;
@@ -49,7 +104,7 @@ function ComboboxInput({
   children,
   disabled = false,
   showTrigger = true,
-  showClear = false,
+  showClear = true,
   ...props
 }: ComboboxPrimitive.Input.Props & {
   showTrigger?: boolean;

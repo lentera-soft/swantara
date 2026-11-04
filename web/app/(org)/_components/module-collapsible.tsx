@@ -35,7 +35,7 @@ export const moduleKey: Record<OrgNavModule, string> = {
   procurement: "Pengadaan",
   hr: "HR",
   finance: "Keuangan",
-  reference: "Referensi",
+  reference: "Data Induk",
   projectManagement: "Manajemen Proyek",
   sales: "Penjualan",
   service: "Layanan",

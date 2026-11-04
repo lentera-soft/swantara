@@ -24,6 +24,8 @@ type User struct {
 	Address         *string    `json:"address"`
 	City            *string    `json:"city"`
 	PostalCode      *string    `json:"postal_code"`
+	Country         *string    `json:"country"`
+	CountryCode     *string    `gorm:"type:char(2)" json:"country_code"`
 	EmailVerifiedAt *time.Time `json:"email_verified_at"`
 	PhoneVerifiedAt *time.Time `json:"phone_verified_at"`
 }

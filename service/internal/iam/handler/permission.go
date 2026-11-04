@@ -26,7 +26,7 @@ type ListPermissionsResponse struct {
 // @Security BearerAuth
 // @Router /organizations/{organization_id}/permissions [get]
 func (h MemberHandler) ListPermissions(c fiber.Ctx) error {
-	page, err := h.memberSvc.ListPermissions(c, nil)
+	page, err := h.permissionDAO.List(c, nil)
 	if err != nil {
 		httpx.RequestLog(c).Error("permission list failed", "error", err)
 		return httpx.CreateInternalServerErrorResponse(c, "Failed to retrieve permissions.", err)

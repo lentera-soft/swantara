@@ -22,6 +22,7 @@ import { CurrencyField } from "@/components/currency-field";
 import { DatePicker } from "@/components/date-picker";
 import { DetailPageSkeleton } from "@/components/detail-page-skeleton";
 import { Form, FormField, SubmitButton } from "@/components/form";
+import { FormSection } from "@/components/form-section";
 import { Input } from "@/components/input";
 import { PageHeader } from "@/components/page-header";
 import { Progress } from "@/components/progress";
@@ -40,7 +41,6 @@ import type {
 } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
 import { formatNumber, getLocalDateString } from "@/lib/utils";
-import { CrmFormSection } from "./crm-form-section";
 
 function useLeadFormSchema(effectiveType: string) {
   const t = useTranslations("Crm");
@@ -436,7 +436,7 @@ export function LeadForm({
         }
       />
       <Form form={form} onSubmit={handleSubmit} className="flex flex-col gap-4">
-        <CrmFormSection
+        <FormSection
           title={isOpportunity ? t("sectionDeal") : t("sectionLeadDetails")}
           description={isOpportunity ? t("sectionDealDescription") : t("sectionLeadDescription")}
         >
@@ -515,9 +515,9 @@ export function LeadForm({
               </Select>
             )}
           </FormField>
-        </CrmFormSection>
+        </FormSection>
 
-        <CrmFormSection title={t("sectionContact")} description={t("sectionContactDescription")}>
+        <FormSection title={t("sectionContact")} description={t("sectionContactDescription")}>
           <FormField name="contactId" label={t("tableContact")}>
             {({ field, id }) => (
               <Select value={field.value} onValueChange={field.onChange}>
@@ -575,9 +575,9 @@ export function LeadForm({
               />
             )}
           </FormField>
-        </CrmFormSection>
+        </FormSection>
 
-        <CrmFormSection
+        <FormSection
           title={isOpportunity ? t("sectionPipeline") : t("sectionQualification")}
           description={isOpportunity ? t("pipelineHint") : t("qualificationHint")}
         >
@@ -771,9 +771,9 @@ export function LeadForm({
             {({ field, id }) => <Input {...field} id={id} type="number" min="0" />}
           </FormField>
           <div className="hidden sm:block" aria-hidden />
-        </CrmFormSection>
+        </FormSection>
 
-        <CrmFormSection title={t("sectionNextStep")} description={t("nextStepHint")}>
+        <FormSection title={t("sectionNextStep")} description={t("nextStepHint")}>
           <FormField name="nextStep" label={t("fieldNextStep")} className="sm:col-span-2">
             {({ field, id }) => (
               <Input {...field} id={id} placeholder={t("nextStepPlaceholder")} autoComplete="off" />
@@ -818,9 +818,9 @@ export function LeadForm({
               )}
             </FormField>
           </div>
-        </CrmFormSection>
+        </FormSection>
 
-        <CrmFormSection title={t("sectionOwnership")} description={t("ownershipHint")}>
+        <FormSection title={t("sectionOwnership")} description={t("ownershipHint")}>
           <FormField name="salespersonId" label={t("fieldSalesperson")}>
             {({ field, id }) => (
               <Select value={field.value} onValueChange={field.onChange}>
@@ -855,7 +855,7 @@ export function LeadForm({
               </Select>
             )}
           </FormField>
-        </CrmFormSection>
+        </FormSection>
         {isOpportunity ? (
           <p className="text-xs text-muted-foreground">{t("stageForecastHint")}</p>
         ) : null}

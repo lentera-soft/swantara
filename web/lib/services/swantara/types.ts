@@ -119,6 +119,8 @@ export type User = {
   address: string | null;
   city: string | null;
   postalCode: string | null;
+  country: string | null;
+  countryCode: string | null;
   systemRoleId: number;
   emailVerifiedAt: Date | null;
   phoneVerifiedAt: Date | null;
@@ -140,6 +142,8 @@ export type Profile = {
   address: string | null;
   city: string | null;
   postalCode: string | null;
+  country: string | null;
+  countryCode: string | null;
   systemRoleId: number;
   emailVerifiedAt: Date | null;
   phoneVerifiedAt: Date | null;
@@ -439,29 +443,38 @@ export type PaymentTermResponse = {
   id: number;
   name: string;
   note: string | null;
+  code?: string | null;
+  isActive?: boolean;
+  templateKey?: string | null;
   lines: PaymentTermLineResponse[];
   createdAt: Date;
   updatedAt: Date;
 };
 
 export type CreatePaymentTermLineRequest = {
-  sequence?: number;
+  sequence: number;
   valueType: "percent" | "fixed" | "balance";
-  value?: number;
-  daysAfter?: number;
-  dayOfMonth?: number | null;
-  discountPct?: number | null;
-  discountDays?: number | null;
+  value: number;
+  daysAfter: number;
+  dayOfMonth: number | null;
+  discountPct: number | null;
+  discountDays: number | null;
 };
 
 export type CreatePaymentTermRequest = {
   name: string;
+  code: string | null;
+  isActive: boolean;
+  templateKey: string | null;
   note?: string | null;
   lines: CreatePaymentTermLineRequest[];
 };
 
 export type UpdatePaymentTermRequest = {
   name: string;
+  code: string | null;
+  isActive: boolean;
+  templateKey: string | null;
   note?: string | null;
   lines: CreatePaymentTermLineRequest[];
 };

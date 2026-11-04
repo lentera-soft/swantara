@@ -2468,6 +2468,9 @@ Total entities: 200 (partitioned tables such as `journal_entrys_*` and `stock_mo
 | `base_currency` | char(3) | NO |  |
 | `country_code` | char(2) | YES |  |
 | `tax_id` | text | YES |  |
+| `address` | text | YES |  |
+| `city` | text | YES |  |
+| `postal_code` | text | YES |  |
 | `logo` | text | YES |  |
 | `timezone` | text | YES | 'UTC'::text |
 | `tax_year_start_month` | smallint | YES | 1 |

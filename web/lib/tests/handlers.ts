@@ -15,6 +15,8 @@ const profile = {
   address: null,
   city: null,
   postal_code: null,
+  country: null,
+  country_code: null,
   system_role_id: 1,
   email_verified_at: null,
   phone_verified_at: null,
@@ -183,8 +185,23 @@ type PaymentTermFixture = {
   id: number;
   name: string;
   note: string | null;
+  code: string | null;
+  is_active: boolean;
+  template_key: string | null;
+  lines: PaymentTermLineFixture[];
   created_at: string;
   updated_at: string;
+};
+
+type PaymentTermLineFixture = {
+  id: number;
+  sequence: number;
+  value_type: string;
+  value: number;
+  days_after: number;
+  day_of_month: number | null;
+  discount_pct: number | null;
+  discount_days: number | null;
 };
 
 function createDimensionFixtures(): DimensionFixture[] {
@@ -304,6 +321,21 @@ function createPaymentTermFixtures(): PaymentTermFixture[] {
       id: 1,
       name: "Net 30",
       note: "Due in 30 days",
+      code: "NET30",
+      is_active: true,
+      template_key: null,
+      lines: [
+        {
+          id: 1,
+          sequence: 1,
+          value_type: "balance",
+          value: 0,
+          days_after: 30,
+          day_of_month: null,
+          discount_pct: null,
+          discount_days: null,
+        },
+      ],
       created_at: "2026-01-01T00:00:00Z",
       updated_at: "2026-01-01T00:00:00Z",
     },
@@ -311,10 +343,56 @@ function createPaymentTermFixtures(): PaymentTermFixture[] {
       id: 2,
       name: "50/50 split",
       note: "Half upfront, half on delivery",
+      code: "SPLIT50",
+      is_active: true,
+      template_key: null,
+      lines: [
+        {
+          id: 2,
+          sequence: 1,
+          value_type: "percent",
+          value: 50,
+          days_after: 0,
+          day_of_month: null,
+          discount_pct: null,
+          discount_days: null,
+        },
+        {
+          id: 3,
+          sequence: 2,
+          value_type: "percent",
+          value: 50,
+          days_after: 30,
+          day_of_month: null,
+          discount_pct: null,
+          discount_days: null,
+        },
+      ],
       created_at: "2026-01-01T00:00:00Z",
       updated_at: "2026-01-01T00:00:00Z",
     },
   ];
+}
+
+function toPaymentTermLineFixtures(body: {
+  lines?: unknown[] | undefined;
+}): PaymentTermLineFixture[] {
+  const lines = Array.isArray(body.lines) ? body.lines : [];
+  return lines.map((raw, index) => {
+    const line = (raw ?? {}) as Record<string, unknown>;
+    const num = (value: unknown, fallback: number) =>
+      typeof value === "number" && Number.isFinite(value) ? value : fallback;
+    return {
+      id: index + 1,
+      sequence: num(line.sequence, index + 1),
+      value_type: typeof line.value_type === "string" ? line.value_type : "percent",
+      value: num(line.value, 0),
+      days_after: num(line.days_after, 0),
+      day_of_month: line.day_of_month == null ? null : num(line.day_of_month, 0),
+      discount_pct: line.discount_pct == null ? null : num(line.discount_pct, 0),
+      discount_days: line.discount_days == null ? null : num(line.discount_days, 0),
+    };
+  });
 }
 
 let dimensionFixtures = createDimensionFixtures();
@@ -1024,11 +1102,22 @@ export const handlers = [
     }),
   ),
   http.post("*/api/v1/organizations/:organizationId/payment-terms", async ({ request }) => {
-    const body = (await request.json()) as { name: string; note?: string };
+    const body = (await request.json()) as {
+      name: string;
+      note?: string | null;
+      code?: string | null;
+      is_active?: boolean;
+      template_key?: string | null;
+      lines?: unknown[];
+    };
     const paymentTerm = {
       id: nextFixtureId(paymentTermFixtures),
       name: body.name,
       note: body.note ?? null,
+      code: body.code ?? null,
+      is_active: body.is_active ?? true,
+      template_key: body.template_key ?? null,
+      lines: toPaymentTermLineFixtures(body),
       created_at: "2026-01-01T00:00:00Z",
       updated_at: "2026-01-01T00:00:00Z",
     };
@@ -1042,10 +1131,30 @@ export const handlers = [
       { status: 201 },
     );
   }),
+  http.get("*/api/v1/organizations/:organizationId/payment-terms/:paymentTermId", ({ params }) => {
+    const paymentTerm = paymentTermFixtures.find(
+      (item) => item.id === Number(params.paymentTermId),
+    );
+    if (!paymentTerm) {
+      return HttpResponse.json({ success: false, message: "Not found." }, { status: 404 });
+    }
+    return HttpResponse.json({
+      success: true,
+      message: "OK.",
+      data: { payment_term: paymentTerm },
+    });
+  }),
   http.put(
     "*/api/v1/organizations/:organizationId/payment-terms/:paymentTermId",
     async ({ request, params }) => {
-      const body = (await request.json()) as { name?: string; note?: string };
+      const body = (await request.json()) as {
+        name?: string;
+        note?: string | null;
+        code?: string | null;
+        is_active?: boolean;
+        template_key?: string | null;
+        lines?: unknown[];
+      };
       const paymentTerm = paymentTermFixtures.find(
         (item) => item.id === Number(params.paymentTermId),
       );
@@ -1054,6 +1163,10 @@ export const handlers = [
       }
       if (body.name !== undefined) paymentTerm.name = body.name;
       if (body.note !== undefined) paymentTerm.note = body.note;
+      if (body.code !== undefined) paymentTerm.code = body.code;
+      if (body.is_active !== undefined) paymentTerm.is_active = body.is_active;
+      if (body.template_key !== undefined) paymentTerm.template_key = body.template_key;
+      if (body.lines !== undefined) paymentTerm.lines = toPaymentTermLineFixtures(body);
       return HttpResponse.json({
         success: true,
         message: "OK.",

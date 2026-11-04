@@ -10,7 +10,7 @@ type UserHandler struct {
 	userDao   iam.UserDAO
 	userSvc   iam.UserService
 	authzSvc  iam.AuthzService
-	memberSvc iam.MemberService
+	memberDAO iam.MemberDAO
 	avatarSvc iam.AvatarService
 }
 
@@ -18,14 +18,14 @@ func NewUserHandler(
 	userDao iam.UserDAO,
 	userSvc iam.UserService,
 	authzSvc iam.AuthzService,
-	memberSvc iam.MemberService,
+	memberDAO iam.MemberDAO,
 	avatarSvc iam.AvatarService,
 ) UserHandler {
 	return UserHandler{
 		userDao:   userDao,
 		userSvc:   userSvc,
 		authzSvc:  authzSvc,
-		memberSvc: memberSvc,
+		memberDAO: memberDAO,
 		avatarSvc: avatarSvc,
 	}
 }
@@ -65,6 +65,8 @@ type Profile struct {
 	Address         *string    `json:"address"`
 	City            *string    `json:"city"`
 	PostalCode      *string    `json:"postal_code"`
+	Country         *string    `json:"country"`
+	CountryCode     *string    `json:"country_code"`
 	EmailVerifiedAt *time.Time `json:"email_verified_at"`
 	PhoneVerifiedAt *time.Time `json:"phone_verified_at"`
 	CreatedAt       time.Time  `json:"created_at"`
@@ -87,6 +89,8 @@ func newProfile(user *iam.User) Profile {
 		Address:         user.Address,
 		City:            user.City,
 		PostalCode:      user.PostalCode,
+		Country:         user.Country,
+		CountryCode:     user.CountryCode,
 		EmailVerifiedAt: user.EmailVerifiedAt,
 		PhoneVerifiedAt: user.PhoneVerifiedAt,
 		CreatedAt:       user.CreatedAt,

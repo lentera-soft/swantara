@@ -1,5 +1,6 @@
 import {
   Activity,
+  AppWindow,
   ArrowLeftRight,
   BarChart3,
   Box,
@@ -27,6 +28,7 @@ import {
   Receipt,
   Ruler,
   Settings,
+  Sparkles,
   Tag,
   Target,
   Truck,
@@ -78,6 +80,12 @@ export const orgNavItems: OrgNavItem[] = [
     group: "overview",
     href: "/dashboard",
     icon: LayoutDashboard,
+  },
+  {
+    key: "apps",
+    group: "overview",
+    href: "/apps",
+    icon: AppWindow,
   },
   {
     key: "inbox",
@@ -141,6 +149,13 @@ export const orgNavItems: OrgNavItem[] = [
     permission: "prospect.view",
   },
   {
+    key: "workspace",
+    group: "modules",
+    module: "sales",
+    href: "/sales-service",
+    icon: Sparkles,
+  },
+  {
     key: "sales",
     group: "modules",
     module: "sales",
@@ -165,12 +180,26 @@ export const orgNavItems: OrgNavItem[] = [
     permission: "sale_order.view",
   },
   {
+    key: "workspace",
+    group: "modules",
+    module: "procurement",
+    href: "/procurement",
+    icon: Sparkles,
+  },
+  {
     key: "supplierReturns",
     group: "modules",
     module: "procurement",
     href: "/purchases/returns",
     icon: ArrowLeftRight,
     permission: "purchase_order.view",
+  },
+  {
+    key: "workspace",
+    group: "modules",
+    module: "production",
+    href: "/production",
+    icon: Sparkles,
   },
   {
     key: "productionOrders",
@@ -245,6 +274,13 @@ export const orgNavItems: OrgNavItem[] = [
     permission: "item.view",
   },
   {
+    key: "workspace",
+    group: "modules",
+    module: "inventory",
+    href: "/inventory",
+    icon: Sparkles,
+  },
+  {
     key: "items",
     group: "modules",
     module: "inventory",
@@ -301,6 +337,13 @@ export const orgNavItems: OrgNavItem[] = [
     permission: "organization.view",
   },
   {
+    key: "workspace",
+    group: "modules",
+    module: "hr",
+    href: "/hr",
+    icon: Sparkles,
+  },
+  {
     key: "employees",
     group: "modules",
     module: "hr",
@@ -341,6 +384,13 @@ export const orgNavItems: OrgNavItem[] = [
     permission: "attendance.view",
   },
   {
+    key: "workspace",
+    group: "modules",
+    module: "projectManagement",
+    href: "/project-management",
+    icon: Sparkles,
+  },
+  {
     key: "projects",
     group: "modules",
     module: "projectManagement",
@@ -355,6 +405,13 @@ export const orgNavItems: OrgNavItem[] = [
     href: "/payroll-runs",
     icon: DollarSign,
     permission: "payroll_run.view",
+  },
+  {
+    key: "workspace",
+    group: "modules",
+    module: "finance",
+    href: "/finance",
+    icon: Sparkles,
   },
   {
     key: "accounting",
@@ -467,6 +524,13 @@ export const orgNavItems: OrgNavItem[] = [
     href: "/dropship",
     icon: Truck,
     permission: "dropship_order.create",
+  },
+  {
+    key: "workspace",
+    group: "modules",
+    module: "service",
+    href: "/sales-service",
+    icon: Sparkles,
   },
   {
     key: "service",
@@ -633,7 +697,7 @@ const NAV_LABEL_OVERRIDES: Record<string, string> = {
   deferrals: "Penangguhan",
   service: "Pesanan Layanan",
   commissions: "Rencana Komisi",
-  reference: "Data Referensi",
+  reference: "Data Induk",
   reports: "Laporan",
   recipes: "Resep (BOM)",
   customerReturns: "Retur Pelanggan",

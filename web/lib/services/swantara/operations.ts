@@ -70,7 +70,7 @@ import type {
   ManufacturingKpi,
   Message,
   PaymentSplit,
-  PaymentTerm,
+  PaymentTermResponse,
   PayPayrollRunRequest,
   PayrollKpi,
   PayrollRun,
@@ -979,16 +979,19 @@ export class Dimensions {
 export class PaymentTerms {
   constructor(private readonly axios: AxiosInstance) {}
 
-  async list(organizationId: number, params?: ListQuery): Promise<{ paymentTerms: PaymentTerm[] }> {
-    const response = await this.axios.get<SuccessEnvelope<{ paymentTerms: PaymentTerm[] }>>(
+  async list(
+    organizationId: number,
+    params?: ListQuery,
+  ): Promise<{ paymentTerms: PaymentTermResponse[] }> {
+    const response = await this.axios.get<SuccessEnvelope<{ paymentTerms: PaymentTermResponse[] }>>(
       endpoints.paymentTerms.list(String(organizationId)),
       { params },
     );
     return withListMeta(response.data);
   }
 
-  async get(organizationId: number, id: number): Promise<{ paymentTerm: PaymentTerm }> {
-    const response = await this.axios.get<SuccessEnvelope<{ paymentTerm: PaymentTerm }>>(
+  async get(organizationId: number, id: number): Promise<{ paymentTerm: PaymentTermResponse }> {
+    const response = await this.axios.get<SuccessEnvelope<{ paymentTerm: PaymentTermResponse }>>(
       endpoints.paymentTerms.get(String(organizationId), String(id)),
     );
     return withListMeta(response.data);
@@ -997,8 +1000,8 @@ export class PaymentTerms {
   async create(
     organizationId: number,
     request: CreatePaymentTermRequest,
-  ): Promise<{ paymentTerm: PaymentTerm }> {
-    const response = await this.axios.post<SuccessEnvelope<{ paymentTerm: PaymentTerm }>>(
+  ): Promise<{ paymentTerm: PaymentTermResponse }> {
+    const response = await this.axios.post<SuccessEnvelope<{ paymentTerm: PaymentTermResponse }>>(
       endpoints.paymentTerms.create(String(organizationId)),
       request,
     );
@@ -1009,8 +1012,8 @@ export class PaymentTerms {
     organizationId: number,
     id: number,
     request: UpdatePaymentTermRequest,
-  ): Promise<{ paymentTerm: PaymentTerm }> {
-    const response = await this.axios.put<SuccessEnvelope<{ paymentTerm: PaymentTerm }>>(
+  ): Promise<{ paymentTerm: PaymentTermResponse }> {
+    const response = await this.axios.put<SuccessEnvelope<{ paymentTerm: PaymentTermResponse }>>(
       endpoints.paymentTerms.update(String(organizationId), String(id)),
       request,
     );

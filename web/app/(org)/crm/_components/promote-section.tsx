@@ -11,6 +11,7 @@ import { Badge } from "@/components/badge";
 import { Checkbox } from "@/components/checkbox";
 import { EntityFormDialog } from "@/components/entity-form-dialog";
 import { FormField } from "@/components/form";
+import { FormSection } from "@/components/form-section";
 import { Input } from "@/components/input";
 import { Progress } from "@/components/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/select";
@@ -26,7 +27,6 @@ import type {
 } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
 import { formatNumber } from "@/lib/utils";
-import { CrmFormSection } from "./crm-form-section";
 
 function usePromoteFormSchema() {
   const t = useTranslations("Crm");
@@ -203,7 +203,7 @@ export function PromoteDialog({
       }
       className="sm:max-w-xl"
     >
-      <CrmFormSection title={t("sectionPlacement")} description={t("placementHint")}>
+      <FormSection title={t("sectionPlacement")} description={t("placementHint")}>
         <FormField
           name="stageId"
           label={t("tableStage")}
@@ -269,7 +269,7 @@ export function PromoteDialog({
             </Select>
           )}
         </FormField>
-      </CrmFormSection>
+      </FormSection>
 
       {missingFields.length > 0 ? (
         <div className="rounded-lg border border-amber-500/40 bg-amber-500/10 p-3 text-sm">
@@ -290,7 +290,7 @@ export function PromoteDialog({
         </div>
       ) : null}
 
-      <CrmFormSection title={t("sectionDealValue")} description={t("dealValueHint")}>
+      <FormSection title={t("sectionDealValue")} description={t("dealValueHint")}>
         <FormField name="expectedRevenue" label={t("tableExpectedRevenue")}>
           {({ field, id }) => <Input {...field} id={id} type="number" step="any" min="0" />}
         </FormField>
@@ -323,7 +323,7 @@ export function PromoteDialog({
         <FormField name="expectedClose" label={t("tableExpectedClose")}>
           {({ field, id }) => <Input {...field} id={id} type="date" />}
         </FormField>
-      </CrmFormSection>
+      </FormSection>
     </EntityFormDialog>
   );
 }

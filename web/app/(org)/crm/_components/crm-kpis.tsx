@@ -111,7 +111,7 @@ export function CrmKpis({
               : opportunities.length + leads.filter((l) => l.type === "prospect").length}
           </p>
           <p className="text-xs text-muted-foreground">
-            {stagesCount} {t("kpiWinRateHint")}
+            {stagesCount} {t("kpiStagesHint")}
           </p>
         </CardContent>
       </Card>

@@ -176,6 +176,9 @@ func (s Service) Update(ctx context.Context, orgID uint64, org *reference.Organi
 	existing.ParentID = org.ParentID
 	existing.CountryCode = org.CountryCode
 	existing.TaxID = org.TaxID
+	existing.Address = org.Address
+	existing.City = org.City
+	existing.PostalCode = org.PostalCode
 	if org.Timezone != "" {
 		existing.Timezone = org.Timezone
 	}

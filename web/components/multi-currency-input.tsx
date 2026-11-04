@@ -303,7 +303,7 @@ export function MultiCurrencyInput({
           <SelectTrigger
             size="sm"
             aria-label={currencyAriaLabel}
-            className="h-full min-h-0 rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0"
+            className="h-full min-h-0 w-auto rounded-none border-0 bg-transparent shadow-none ring-0 ring-offset-0 focus-visible:border-0 focus-visible:ring-0 aria-invalid:border-0 aria-invalid:ring-0 data-[size=sm]:rounded-none dark:bg-transparent dark:hover:bg-transparent"
           >
             <SelectValue placeholder={currencyPlaceholder ?? "Currency"} />
           </SelectTrigger>

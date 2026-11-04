@@ -22,11 +22,14 @@ export function SidebarTree({ items }: SidebarTreeProps) {
   const { isMobile, setOpenMobile } = useSidebar();
 
   function getLabel(key: string): string {
-    try {
-      return (tNav as unknown as (k: string) => string)(key);
-    } catch {
-      return navLabel(key);
+    const tNavAny = tNav as unknown as {
+      (k: string): string;
+      has(k: string): boolean;
+    };
+    if (tNavAny.has(key)) {
+      return tNavAny(key);
     }
+    return navLabel(key);
   }
 
   const activeHref = items

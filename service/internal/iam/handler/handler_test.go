@@ -183,7 +183,7 @@ func memberHandlerTest(t *testing.T, members iam.MemberDAOMock, roles iam.Member
 		})
 	}
 	memberSvc := iam.NewMemberService(members, roles, permissions)
-	h := NewMemberHandler(memberSvc)
+	h := NewMemberHandler(memberSvc, members, roles, permissions)
 	h.Register(app, passthroughGuards())
 	return app
 }
@@ -216,8 +216,7 @@ func userHandlerTestApp(
 	}
 	userSvc := iam.NewUserService(users, testPasswordService())
 	authzSvc := iam.NewAuthzService(permissions)
-	memberSvc := iam.NewMemberService(members, iam.MemberRoleDAOMock{}, iam.PermissionDAOMock{})
-	h := NewUserHandler(users, userSvc, authzSvc, memberSvc, avatarSvc)
+	h := NewUserHandler(users, userSvc, authzSvc, members, avatarSvc)
 	h.Register(app, passthroughGuards())
 	return app
 }

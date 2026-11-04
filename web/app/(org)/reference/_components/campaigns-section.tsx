@@ -16,6 +16,7 @@ import { CurrencyField } from "@/components/currency-field";
 import { DatePicker } from "@/components/date-picker";
 import { EntityFormDialog } from "@/components/entity-form-dialog";
 import { FormField } from "@/components/form";
+import { FormSection } from "@/components/form-section";
 import { Input } from "@/components/input";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { Campaign } from "@/lib/services/swantara";
@@ -219,8 +220,7 @@ export function CampaignsSection({ orgId }: { orgId: string }) {
         cancelLabel={t("actionCancel")}
       >
         <div className="space-y-4">
-          <fieldset className="grid gap-4 rounded-lg border p-4 sm:grid-cols-2">
-            <legend className="px-1 text-sm">Campaign details</legend>
+          <FormSection title="Campaign details">
             <FormField name="name" label={t("fieldName")}>
               {({ field, id }) => <Input {...field} id={id} placeholder={t("fieldName")} />}
             </FormField>
@@ -236,10 +236,9 @@ export function CampaignsSection({ orgId }: { orgId: string }) {
             <FormField name="status" label={t("fieldStatus")}>
               {({ field, id }) => <Input {...field} id={id} placeholder={t("fieldStatus")} />}
             </FormField>
-          </fieldset>
+          </FormSection>
 
-          <fieldset className="grid gap-4 rounded-lg border p-4 sm:grid-cols-2">
-            <legend className="px-1 text-sm">Schedule & budget</legend>
+          <FormSection title="Schedule & budget">
             <FormField name="startDate" label={t("fieldStartDate")}>
               {({ field }) => (
                 <DatePicker
@@ -268,7 +267,7 @@ export function CampaignsSection({ orgId }: { orgId: string }) {
                 />
               )}
             </FormField>
-          </fieldset>
+          </FormSection>
         </div>
       </EntityFormDialog>
     </div>

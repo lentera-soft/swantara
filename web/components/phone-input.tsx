@@ -3,7 +3,12 @@
 import { GlobeIcon } from "lucide-react";
 import { useLocale } from "next-intl";
 import type * as React from "react";
-import PhoneInputLibrary, { type Country, getCountryCallingCode } from "react-phone-number-input";
+import { useState } from "react";
+import PhoneInputLibrary, {
+  type Country,
+  getCountries,
+  getCountryCallingCode,
+} from "react-phone-number-input";
 
 import { CountryFlag } from "@/components/country-flag";
 import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/input-group";
@@ -15,7 +20,7 @@ const INTERNATIONAL_COUNTRY = "XX" as unknown as Country;
 // disabled, and invalid recipes instead of a second border/focus recipe here.
 const COUNTRY_SELECT_SLOT = "input-group-control";
 
-type CountryOption = { country: Country; label?: string };
+type CountryOption = { value?: Country; label?: string; divider?: boolean };
 
 type CountrySelectComponentProps = {
   value?: Country;
@@ -37,11 +42,35 @@ function callingCode(country?: Country): string {
   }
 }
 
+const ALL_COUNTRIES: Country[] = getCountries();
+
+function countryFromValue(value?: string): Country | undefined {
+  if (!value?.startsWith("+")) return undefined;
+  const prefix = /^\+\d+/.exec(value)?.[0];
+  if (!prefix) return undefined;
+  return ALL_COUNTRIES.find((country) => callingCode(country) === prefix);
+}
+
+// The placeholder keeps mirroring the selected country so its dial prefix
+// updates live when the user switches countries in the select.
+function phonePlaceholder(country: Country | undefined, placeholder?: string): string | undefined {
+  if (!placeholder) return placeholder;
+  const separated = /^(\+\d{1,3})([\s\u00A0-]+)(.*)$/.exec(placeholder);
+  if (separated) {
+    const code = callingCode(country);
+    return code ? `${code} ${separated[3]}` : separated[3];
+  }
+  if (placeholder.startsWith("+")) return placeholder;
+  const code = callingCode(country);
+  return code ? `${code} ${placeholder}` : placeholder;
+}
+
 function regionName(option: CountryOption, locale: string): string {
-  const fallback = option.label ?? String(option.country);
-  if (option.country === INTERNATIONAL_COUNTRY) return fallback;
+  const code = String(option.value ?? "");
+  const fallback = option.label ?? code;
+  if (option.value === INTERNATIONAL_COUNTRY || !/^[A-Z]{2}$/.test(code)) return fallback;
   try {
-    return new Intl.DisplayNames([locale], { type: "region" }).of(option.country) ?? fallback;
+    return new Intl.DisplayNames([locale], { type: "region" }).of(code) ?? fallback;
   } catch {
     return fallback;
   }
@@ -69,8 +98,12 @@ function PhoneInputCountrySelect({
   return (
     <InputGroupAddon align="inline-start" className="pr-0">
       <Select
-        value={value ?? null}
-        onValueChange={(next) => onChange?.(next ?? undefined)}
+        value={value ?? INTERNATIONAL_COUNTRY}
+        onValueChange={(next) =>
+          onChange?.(
+            next && next !== INTERNATIONAL_COUNTRY ? (next as unknown as Country) : undefined,
+          )
+        }
         disabled={disabled}
       >
         <SelectTrigger
@@ -79,21 +112,25 @@ function PhoneInputCountrySelect({
           data-slot={dataSlot}
           onFocus={onFocus}
           onBlur={onBlur}
-          className="h-full min-h-0 w-auto rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0"
+          className="h-full min-h-0 w-auto rounded-none border-0 bg-transparent shadow-none ring-0 ring-offset-0 focus-visible:border-0 focus-visible:ring-0 aria-invalid:border-0 aria-invalid:ring-0 data-[size=sm]:rounded-none dark:bg-transparent dark:hover:bg-transparent"
         >
           {value ? <CountryIcon country={value} /> : null}
           <span className="text-xs">{callingCode(value)}</span>
         </SelectTrigger>
         <SelectContent>
-          {options.map((option) => (
-            <SelectItem key={option.country} value={option.country}>
-              <span className="flex items-center gap-2">
-                <CountryIcon country={option.country} />
-                <span>{regionName(option, locale)}</span>
-                <span className="text-xs text-muted-foreground">{callingCode(option.country)}</span>
-              </span>
-            </SelectItem>
-          ))}
+          {options.map((option) => {
+            if (option.divider) return null;
+            const value = option.value ?? INTERNATIONAL_COUNTRY;
+            return (
+              <SelectItem key={value} value={value}>
+                <span className="flex items-center gap-2">
+                  <CountryIcon country={value} />
+                  <span>{regionName(option, locale)}</span>
+                  <span className="text-xs text-muted-foreground">{callingCode(option.value)}</span>
+                </span>
+              </SelectItem>
+            );
+          })}
         </SelectContent>
       </Select>
     </InputGroupAddon>
@@ -120,15 +157,27 @@ export function PhoneInput({
   countries,
   countryAriaLabel = "Country code",
   className,
+  placeholder,
   ...props
 }: PhoneInputProps) {
+  const [country, setCountry] = useState<Country | undefined>(
+    () => countryFromValue(value) ?? defaultCountry,
+  );
+  const currentCountry = countryFromValue(value) ?? country;
+
+  function handleCountryChange(next?: Country) {
+    setCountry(next);
+    onCountryChange?.(next);
+  }
+
   return (
     <PhoneInputLibrary
       value={value}
       onChange={(next) => onChange?.(next ?? "")}
-      onCountryChange={onCountryChange}
-      defaultCountry={defaultCountry}
+      onCountryChange={handleCountryChange}
+      defaultCountry={currentCountry}
       countries={countries}
+      placeholder={phonePlaceholder(currentCountry, placeholder)}
       containerComponent={InputGroup}
       containerComponentProps={{ "data-slot": "phone-input" }}
       countrySelectComponent={PhoneInputCountrySelect}

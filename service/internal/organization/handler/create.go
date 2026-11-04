@@ -13,6 +13,9 @@ type CreateOrganizationRequest struct {
 	BaseCurrency      string  `json:"base_currency" validate:"required,len=3"`
 	CountryCode       *string `json:"country_code"`
 	TaxID             *string `json:"tax_id"`
+	Address           *string `json:"address"`
+	City              *string `json:"city"`
+	PostalCode        *string `json:"postal_code"`
 	Logo              *string `json:"logo"`
 	Timezone          string  `json:"timezone"`
 	TaxYearStartMonth int16   `json:"tax_year_start_month"`
@@ -58,6 +61,9 @@ func (h OrganizationHandler) Create(c fiber.Ctx) error {
 		BaseCurrency:      request.BaseCurrency,
 		CountryCode:       request.CountryCode,
 		TaxID:             request.TaxID,
+		Address:           request.Address,
+		City:              request.City,
+		PostalCode:        request.PostalCode,
 		Logo:              request.Logo,
 		Timezone:          request.Timezone,
 		TaxYearStartMonth: request.TaxYearStartMonth,

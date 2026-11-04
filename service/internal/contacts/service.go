@@ -2,10 +2,12 @@ package contacts
 
 import (
 	"context"
+	"errors"
 	"strings"
 
 	"github.com/jalusw/swantara/apps/service/internal/kernel/query"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/scope"
+	"github.com/jalusw/swantara/apps/service/internal/kernel/sequence"
 
 	"github.com/jalusw/swantara/apps/service/internal/kernel/dao"
 )
@@ -17,6 +19,7 @@ type ContactService struct {
 	suppliers     SupplierProfileDAO
 	banks         ContactBankAccountDAO
 	employeeRoles EmployeeRoleReader
+	sequences     *sequence.Service
 }
 
 func NewContactService(
@@ -35,6 +38,14 @@ func NewContactService(
 		suppliers:     suppliers,
 		employeeRoles: employeeRoles,
 	}
+}
+
+// WithSequences enables automatic contact code numbering through the given
+// document sequence service. Contacts created without an explicit code are
+// assigned the next number of the "contact" sequence of their organization.
+func (s ContactService) WithSequences(svc sequence.Service) ContactService {
+	s.sequences = &svc
+	return s
 }
 
 func (s ContactService) List(ctx context.Context, q *query.Query) (*query.Page[Contact], error) {
@@ -144,8 +155,29 @@ func (s ContactService) Create(
 	if err := s.validateAddresses(addresses); err != nil {
 		return nil, err
 	}
+	if err := s.assignCode(ctx, contact); err != nil {
+		return nil, err
+	}
 
 	return s.contacts.CreateWithDetails(ctx, contact, addresses, banks, customer, supplier)
+}
+
+func (s ContactService) assignCode(ctx context.Context, contact *Contact) error {
+	if contact.Code != nil && strings.TrimSpace(*contact.Code) != "" {
+		return nil
+	}
+	if s.sequences == nil || contact.OrganizationID == nil {
+		return nil
+	}
+	code, err := s.sequences.Next(ctx, *contact.OrganizationID, SequenceContactCode)
+	if err != nil {
+		if errors.Is(err, sequence.ErrSequenceNotFound) {
+			return nil
+		}
+		return err
+	}
+	contact.Code = &code
+	return nil
 }
 
 func (s ContactService) Update(ctx context.Context, contactID uint64, contact *Contact) (*Contact, error) {

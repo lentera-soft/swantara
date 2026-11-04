@@ -15,6 +15,7 @@ import {
 } from "@/components/dialog";
 import { Input } from "@/components/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/select";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/table";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { Account } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
@@ -55,36 +56,14 @@ export function AccountsSection({ orgId }: { orgId: string }) {
     void accountsQuery.refetch();
   }
 
-  function renderNode(node: AccountTreeNode, depth: number) {
-    return (
-      <div key={node.id}>
-        <div
-          className="flex items-center gap-2 rounded border px-3 py-2 hover:bg-muted/50"
-          style={{ marginLeft: depth * 24 }}
-        >
-          <span className="font-mono text-sm w-20 shrink-0">{node.code}</span>
-          <span className="flex-1 text-sm">{node.name}</span>
-          <Badge variant="outline" className={cn("text-xs", accountTypeTone(node.type))}>
-            {(t as unknown as (k: string) => string)(`accountType_${node.type}`)}
-          </Badge>
-          {node.reconcilable ? (
-            <Badge variant="secondary" className="text-xs">
-              {t("badgeReconcilable")}
-            </Badge>
-          ) : null}
-          {!node.active ? (
-            <Badge variant="outline" className="text-xs text-muted-foreground">
-              {t("badgeInactive")}
-            </Badge>
-          ) : null}
-          <Button size="sm" variant="ghost" onClick={() => handleEdit(node)}>
-            {tCommon("edit")}
-          </Button>
-        </div>
-        {node.children.map((child) => renderNode(child, depth + 1))}
-      </div>
-    );
-  }
+  const rows: { node: AccountTreeNode; depth: number }[] = [];
+  const flatten = (nodes: AccountTreeNode[], depth: number) => {
+    for (const node of nodes) {
+      rows.push({ node, depth });
+      flatten(node.children, depth + 1);
+    }
+  };
+  flatten(tree, 0);
 
   return (
     <div className="flex flex-col gap-4">
@@ -101,8 +80,50 @@ export function AccountsSection({ orgId }: { orgId: string }) {
       ) : tree.length === 0 ? (
         <div className="text-sm text-muted-foreground">{t("accountsEmpty")}</div>
       ) : (
-        <div className="flex flex-col gap-1 rounded-md border p-2">
-          {tree.map((node) => renderNode(node, 0))}
+        <div className="rounded-md border">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-24 font-medium">{t("fieldCode")}</TableHead>
+                <TableHead className="font-medium">{t("fieldName")}</TableHead>
+                <TableHead className="w-36 font-medium">{t("fieldType")}</TableHead>
+                <TableHead className="w-40 font-medium">{tCommon("status")}</TableHead>
+                <TableHead className="w-24 text-right font-medium">{tCommon("actions")}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {rows.map(({ node, depth }) => (
+                <TableRow key={node.id}>
+                  <TableCell className="font-mono">{node.code}</TableCell>
+                  <TableCell style={{ paddingLeft: 8 + depth * 24 }}>{node.name}</TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className={cn("text-xs", accountTypeTone(node.type))}>
+                      {(t as unknown as (k: string) => string)(`accountType_${node.type}`)}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex items-center gap-1">
+                      {node.reconcilable ? (
+                        <Badge variant="secondary" className="text-xs">
+                          {t("badgeReconcilable")}
+                        </Badge>
+                      ) : null}
+                      {!node.active ? (
+                        <Badge variant="outline" className="text-xs text-muted-foreground">
+                          {t("badgeInactive")}
+                        </Badge>
+                      ) : null}
+                    </div>
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Button size="sm" variant="ghost" onClick={() => handleEdit(node)}>
+                      {tCommon("edit")}
+                    </Button>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
         </div>
       )}
       {dialogOpen ? (

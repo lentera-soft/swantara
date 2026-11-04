@@ -2,8 +2,9 @@
 
 import type { LegacyColumnDef as ColumnDef } from "@tanstack/react-table/legacy";
 import { Plus } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 import { toast } from "sonner";
 import { InteractiveEntityTable } from "@/app/(org)/_components/interactive-entity-table";
 import { RowActions } from "@/app/(org)/_components/row-actions";
@@ -15,7 +16,6 @@ import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { Employee } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
 import { humanizeKey } from "@/lib/utils/case";
-import { EmployeeFormDialog } from "./employee-form-dialog";
 
 export type EmployeeRow = {
   id: string;
@@ -52,8 +52,7 @@ function initials(name: string) {
 export function EmployeesTable({ orgId }: { orgId: string }) {
   const t = useTranslations("Employees");
   const tCommon = useTranslations("Common");
-  const [dialogOpen, setDialogOpen] = useState(false);
-  const [editingEmployee, setEditingEmployee] = useState<Employee | null>(null);
+  const router = useRouter();
 
   const query = useOrgListQuery<{ employees: Employee[] }, Record<string, never>>(
     "employees",
@@ -62,19 +61,8 @@ export function EmployeesTable({ orgId }: { orgId: string }) {
 
   const employees = (query.data?.employees ?? []).map(toEmployeeRow);
 
-  function handleSave() {
-    setDialogOpen(false);
-    setEditingEmployee(null);
-    void query.refetch();
-    toast.success(t("saved"));
-  }
-
   function handleEdit(employee: EmployeeRow) {
-    const raw = (query.data?.employees ?? []).find((e) => String(e.id) === employee.id);
-    if (raw) {
-      setEditingEmployee(raw);
-      setDialogOpen(true);
-    }
+    router.push(`/employees/${employee.id}/edit`);
   }
 
   function handleDelete(employee: EmployeeRow) {
@@ -197,27 +185,14 @@ export function EmployeesTable({ orgId }: { orgId: string }) {
               : undefined
         }
         actions={
-          <Button
-            size="sm"
-            onClick={() => {
-              setEditingEmployee(null);
-              setDialogOpen(true);
-            }}
-          >
-            <Plus />
-            <span>{t("addEmployee")}</span>
+          <Button size="sm" asChild>
+            <Link href="/employees/new">
+              <Plus />
+              <span>{t("addEmployee")}</span>
+            </Link>
           </Button>
         }
       />
-      {dialogOpen ? (
-        <EmployeeFormDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          orgId={orgId}
-          initial={editingEmployee}
-          onSave={handleSave}
-        />
-      ) : null}
     </div>
   );
 }

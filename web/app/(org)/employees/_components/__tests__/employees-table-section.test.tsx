@@ -78,13 +78,12 @@ describe("EmployeesTable", () => {
     expect(await screen.findByText("EMP-0002")).toBeInTheDocument();
   });
 
-  it("opens the create dialog from the add button", async () => {
-    const user = userEvent.setup();
+  it("links to the create page from the add button", async () => {
     renderWithProviders(<EmployeesTable orgId="1" />);
 
     await screen.findByText("EMP-0001");
-    await user.click(screen.getByRole("button", { name: "Tambah Karyawan" }));
+    const addButton = await screen.findByRole("link", { name: "Tambah Karyawan" });
 
-    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+    expect(addButton).toHaveAttribute("href", "/employees/new");
   });
 });

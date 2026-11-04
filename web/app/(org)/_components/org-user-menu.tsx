@@ -93,8 +93,8 @@ export function OrgUserMenu() {
                 aria-label={t("accountMenu")}
                 className="outline-none ring-ring focus-visible:ring-3 ring-offset-2 ring-offset-background focus-visible:ring-ring"
               >
-                <Avatar size="sm">
-                  <AvatarFallback>{initials}</AvatarFallback>
+                <Avatar size="sm" className="rounded-md ">
+                  <AvatarFallback className="rounded-md">{initials}</AvatarFallback>
                 </Avatar>
               </button>
             </DropdownMenuTrigger>

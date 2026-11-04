@@ -42,6 +42,7 @@ type SupplierProfileRequest struct {
 
 type CreateContactRequest struct {
 	OrganizationID *uint64                     `json:"organization_id"`
+	Code           *string                     `json:"code"`
 	Name           string                      `json:"name" validate:"required"`
 	DisplayName    *string                     `json:"display_name"`
 	IsOrganization bool                        `json:"is_organization"`
@@ -138,6 +139,7 @@ func (h ContactHandler) Create(c fiber.Ctx) error {
 
 	contact, err := h.svc.Create(c, &contacts.Contact{
 		OrganizationID: httpx.TenantOrganizationID(c, request.OrganizationID),
+		Code:           request.Code,
 		Name:           request.Name,
 		DisplayName:    request.DisplayName,
 		IsOrganization: request.IsOrganization,

@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/button";
 import { Form, FormField, SubmitButton } from "@/components/form";
+import { FormSection } from "@/components/form-section";
 import { Input } from "@/components/input";
 import { PageHeader } from "@/components/page-header";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/select";
@@ -118,8 +119,7 @@ export function SupplierForm({ orgId }: { orgId: string }) {
         onSubmit={(values) => createMutation.mutate(values)}
         className="flex flex-col gap-4"
       >
-        <fieldset className="grid gap-4 rounded-lg border p-4 sm:grid-cols-2">
-          <legend className="px-1 text-sm">{t("sectionIdentity")}</legend>
+        <FormSection title={t("sectionIdentity")}>
           <FormField name="name" label={tc("fieldName")} className="sm:col-span-2">
             {({ field, id }) => (
               <Input {...field} id={id} placeholder={tc("fieldName")} autoFocus />
@@ -143,10 +143,9 @@ export function SupplierForm({ orgId }: { orgId: string }) {
               />
             )}
           </FormField>
-        </fieldset>
+        </FormSection>
 
-        <fieldset className="grid gap-4 rounded-lg border p-4 sm:grid-cols-2">
-          <legend className="px-1 text-sm">{t("sectionContact")}</legend>
+        <FormSection title={t("sectionContact")}>
           <FormField name="email" label={tc("fieldEmail")}>
             {({ field, id }) => (
               <Input {...field} id={id} type="email" placeholder={tc("fieldEmail")} />
@@ -161,10 +160,9 @@ export function SupplierForm({ orgId }: { orgId: string }) {
           <FormField name="website" label={tc("fieldWebsite")}>
             {({ field, id }) => <Input {...field} id={id} placeholder={tc("fieldWebsite")} />}
           </FormField>
-        </fieldset>
+        </FormSection>
 
-        <fieldset className="grid gap-4 rounded-lg border p-4 sm:grid-cols-2">
-          <legend className="px-1 text-sm">{t("sectionSettings")}</legend>
+        <FormSection title={t("sectionSettings")}>
           <FormField name="currencyCode" label={tc("fieldCurrency")}>
             {({ field, id }) => (
               <Select value={field.value} onValueChange={field.onChange}>
@@ -203,7 +201,7 @@ export function SupplierForm({ orgId }: { orgId: string }) {
               />
             )}
           </FormField>
-        </fieldset>
+        </FormSection>
 
         <div className="flex items-center justify-end gap-2">
           <Button type="button" variant="outline" disabled={createMutation.isPending} asChild>

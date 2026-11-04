@@ -10,6 +10,7 @@
     {"key": "purchase.approval_threshold", "value": 100000000}
   ],
   "doc_sequences": [
+    {"code": "contact", "prefix": "CT/", "padding": 5, "reset_period": "never"},
     {"code": "sale_order", "prefix": "SO/", "padding": 5, "reset_period": "never"},
     {"code": "sale_quote", "prefix": "SQ/", "padding": 5, "reset_period": "never"},
     {"code": "invoice", "prefix": "INV/", "padding": 5, "reset_period": "never"},

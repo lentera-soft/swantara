@@ -11,12 +11,24 @@ export function OrgBreadcrumbs() {
   const tNav = useTranslations("Nav");
   const tCrumb = useTranslations("Breadcrumbs");
 
+  const tNavAny = tNav as unknown as {
+    (key: string): string;
+    has(key: string): boolean;
+  };
+
   function translatedNavLabel(key: string): string {
-    try {
-      return (tNav as unknown as (k: string) => string)(key);
-    } catch {
-      return navLabel(key);
+    if (tNavAny.has(key)) {
+      return tNavAny(key);
     }
+    return navLabel(key);
+  }
+
+  function resolveSegmentLabel(segment: string): string {
+    const key = segment.replace(/-([a-z0-9])/g, (_match, char: string) => char.toUpperCase());
+    if (tNavAny.has(key)) {
+      return tNavAny(key);
+    }
+    return humanizeKey(segment);
   }
 
   const trail = pathname.split("/").filter(Boolean);
@@ -30,26 +42,11 @@ export function OrgBreadcrumbs() {
     },
   ];
 
-  const settingsSubPageKeys = new Set(["profile"]);
-  const productsSubPageKeys = new Set(["recipes", "categories", "price-books"]);
   for (let i = 1; i <= trail.length; i++) {
     const prefix = `/${trail.slice(0, i).join("/")}`;
     const match = orgNavItems.find((item) => item.href === prefix);
     const isLast = i === trail.length;
-    let label: string;
-    if (match) {
-      label = translatedNavLabel(match.key);
-    } else if (trail[0] === "settings" && settingsSubPageKeys.has(trail[i - 1]!)) {
-      try {
-        label = humanizeKey(String(trail[i - 1]!));
-      } catch {
-        label = trail[i - 1]!;
-      }
-    } else if (trail[0] === "products" && productsSubPageKeys.has(trail[i - 1]!)) {
-      label = translatedNavLabel(String(trail[i - 1]!));
-    } else {
-      label = prefix;
-    }
+    const label = match ? translatedNavLabel(match.key) : resolveSegmentLabel(trail[i - 1]!);
     items.push({
       label,
       href: isLast ? undefined : prefix,

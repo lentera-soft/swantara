@@ -33,6 +33,9 @@ type Organization struct {
 	BaseCurrency      string  `gorm:"type:char(3);not null" json:"base_currency"`
 	CountryCode       *string `gorm:"type:char(2)" json:"country_code"`
 	TaxID             *string `json:"tax_id" audit:"redact"`
+	Address           *string `json:"address"`
+	City              *string `json:"city"`
+	PostalCode        *string `json:"postal_code"`
 	Logo              *string `json:"logo"`
 	Timezone          string  `gorm:"default:UTC" json:"timezone"`
 	TaxYearStartMonth int16   `gorm:"default:1" json:"tax_year_start_month"`

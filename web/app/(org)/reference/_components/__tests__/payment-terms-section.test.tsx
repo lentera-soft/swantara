@@ -1,27 +1,8 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { beforeEach, describe, expect, it } from "vitest";
-import { renderWithProviders } from "@/lib/tests";
+import { describe, expect, it } from "vitest";
+import { navigationMock, renderWithProviders } from "@/lib/tests";
 import { PaymentTermsSection } from "../payment-terms-section";
-
-beforeEach(() => {});
-
-async function addPercentTerm(
-  user: ReturnType<typeof userEvent.setup>,
-  name: string,
-  values: string[],
-) {
-  await user.click(screen.getByRole("button", { name: "Tambah syarat" }));
-  await user.type(screen.getByLabelText("Nama"), name);
-  for (const [index, value] of values.entries()) {
-    if (index > 0) {
-      await user.click(screen.getByRole("button", { name: "Tambah baris" }));
-    }
-    await user.type(screen.getAllByLabelText("Nilai")[index]!, value);
-    await user.type(screen.getAllByLabelText("Hari jatuh tempo")[index]!, "30");
-  }
-  await user.click(screen.getByRole("button", { name: "Simpan syarat" }));
-}
 
 describe("PaymentTermsSection", () => {
   it("renders the seeded payment terms", async () => {
@@ -31,35 +12,34 @@ describe("PaymentTermsSection", () => {
     expect(screen.getByText("50/50 split")).toBeInTheDocument();
   });
 
-  it("requires a name when creating a term", async () => {
-    const user = userEvent.setup();
+  it("shows the number of schedule lines per term", async () => {
     renderWithProviders(<PaymentTermsSection orgId="1" />);
 
-    await user.click(screen.getByRole("button", { name: "Tambah syarat" }));
-    await user.click(screen.getByRole("button", { name: "Simpan syarat" }));
+    const net30Row = (await screen.findByText("Net 30")).closest("tr");
+    expect(within(net30Row!).getByText("1")).toBeInTheDocument();
 
-    expect(screen.getByText("Masukkan nama.")).toBeInTheDocument();
+    const splitRow = screen.getByText("50/50 split").closest("tr");
+    expect(within(splitRow!).getByText("2")).toBeInTheDocument();
   });
 
-  it("rejects percent lines that do not add up to 100", async () => {
-    const user = userEvent.setup();
+  it("links the add button to the new term page", async () => {
     renderWithProviders(<PaymentTermsSection orgId="1" />);
 
-    await addPercentTerm(user, "60/60", ["60", "60"]);
-
-    expect(
-      screen.getByText("Baris persen harus berjumlah 100%. Total saat ini: 120%."),
-    ).toBeInTheDocument();
+    const link = await screen.findByRole("link", { name: "Tambah syarat" });
+    expect(link).toHaveAttribute("href", "/reference/payment-terms/new");
   });
 
-  it("saves a term whose percent lines add up to 100", async () => {
+  it("navigates to the term page when editing a row", async () => {
     const user = userEvent.setup();
     renderWithProviders(<PaymentTermsSection orgId="1" />);
 
     await screen.findByText("Net 30");
-    await addPercentTerm(user, "60/40", ["60", "40"]);
+    await user.click(screen.getAllByRole("button", { name: "Aksi" })[0]!);
+    await user.click(await screen.findByRole("menuitem", { name: "Ubah" }));
 
-    expect(await screen.findByText("60/40")).toBeInTheDocument();
+    await waitFor(() =>
+      expect(navigationMock.push).toHaveBeenCalledWith("/reference/payment-terms/1"),
+    );
   });
 
   it("deletes a payment term after confirmation", async () => {

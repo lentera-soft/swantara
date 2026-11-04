@@ -1,6 +1,6 @@
 import { getTranslations } from "next-intl/server";
 import { PageHeader } from "@/components/page-header";
-import { BillingSection } from "./_components/billing-section";
+import { BillingPanel } from "./_components/billing-panel";
 
 export default async function BillingPage() {
   const t = await getTranslations("Billing");
@@ -8,7 +8,7 @@ export default async function BillingPage() {
   return (
     <div className="flex flex-col gap-4 sm:gap-6">
       <PageHeader force title={t("title")} description={t("pageDescription")} />
-      <BillingSection />
+      <BillingPanel />
     </div>
   );
 }

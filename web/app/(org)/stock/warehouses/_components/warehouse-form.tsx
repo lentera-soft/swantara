@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Button } from "@/components/button";
 import { Form, FormField, SubmitButton } from "@/components/form";
+import { FormSection } from "@/components/form-section";
 import { Input } from "@/components/input";
 import { PageHeader } from "@/components/page-header";
 import type { Warehouse } from "@/lib/services/swantara";
@@ -121,18 +122,16 @@ export function WarehouseForm({
         onSubmit={(values) => saveMutation.mutate(values)}
         className="flex flex-col gap-4"
       >
-        <fieldset className="grid gap-4 rounded-lg border p-4 sm:grid-cols-2">
-          <legend className="px-1 text-sm">{t("sectionGeneral")}</legend>
+        <FormSection title={t("sectionGeneral")}>
           <FormField name="name" label={t("fieldName")} className="sm:col-span-2">
             {({ field, id }) => <Input {...field} id={id} placeholder={t("fieldName")} autoFocus />}
           </FormField>
           <FormField name="code" label={t("fieldCode")}>
             {({ field, id }) => <Input {...field} id={id} placeholder={t("fieldCode")} />}
           </FormField>
-        </fieldset>
+        </FormSection>
 
-        <fieldset className="grid gap-4 rounded-lg border p-4 sm:grid-cols-2">
-          <legend className="px-1 text-sm">{t("sectionAddress")}</legend>
+        <FormSection title={t("sectionAddress")}>
           <FormField name="line1" label={t("fieldAddress1")} className="sm:col-span-2">
             {({ field, id }) => <Input {...field} id={id} placeholder={t("fieldAddress1")} />}
           </FormField>
@@ -151,7 +150,7 @@ export function WarehouseForm({
           <FormField name="countryCode" label={t("fieldCountryCode")}>
             {({ field, id }) => <Input {...field} id={id} placeholder={t("fieldCountryCode")} />}
           </FormField>
-        </fieldset>
+        </FormSection>
 
         <div className="flex items-center justify-end gap-2">
           <Button type="button" variant="outline" disabled={saveMutation.isPending} asChild>

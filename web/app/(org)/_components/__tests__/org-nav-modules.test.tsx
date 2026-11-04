@@ -26,11 +26,11 @@ describe("OrgNav", () => {
       "href",
       "/reports",
     );
-    expect(screen.queryByRole("link", { name: "Data Referensi" })).toBeNull();
+    expect(screen.queryByRole("link", { name: "Data Induk" })).toBeNull();
     expect(screen.queryByRole("button", { name: "Other" })).toBeNull();
     expect(screen.getByRole("link", { name: "Persetujuan" })).toBeInTheDocument();
     expect(screen.queryByRole("link", { name: "Log Audit" })).toBeNull();
-    await user.click(await screen.findByRole("button", { name: "Referensi" }));
+    await user.click(await screen.findByRole("button", { name: "Data Induk" }));
     expect(await screen.findByRole("link", { name: "Mata Uang" })).toHaveAttribute(
       "href",
       "/reference",

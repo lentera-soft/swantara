@@ -9,8 +9,10 @@ import { toast } from "sonner";
 import { z } from "zod";
 import { Badge } from "@/components/badge";
 import { Checkbox } from "@/components/checkbox";
+import { DatePicker } from "@/components/date-picker";
 import { EntityFormDialog } from "@/components/entity-form-dialog";
 import { FormField } from "@/components/form";
+import { FormSection } from "@/components/form-section";
 import { Input } from "@/components/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/select";
 import { Textarea } from "@/components/textarea";
@@ -24,7 +26,6 @@ import type {
 import { getSwantaraService } from "@/lib/services/swantara";
 import { cn, getLocalDateString } from "@/lib/utils";
 import { humanizeKey } from "@/lib/utils/case";
-import { CrmFormSection } from "./crm-form-section";
 
 const activityTypes = ["call", "meeting", "email", "note", "task"] as const;
 
@@ -229,7 +230,7 @@ export function ActivityFormDialog({
       submitLabel={isEdit ? t("saveChanges") : t("addActivity")}
       className="sm:max-w-xl"
     >
-      <CrmFormSection title={t("sectionActivity")} description={t("sectionActivityDescription")}>
+      <FormSection title={t("sectionActivity")} description={t("sectionActivityDescription")}>
         <fieldset className="sm:col-span-2">
           <legend className="mb-2 text-sm">{t("tableType")}</legend>
           <div className="grid grid-cols-5 gap-1.5">
@@ -294,7 +295,14 @@ export function ActivityFormDialog({
           )}
         </FormField>
         <FormField name="dueDate" label={t("tableDueDate")}>
-          {({ field, id }) => <Input {...field} id={id} type="date" />}
+          {({ field }) => (
+            <DatePicker
+              selected={field.value ? new Date(`${field.value}T00:00:00`) : undefined}
+              onSelect={(day) => field.onChange(day ? getLocalDateString(day) : "")}
+              defaultMonth={field.value ? new Date(`${field.value}T00:00:00`) : undefined}
+              placeholder={t("tableDueDate")}
+            />
+          )}
         </FormField>
         <FormField name="outcome" label={t("fieldOutcome")}>
           {({ field, id }) => (
@@ -331,7 +339,14 @@ export function ActivityFormDialog({
           )}
         </FormField>
         <FormField name="nextStepDue" label={t("fieldNextStepDue")}>
-          {({ field, id }) => <Input {...field} id={id} type="date" />}
+          {({ field }) => (
+            <DatePicker
+              selected={field.value ? new Date(`${field.value}T00:00:00`) : undefined}
+              onSelect={(day) => field.onChange(day ? getLocalDateString(day) : "")}
+              defaultMonth={field.value ? new Date(`${field.value}T00:00:00`) : undefined}
+              placeholder={t("fieldNextStepDue")}
+            />
+          )}
         </FormField>
         <FormField name="participants" label={t("fieldParticipants")} className="sm:col-span-2">
           {({ field, id }) => (
@@ -343,9 +358,9 @@ export function ActivityFormDialog({
             />
           )}
         </FormField>
-      </CrmFormSection>
+      </FormSection>
 
-      <CrmFormSection title={t("sectionRelated")} description={t("relatedHint")}>
+      <FormSection title={t("sectionRelated")} description={t("relatedHint")}>
         <FormField name="prospectId" label={t("fieldLeadOpportunity")}>
           {({ field, id }) => (
             <Select value={field.value} onValueChange={field.onChange}>
@@ -380,9 +395,9 @@ export function ActivityFormDialog({
             </Select>
           )}
         </FormField>
-      </CrmFormSection>
+      </FormSection>
 
-      <CrmFormSection title={t("sectionNotes")} description={t("notesHint")}>
+      <FormSection title={t("sectionNotes")} description={t("notesHint")}>
         {needsConsentOverride ? (
           <div className="rounded-md border border-amber-500/40 bg-amber-500/5 p-3 sm:col-span-2">
             <FormField
@@ -421,7 +436,7 @@ export function ActivityFormDialog({
             <Textarea {...field} id={id} rows={4} placeholder={t("notePlaceholder")} />
           )}
         </FormField>
-      </CrmFormSection>
+      </FormSection>
     </EntityFormDialog>
   );
 }

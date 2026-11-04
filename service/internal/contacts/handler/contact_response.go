@@ -9,6 +9,7 @@ import (
 type ContactResponse struct {
 	ID             uint64    `json:"id"`
 	OrganizationID *uint64   `json:"organization_id"`
+	Code           *string   `json:"code"`
 	Name           string    `json:"name"`
 	DisplayName    *string   `json:"display_name"`
 	IsOrganization bool      `json:"is_organization"`
@@ -34,6 +35,7 @@ func newContactResponse(contact *contacts.Contact) ContactResponse {
 	return ContactResponse{
 		ID:             contact.ID,
 		OrganizationID: contact.OrganizationID,
+		Code:           contact.Code,
 		Name:           contact.Name,
 		DisplayName:    contact.DisplayName,
 		IsOrganization: contact.IsOrganization,
@@ -58,6 +60,7 @@ func newContactResponse(contact *contacts.Contact) ContactResponse {
 
 var contactQueryAllowlist = map[string]struct{}{
 	"organization_id": {},
+	"code":            {},
 	"name":            {},
 	"email":           {},
 	"phone":           {},

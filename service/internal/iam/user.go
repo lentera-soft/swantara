@@ -109,6 +109,8 @@ func (s UserService) Update(
 	existing.Address = user.Address
 	existing.City = user.City
 	existing.PostalCode = user.PostalCode
+	existing.Country = user.Country
+	existing.CountryCode = user.CountryCode
 
 	if active != nil {
 		existing.Active = *active

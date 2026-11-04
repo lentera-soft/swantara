@@ -2,6 +2,7 @@ package payroll
 
 import (
 	"context"
+	"errors"
 	"math"
 	"time"
 
@@ -11,6 +12,7 @@ import (
 	"github.com/jalusw/swantara/apps/service/internal/kernel/dao"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/query"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/scope"
+	"github.com/jalusw/swantara/apps/service/internal/kernel/sequence"
 	"github.com/jalusw/swantara/apps/service/internal/reference"
 	"gorm.io/gorm"
 
@@ -39,7 +41,15 @@ type HRService struct {
 	shifts           ShiftDAO
 	shiftAssignments ShiftAssignmentDAO
 	tx               db.Transactioner
+	sequences        *sequence.Service
 	now              func() time.Time
+}
+
+// WithSequences enables automatic contact code numbering for employee
+// contacts created through CreateEmployee.
+func (s HRService) WithSequences(svc sequence.Service) HRService {
+	s.sequences = &svc
+	return s
 }
 
 func NewHRService(
@@ -164,6 +174,15 @@ func (s HRService) CreateEmployee(ctx context.Context, request CreateEmployeeReq
 	}
 	var created *Employee
 	err := s.tx.Run(ctx, func(tx *gorm.DB) error {
+		if (request.Contact.Code == nil || *request.Contact.Code == "") && s.sequences != nil && employee.OrganizationID != nil && *employee.OrganizationID != 0 {
+			code, err := s.sequences.NextTx(ctx, tx, *employee.OrganizationID, contacts.SequenceContactCode)
+			if err != nil && !errors.Is(err, sequence.ErrSequenceNotFound) {
+				return err
+			}
+			if code != "" {
+				request.Contact.Code = &code
+			}
+		}
 		contact, err := s.contacts.CreateWithDetailsTx(ctx, tx, request.Contact, nil, nil, nil, nil)
 		if err != nil {
 			return err

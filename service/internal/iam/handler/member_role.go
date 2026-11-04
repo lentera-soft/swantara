@@ -33,7 +33,7 @@ func (h MemberHandler) ListMemberRoles(c fiber.Ctx) error {
 		return httpx.CreateUnauthorizedErrorResponse(c, "Unauthorized.", httpx.ErrMissingOrganizationInContext)
 	}
 
-	roles, err := h.memberSvc.ListRolesByOrganization(c, organizationID)
+	roles, err := h.memberRoleDAO.ListByOrganization(c, organizationID)
 	if err != nil {
 		httpx.RequestLog(c).Error("member role list failed", "organization_id", organizationID, "error", err)
 		return httpx.CreateInternalServerErrorResponse(c, "Failed to retrieve member roles.", err)

@@ -177,6 +177,7 @@ func main() {
 	subscriptionPlanDAO := dao.NewBase[reference.SubscriptionPlan](d)
 	systemConfigDAO := dao.NewBase[reference.SystemConfig](d)
 	journalEntryDAO := accounting.NewJournalEntryDAO(d)
+	sequenceSvc := sequence.NewService(sequence.NewDAO(d))
 	contactDAO := contacts.NewContactDAO(d)
 	contactAddressDAO := contacts.NewContactAddressDAO(d)
 	contactBankAccountDAO := contacts.NewContactBankAccountDAO(d)
@@ -374,7 +375,7 @@ func main() {
 		customerProfileDAO,
 		supplierProfileDAO,
 		employeeDAO,
-	)
+	).WithSequences(sequenceSvc)
 	contactAvatarSvc := contacts.NewContactAvatarService(contactDAO, objectStore)
 	configSvc := xtradata.NewConfigService(orgSystemConfigDAO)
 	idemSvc := xtradata.NewIdempotencyService(orgIdempotencyKeyDAO)
@@ -437,7 +438,6 @@ func main() {
 	routingSvc := manufacturing.NewRoutingService(recipeDAO, routingOperationDAO)
 	taxPeriodSvc := accounting.NewTaxPeriodService(taxPeriodDAO, taxYearDAO).WithCloseGuard(periodCloseDAO)
 	reversalEngine := accounting.NewReversalEngine(journalEntryDAO, journalEntryLineDAO).WithPeriods(taxPeriodSvc)
-	sequenceSvc := sequence.NewService(sequence.NewDAO(d))
 	postingSvc := accounting.NewPostingService(journalEntryDAO).WithPeriods(taxPeriodSvc).WithReverser(reversalEngine).WithLines(journalEntryLineDAO).WithAccounts(accountDAO).WithSequences(sequenceSvc)
 	productAdapter := accounting.NewProductAdapter(itemVariantDAO, itemDAO)
 	paymentTermAdapter := accounting.NewPaymentTermAdapter(paymentTermDAO)
@@ -670,7 +670,7 @@ func main() {
 		shiftDAO,
 		shiftAssignmentDAO,
 		db.NewDBTransactioner(d),
-	)
+	).WithSequences(sequenceSvc)
 	salaryRuleSvc := payroll.NewSalaryRuleService(salaryRuleDAO, accountDAO)
 	payrollSvc := payroll.NewPayrollService(
 		payrollRunDAO,
@@ -856,7 +856,7 @@ func main() {
 
 	authHandler := handler.NewAuthHandler(authSvc)
 	oauthHandler := handler.NewOAuthHandler(oauthSvc, cfg)
-	userHandler := handler.NewUserHandler(userDAO, userSvc, authzSvc, memberSvc, avatarSvc)
+	userHandler := handler.NewUserHandler(userDAO, userSvc, authzSvc, memberDAO, avatarSvc)
 	fxRateHandler := referenceHandler.NewFxRateHandler(fxRateSvc, fxRateSource)
 	unitGroupHandler := referenceHandler.NewUnitGroupHandler(uomSvc)
 	uomHandler := referenceHandler.NewUnitHandler(uomSvc)
@@ -880,7 +880,7 @@ func main() {
 		organizationDAO,
 		memberDAO,
 	)
-	memberHandler := handler.NewMemberHandler(memberSvc)
+	memberHandler := handler.NewMemberHandler(memberSvc, memberDAO, memberRoleDAO, permissionDAO)
 	contactHandler := contactsHandler.NewContactHandler(contactSvc)
 	contactAvatarHandler := contactsHandler.NewContactAvatarHandler(contactAvatarSvc)
 	contactRelationHandler := contactsHandler.NewContactRelationHandler(

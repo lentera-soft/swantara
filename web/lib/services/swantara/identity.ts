@@ -150,6 +150,8 @@ export type UpdateUserRequest = {
   address?: string;
   city?: string;
   postalCode?: string;
+  country?: string;
+  countryCode?: string;
 };
 
 export class Users {

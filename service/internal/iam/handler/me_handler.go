@@ -138,7 +138,7 @@ func (h UserHandler) MeOrganizations(c fiber.Ctx) error {
 		return httpx.CreateUnauthorizedErrorResponse(c, "Unauthorized.", httpx.ErrMissingUserInContext)
 	}
 
-	orgs, err := h.memberSvc.ListOrganizationsByUser(c, userID)
+	orgs, err := h.memberDAO.ListOrganizationsByUser(c, userID)
 	if err != nil {
 		httpx.RequestLog(c).Error("failed to list current user organizations", "user_id", userID, "error", err)
 		return httpx.CreateInternalServerErrorResponse(c, "Failed to retrieve organizations.", err)
@@ -170,7 +170,7 @@ func (h UserHandler) MeOrganizationPermissions(c fiber.Ctx) error {
 		return httpx.CreateUnprocessableEntityErrorResponse(c, "Invalid organization_id.", nil)
 	}
 
-	member, err := h.memberSvc.FindByUserAndOrganization(c, userID, organizationID)
+	member, err := h.memberDAO.FindByUserAndOrganization(c, userID, organizationID)
 	if err != nil {
 		if dao.IsNotFound(err) {
 			return httpx.CreateNotFoundResponse(c, "Organization not found.")

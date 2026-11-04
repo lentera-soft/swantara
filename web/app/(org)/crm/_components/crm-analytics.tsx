@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useEffect, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
 import type { PipelineForecast } from "@/lib/services/swantara";
 import { formatNumber } from "@/lib/utils";
@@ -32,7 +33,10 @@ function ownerKey(owner: {
 
 export function CrmAnalytics({ pipeline }: { pipeline: PipelineForecast | null | undefined }) {
   const t = useTranslations("Crm");
-  if (!pipeline) {
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  if (!mounted || !pipeline) {
     return <p className="text-sm text-muted-foreground">{t("noAnalyticsData")}</p>;
   }
 

@@ -34,7 +34,7 @@ func (h MemberHandler) ListMembers(c fiber.Ctx) error {
 		return httpx.CreateUnauthorizedErrorResponse(c, "Unauthorized.", httpx.ErrMissingOrganizationInContext)
 	}
 
-	members, err := h.memberSvc.ListByOrganization(c, organizationID)
+	members, err := h.memberDAO.ListByOrganization(c, organizationID)
 	if err != nil {
 		httpx.RequestLog(c).Error("member list failed", "organization_id", organizationID, "error", err)
 		return httpx.CreateInternalServerErrorResponse(c, "Failed to retrieve members.", err)

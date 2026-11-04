@@ -1,8 +1,7 @@
 "use client";
 
+import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
-import { toast } from "sonner";
 import { ActiveBadge } from "@/components/active-badge";
 import { Button } from "@/components/button";
 import { Card, CardContent } from "@/components/card";
@@ -12,12 +11,10 @@ import type { Employee, EmploymentContract } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
 import { formatNumber } from "@/lib/utils";
 import { humanizeKey } from "@/lib/utils/case";
-import { EmployeeFormDialog } from "../../_components/employee-form-dialog";
 
-export function EmployeeDetail({ orgId, employeeId }: { orgId: string; employeeId: string }) {
+export function EmployeeDetail({ employeeId }: { orgId: string; employeeId: string }) {
   const t = useTranslations("Employees");
   const tCommon = useTranslations("Common");
-  const [editOpen, setEditOpen] = useState(false);
 
   const employeeQuery = useOrgQuery<Employee>("employee", employeeId, (organizationId) =>
     getSwantaraService().employees.get(organizationId, Number(employeeId)),
@@ -41,13 +38,6 @@ export function EmployeeDetail({ orgId, employeeId }: { orgId: string; employeeI
     return <p className="text-sm text-muted-foreground">{t("detailNotFound")}</p>;
   }
 
-  function handleEditSave() {
-    setEditOpen(false);
-    toast.success(t("saved"));
-    void employeeQuery.refetch();
-    void contractsQuery.refetch();
-  }
-
   const status = (
     <ActiveBadge active={employee.active}>
       {employee.active ? t("statusActive") : t("statusInactive")}
@@ -55,57 +45,46 @@ export function EmployeeDetail({ orgId, employeeId }: { orgId: string; employeeI
   );
 
   return (
-    <>
-      <RecordLayout
-        breadcrumbItems={[
-          { label: t("title"), href: "/employees" },
-          { label: employee.employeeNumber },
-        ]}
-        title={employee.employeeNumber}
-        status={status}
-        actions={
-          <Button size="sm" variant="outline" onClick={() => setEditOpen(true)}>
-            {tCommon("edit")}
-          </Button>
-        }
-        tabs={[
-          {
-            id: "overview",
-            label: t("tabOverview"),
-            content: <EmployeeOverview employee={employee} />,
-          },
-          {
-            id: "contracts",
-            label: t("tabContracts"),
-            content: (
-              <EmployeeContracts
-                contracts={contracts}
-                status={
-                  contractsQuery.isLoading
-                    ? { type: "loading" }
-                    : contractsQuery.isError
-                      ? {
-                          type: "error",
-                          message: contractsQuery.error.message,
-                          onRetry: () => void contractsQuery.refetch(),
-                        }
-                      : undefined
-                }
-              />
-            ),
-          },
-        ]}
-      />
-      {editOpen ? (
-        <EmployeeFormDialog
-          open={editOpen}
-          onOpenChange={setEditOpen}
-          orgId={orgId}
-          initial={employee}
-          onSave={handleEditSave}
-        />
-      ) : null}
-    </>
+    <RecordLayout
+      breadcrumbItems={[
+        { label: t("title"), href: "/employees" },
+        { label: employee.employeeNumber },
+      ]}
+      title={employee.employeeNumber}
+      status={status}
+      actions={
+        <Button size="sm" variant="outline" asChild>
+          <Link href={`/employees/${employeeId}/edit`}>{tCommon("edit")}</Link>
+        </Button>
+      }
+      tabs={[
+        {
+          id: "overview",
+          label: t("tabOverview"),
+          content: <EmployeeOverview employee={employee} />,
+        },
+        {
+          id: "contracts",
+          label: t("tabContracts"),
+          content: (
+            <EmployeeContracts
+              contracts={contracts}
+              status={
+                contractsQuery.isLoading
+                  ? { type: "loading" }
+                  : contractsQuery.isError
+                    ? {
+                        type: "error",
+                        message: contractsQuery.error.message,
+                        onRetry: () => void contractsQuery.refetch(),
+                      }
+                    : undefined
+              }
+            />
+          ),
+        },
+      ]}
+    />
   );
 }
 

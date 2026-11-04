@@ -38,6 +38,9 @@ type OrganizationResponse struct {
 	BaseCurrency      string    `json:"base_currency"`
 	CountryCode       *string   `json:"country_code"`
 	TaxID             *string   `json:"tax_id"`
+	Address           *string   `json:"address"`
+	City              *string   `json:"city"`
+	PostalCode        *string   `json:"postal_code"`
 	Logo              *string   `json:"logo"`
 	Timezone          string    `json:"timezone"`
 	TaxYearStartMonth int16     `json:"tax_year_start_month"`
@@ -54,6 +57,9 @@ func newOrganizationResponse(org *reference.Organization) OrganizationResponse {
 		BaseCurrency:      org.BaseCurrency,
 		CountryCode:       org.CountryCode,
 		TaxID:             org.TaxID,
+		Address:           org.Address,
+		City:              org.City,
+		PostalCode:        org.PostalCode,
 		Logo:              org.Logo,
 		Timezone:          org.Timezone,
 		TaxYearStartMonth: org.TaxYearStartMonth,
@@ -68,6 +74,9 @@ var organizationQueryAllowlist = map[string]struct{}{
 	"base_currency": {},
 	"country_code":  {},
 	"logo":          {},
+	"address":       {},
+	"city":          {},
+	"postal_code":   {},
 	"timezone":      {},
 	"created_at":    {},
 	"updated_at":    {},

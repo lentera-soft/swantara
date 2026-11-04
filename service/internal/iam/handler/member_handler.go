@@ -7,11 +7,24 @@ import (
 )
 
 type MemberHandler struct {
-	memberSvc iam.MemberService
+	memberSvc     iam.MemberService
+	memberDAO     iam.MemberDAO
+	memberRoleDAO iam.MemberRoleDAO
+	permissionDAO iam.PermissionDAO
 }
 
-func NewMemberHandler(memberSvc iam.MemberService) MemberHandler {
-	return MemberHandler{memberSvc: memberSvc}
+func NewMemberHandler(
+	memberSvc iam.MemberService,
+	memberDAO iam.MemberDAO,
+	memberRoleDAO iam.MemberRoleDAO,
+	permissionDAO iam.PermissionDAO,
+) MemberHandler {
+	return MemberHandler{
+		memberSvc:     memberSvc,
+		memberDAO:     memberDAO,
+		memberRoleDAO: memberRoleDAO,
+		permissionDAO: permissionDAO,
+	}
 }
 
 func (h MemberHandler) Register(api fiber.Router, guards httpx.RouteGuards) {

@@ -120,13 +120,12 @@ describe("EmployeeDetail branches", () => {
     expect(await screen.findByText(/5\.000/)).toBeInTheDocument();
   });
 
-  it("opens the edit dialog and saves", async () => {
-    const user = userEvent.setup();
+  it("links to the edit page", async () => {
     renderWithProviders(<EmployeeDetail orgId="1" employeeId="1" />);
 
     await screen.findByRole("heading", { name: "EMP-0001" });
-    await user.click(screen.getByRole("button", { name: "Ubah" }));
+    const editLink = await screen.findByRole("link", { name: "Ubah" });
 
-    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+    expect(editLink).toHaveAttribute("href", "/employees/1/edit");
   });
 });

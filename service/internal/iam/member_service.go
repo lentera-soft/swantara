@@ -4,8 +4,6 @@ import (
 	"context"
 
 	"github.com/jalusw/swantara/apps/service/internal/helper"
-	"github.com/jalusw/swantara/apps/service/internal/kernel/query"
-	"github.com/jalusw/swantara/apps/service/internal/reference"
 
 	"github.com/jalusw/swantara/apps/service/internal/kernel/dao"
 )
@@ -35,26 +33,6 @@ func (s MemberService) CountMembers(ctx context.Context, organizationID uint64) 
 		return 0, err
 	}
 	return len(members), nil
-}
-
-func (s MemberService) ListByOrganization(ctx context.Context, organizationID uint64) ([]*Member, error) {
-	return s.memberDAO.ListByOrganization(ctx, organizationID)
-}
-
-func (s MemberService) FindByUserAndOrganization(ctx context.Context, userID, organizationID uint64) (*Member, error) {
-	return s.memberDAO.FindByUserAndOrganization(ctx, userID, organizationID)
-}
-
-func (s MemberService) ListOrganizationsByUser(ctx context.Context, userID uint64) ([]*reference.Organization, error) {
-	return s.memberDAO.ListOrganizationsByUser(ctx, userID)
-}
-
-func (s MemberService) ListRolesByOrganization(ctx context.Context, organizationID uint64) ([]*MemberRole, error) {
-	return s.memberRoleDAO.ListByOrganization(ctx, organizationID)
-}
-
-func (s MemberService) ListPermissions(ctx context.Context, q *query.Query) (*query.Page[Permission], error) {
-	return s.permissionDAO.List(ctx, q)
 }
 
 func (s MemberService) ProvisionOwner(ctx context.Context, organizationID, ownerUserID uint64) error {

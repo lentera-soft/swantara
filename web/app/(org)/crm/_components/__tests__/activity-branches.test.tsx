@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it, vi } from "vitest";
@@ -96,7 +96,7 @@ describe("ActivityFormDialog branches", () => {
 
     expect(await screen.findByText("Aktivitas")).toBeInTheDocument();
     expect(screen.getByDisplayValue("Kickoff call")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("2026-02-01")).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Feb 1, 2026/ })).toBeInTheDocument();
   });
 
   it("lists leads and opportunities together", async () => {
@@ -159,7 +159,9 @@ describe("ActivityFormDialog branches", () => {
     await user.click(await screen.findByRole("option", { name: "Panggilan" }));
     await user.type(screen.getByLabelText("Ringkasan"), "Kickoff call");
     await user.type(screen.getByLabelText("Catatan", { selector: "textarea" }), "Discuss scope");
-    await user.type(screen.getByLabelText("Tanggal jatuh tempo"), "2026-02-01");
+    await user.click(screen.getByRole("button", { name: "Tanggal jatuh tempo" }));
+    const grid = await screen.findByRole("grid");
+    await user.click(within(grid).getAllByRole("button")[0]!);
     await user.click(screen.getByRole("button", { name: "Tambah Aktivitas" }));
 
     await waitFor(() => expect(onSave).toHaveBeenCalled());

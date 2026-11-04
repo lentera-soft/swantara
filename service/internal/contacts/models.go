@@ -4,9 +4,12 @@ import (
 	"github.com/jalusw/swantara/apps/service/internal/kernel/model"
 )
 
+const SequenceContactCode = "contact"
+
 type Contact struct {
 	model.Base
 	OrganizationID *uint64 `json:"organization_id"`
+	Code           *string `json:"code"`
 	Name           string  `json:"name"`
 	DisplayName    *string `json:"display_name"`
 	IsOrganization bool    `json:"is_organization"`

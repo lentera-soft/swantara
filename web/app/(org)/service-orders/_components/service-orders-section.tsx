@@ -9,7 +9,6 @@ import { InteractiveEntityTable } from "@/app/(org)/_components/interactive-enti
 import { RowActions } from "@/app/(org)/_components/row-actions";
 import { Badge } from "@/components/badge";
 import { Button } from "@/components/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { ServiceOrder } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
@@ -110,16 +109,6 @@ export function ServiceOrdersSection({ orgId }: { orgId: string }) {
 
   return (
     <div className="flex flex-col gap-4">
-      <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-        <Card>
-          <CardHeader>
-            <CardTitle>{t("totalOrders")}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <p className="text-2xl font-bold tabular-nums">{orders.length}</p>
-          </CardContent>
-        </Card>
-      </div>
       <InteractiveEntityTable
         columns={columns}
         data={orders}

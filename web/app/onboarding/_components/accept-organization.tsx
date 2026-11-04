@@ -10,7 +10,6 @@ import { setActiveOrg } from "@/lib/server/active-org-actions";
 export function AcceptOrganization({ orgId }: { orgId: number }) {
   const router = useRouter();
   const t = useTranslations("Onboarding");
-  const tx = t as unknown as (key: string) => string;
   const [failed, setFailed] = useState(false);
   const unmountedRef = useRef(false);
 
@@ -25,12 +24,13 @@ export function AcceptOrganization({ orgId }: { orgId: number }) {
     setFailed(false);
     setActiveOrg(orgId).then(
       () => {
-        if (unmountedRef.current) return;
         router.replace("/dashboard");
         router.refresh();
       },
       () => {
-        if (!unmountedRef.current) setFailed(true);
+        if (!unmountedRef.current) {
+           setFailed(true);
+        }
       },
     );
   }, [orgId, router]);
@@ -54,10 +54,10 @@ export function AcceptOrganization({ orgId }: { orgId: number }) {
       {failed ? (
         <>
           <h1 className="mt-6 font-heading text-xl leading-tight font-medium tracking-tight">
-            {tx("selectOrgFailed")}
+            {t("selectOrgFailed")}
           </h1>
           <Button className="mt-6 w-full" size="lg" onClick={selectOrg}>
-            {tx("retry")}
+            {t("retry")}
           </Button>
         </>
       ) : (

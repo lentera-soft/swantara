@@ -7,6 +7,9 @@ import {
   Megaphone,
   Sparkles,
   Target,
+  TrendingUp,
+  Trophy,
+  UserCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { getTranslations } from "next-intl/server";
@@ -17,6 +20,37 @@ import { PipelineSection } from "./_components/pipeline-section";
 export default async function OrgCrmPage() {
   const id = String(await requireActiveOrgId());
   const t = await getTranslations("Crm");
+
+  const workflowSteps = [
+    {
+      href: "/crm/inquiries",
+      title: t("workspaceWorkflowStep1Title"),
+      description: t("workspaceWorkflowStep1Description"),
+      icon: Inbox,
+      iconClassName: "bg-sky-500/10 text-sky-700 dark:text-sky-300",
+    },
+    {
+      href: "/crm/leads",
+      title: t("workspaceWorkflowStep2Title"),
+      description: t("workspaceWorkflowStep2Description"),
+      icon: UserCheck,
+      iconClassName: "bg-violet-500/10 text-violet-700 dark:text-violet-300",
+    },
+    {
+      href: "/crm/opportunities",
+      title: t("workspaceWorkflowStep3Title"),
+      description: t("workspaceWorkflowStep3Description"),
+      icon: TrendingUp,
+      iconClassName: "bg-emerald-500/10 text-emerald-700 dark:text-emerald-300",
+    },
+    {
+      href: "/crm/opportunities",
+      title: t("workspaceWorkflowStep4Title"),
+      description: t("workspaceWorkflowStep4Description"),
+      icon: Trophy,
+      iconClassName: "bg-amber-500/10 text-amber-700 dark:text-amber-300",
+    },
+  ];
 
   const destinations = [
     {
@@ -89,6 +123,45 @@ export default async function OrgCrmPage() {
               <ArrowUpRight aria-hidden="true" className="size-4" />
             </Link>
           </div>
+        </div>
+      </section>
+
+      <section aria-labelledby="crm-workflow-guide" className="flex flex-col gap-4">
+        <div>
+          <h2 id="crm-workflow-guide" className="font-heading text-xl tracking-tight">
+            {t("workspaceWorkflowTitle")}
+          </h2>
+          <p className="mt-1 text-sm text-muted-foreground">{t("workspaceWorkflowDescription")}</p>
+        </div>
+        <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
+          {workflowSteps.map(({ href, title, description, icon: Icon, iconClassName }, index) => (
+            <Link
+              key={title}
+              href={href}
+              className="group flex min-h-36 flex-col rounded-xl border border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/35 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:p-5"
+            >
+              <div className="mb-3 flex items-center gap-3">
+                <span
+                  className={`flex size-9 items-center justify-center rounded-lg ${iconClassName}`}
+                >
+                  <Icon aria-hidden="true" className="size-4" />
+                </span>
+                <span className="flex size-6 items-center justify-center rounded-full border border-border bg-muted text-xs font-medium text-muted-foreground">
+                  {index + 1}
+                </span>
+              </div>
+              <span className="flex items-center justify-between gap-2 font-heading text-base">
+                {title}
+                <ArrowUpRight
+                  aria-hidden="true"
+                  className="size-4 shrink-0 text-muted-foreground transition-transform group-hover:-translate-y-0.5 group-hover:translate-x-0.5 group-hover:text-primary"
+                />
+              </span>
+              <span className="mt-1.5 text-sm leading-relaxed text-muted-foreground">
+                {description}
+              </span>
+            </Link>
+          ))}
         </div>
       </section>
 

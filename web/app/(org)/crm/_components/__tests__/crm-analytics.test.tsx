@@ -85,14 +85,14 @@ describe("CrmAnalytics", () => {
   it("renders source, owner, lost-reason, velocity, and cycle time metrics", () => {
     renderWithProviders(<CrmAnalytics pipeline={forecast} />);
 
-    expect(screen.getByText("Prospek → peluang")).toBeInTheDocument();
+    expect(screen.getByText("Waktu prospek jadi peluang")).toBeInTheDocument();
     expect(screen.getByText("9,5 hari")).toBeInTheDocument();
-    expect(screen.getByText("Kinerja sumber")).toBeInTheDocument();
+    expect(screen.getByText("Sumber prospek")).toBeInTheDocument();
     expect(screen.getByText("website")).toBeInTheDocument();
-    expect(screen.getByText("Kinerja pemilik dan tim")).toBeInTheDocument();
+    expect(screen.getByText("Performa tim")).toBeInTheDocument();
     expect(screen.getByText("#4 · #2")).toBeInTheDocument();
-    expect(screen.getByText("Alasan kalah")).toBeInTheDocument();
+    expect(screen.getByText("Mengapa kita kalah")).toBeInTheDocument();
     expect(screen.getByText("Price too high")).toBeInTheDocument();
-    expect(screen.getByText("Kecepatan dan usia tahap")).toBeInTheDocument();
+    expect(screen.getByText("Pergerakan per tahap")).toBeInTheDocument();
   });
 });

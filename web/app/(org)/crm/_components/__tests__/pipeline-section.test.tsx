@@ -121,8 +121,8 @@ describe("PipelineSection", () => {
   it("renders KPIs, stage forecast wall, and the pipeline board", async () => {
     renderWithProviders(<PipelineSection orgId="1" />);
 
-    expect((await screen.findAllByText("Tertimbang")).length).toBeGreaterThan(0);
-    expect(screen.getByText("Papan pipa")).toBeInTheDocument();
+    expect((await screen.findAllByText("Perkiraan realistis")).length).toBeGreaterThan(0);
+    expect(screen.getByText("Papan proses penjualan")).toBeInTheDocument();
     expect(screen.getByText("Acme Enterprise Deal")).toBeInTheDocument();
     expect(screen.getByText("New")).toBeInTheDocument();
   });
