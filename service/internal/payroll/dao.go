@@ -12,14 +12,16 @@ import (
 type EmployeeDAO interface {
 	dao.CRUD[Employee]
 	CreateTx(ctx context.Context, tx *gorm.DB, entity *Employee) (*Employee, error)
+	ListEmployeeContactIDs(ctx context.Context, contactIDs []uint64) ([]uint64, error)
 }
 
 type employeeDAO struct {
 	dao.Base[Employee]
+	db *gorm.DB
 }
 
 func NewEmployeeDAO(db *gorm.DB) EmployeeDAO {
-	return employeeDAO{Base: dao.NewBase[Employee](db)}
+	return employeeDAO{Base: dao.NewBase[Employee](db), db: db}
 }
 
 func (d employeeDAO) CreateTx(ctx context.Context, tx *gorm.DB, entity *Employee) (*Employee, error) {
@@ -27,6 +29,25 @@ func (d employeeDAO) CreateTx(ctx context.Context, tx *gorm.DB, entity *Employee
 		return nil, err
 	}
 	return entity, nil
+}
+
+// ListEmployeeContactIDs returns the subset of contactIDs that are linked to
+// an active, not-deleted employee record. It backs the contact employee-role
+// annotation without exposing employee data to the contacts module.
+func (d employeeDAO) ListEmployeeContactIDs(ctx context.Context, contactIDs []uint64) ([]uint64, error) {
+	if len(contactIDs) == 0 {
+		return nil, nil
+	}
+	var ids []uint64
+	err := d.db.WithContext(ctx).
+		Table("employees").
+		Select("DISTINCT contact_id").
+		Where("contact_id IN ? AND active = ? AND deleted_at IS NULL", contactIDs, true).
+		Pluck("contact_id", &ids).Error
+	if err != nil {
+		return nil, err
+	}
+	return ids, nil
 }
 
 type EmploymentContractDAO interface {

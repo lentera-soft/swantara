@@ -47242,6 +47242,9 @@ const docTemplate = `{
                 "is_customer": {
                     "type": "boolean"
                 },
+                "is_employee": {
+                    "type": "boolean"
+                },
                 "is_organization": {
                     "type": "boolean"
                 },

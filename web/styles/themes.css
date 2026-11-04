@@ -32,14 +32,15 @@
   --chart-3: var(--color-chart-3);
   --chart-4: var(--color-chart-4);
   --chart-5: var(--color-chart-5);
-  --sidebar: var(--white);
-  --sidebar-fg: var(--black);
-  --sidebar-primary: var(--accent-600);
-  --sidebar-primary-fg: var(--white);
-  --sidebar-accent: oklch(0 0 0 / 0.04);
-  --sidebar-accent-fg: var(--black);
-  --sidebar-border: oklch(0 0 0 / 0.12);
-  --sidebar-ring: var(--accent-600);
+  --canvas: var(--color-surface-sunken);
+  --sidebar: var(--color-background);
+  --sidebar-fg: var(--color-foreground);
+  --sidebar-primary: var(--color-accent);
+  --sidebar-primary-fg: var(--color-accent-on);
+  --sidebar-accent: var(--muted);
+  --sidebar-accent-fg: var(--color-foreground);
+  --sidebar-border: var(--color-border);
+  --sidebar-ring: var(--color-focus-ring);
   --overlay: var(--color-overlay);
   --overlay-strong: var(--color-overlay-strong);
 }
@@ -78,14 +79,15 @@
   --chart-3: var(--color-chart-3);
   --chart-4: var(--color-chart-4);
   --chart-5: var(--color-chart-5);
-  --sidebar: oklch(0.145 0 0);
-  --sidebar-fg: var(--white);
-  --sidebar-primary: var(--accent-500);
-  --sidebar-primary-fg: var(--white);
-  --sidebar-accent: oklch(1 0 0 / 0.1);
-  --sidebar-accent-fg: var(--white);
-  --sidebar-border: oklch(1 0 0 / 0.12);
-  --sidebar-ring: var(--accent-500);
+  --canvas: var(--color-background);
+  --sidebar: var(--color-surface-warm);
+  --sidebar-fg: var(--color-foreground);
+  --sidebar-primary: var(--color-accent);
+  --sidebar-primary-fg: var(--color-accent-on);
+  --sidebar-accent: var(--muted);
+  --sidebar-accent-fg: var(--color-foreground);
+  --sidebar-border: var(--color-border);
+  --sidebar-ring: var(--color-focus-ring);
   --overlay: var(--color-overlay);
   --overlay-strong: var(--color-overlay-strong);
 }

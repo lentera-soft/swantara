@@ -1,6 +1,7 @@
 "use client";
 
 import { useTranslations } from "next-intl";
+import { useId } from "react";
 import { Controller, FormProvider } from "react-hook-form";
 import { Button } from "@/components/button";
 import { Field } from "@/components/field";
@@ -9,6 +10,8 @@ import { SubmitButton } from "@/components/form";
 import { Input } from "@/components/input";
 import { Label } from "@/components/label";
 import { Password } from "@/components/password";
+import { PhoneInput } from "@/components/phone-input";
+import { Separator } from "@/components/separator";
 
 import { useRegisterForm } from "../_hooks/use-register-form";
 
@@ -18,22 +21,86 @@ export default function RegisterForm() {
   const formState = form.formState;
   const control = form.control;
 
-  const emailId = "email";
+  const firstNameId = useId();
+  const lastNameId = useId();
+  const emailId = useId();
+  const phoneId = useId();
+  const passwordId = useId();
+  const confirmPasswordId = useId();
 
   return (
     <FormProvider {...form}>
-      <form noValidate onSubmit={handleSubmit} className="w-full">
-        <div className="animate-fade-up flex flex-col gap-x-4 gap-y-4 sm:grid-cols-2">
+      <form
+        noValidate
+        onSubmit={handleSubmit}
+        aria-busy={formState.isSubmitting}
+        className="flex flex-col gap-5"
+      >
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field>
+            <Label htmlFor={firstNameId}>{t("firstName")}</Label>
+            <Controller
+              name="firstName"
+              control={control}
+              render={({ field, fieldState }) => (
+                <>
+                  <Input
+                    id={firstNameId}
+                    autoComplete="given-name"
+                    autoFocus
+                    placeholder="Jane"
+                    aria-invalid={Boolean(fieldState.error)}
+                    {...field}
+                  />
+                  <FieldFeedback
+                    visible={Boolean(fieldState.error)}
+                    intent="danger"
+                    role={fieldState.error ? "alert" : undefined}
+                  >
+                    {fieldState.error?.message}
+                  </FieldFeedback>
+                </>
+              )}
+            />
+          </Field>
+          <Field>
+            <Label htmlFor={lastNameId}>{t("lastName")}</Label>
+            <Controller
+              name="lastName"
+              control={control}
+              render={({ field, fieldState }) => (
+                <>
+                  <Input
+                    id={lastNameId}
+                    autoComplete="family-name"
+                    placeholder="Doe"
+                    aria-invalid={Boolean(fieldState.error)}
+                    {...field}
+                  />
+                  <FieldFeedback
+                    visible={Boolean(fieldState.error)}
+                    intent="danger"
+                    role={fieldState.error ? "alert" : undefined}
+                  >
+                    {fieldState.error?.message}
+                  </FieldFeedback>
+                </>
+              )}
+            />
+          </Field>
+        </div>
+        <Field>
+          <Label htmlFor={emailId}>{t("email")}</Label>
           <Controller
             name="email"
             control={control}
             render={({ field, fieldState }) => (
-              <Field>
-                <Label htmlFor={emailId}>{t("email")}</Label>
+              <>
                 <Input
                   id={emailId}
                   type="email"
                   autoComplete="email"
+                  inputMode="email"
                   placeholder="johndoe@mail.com"
                   aria-invalid={Boolean(fieldState.error)}
                   {...field}
@@ -45,20 +112,26 @@ export default function RegisterForm() {
                 >
                   {fieldState.error?.message}
                 </FieldFeedback>
-              </Field>
+              </>
             )}
           />
+        </Field>
+        <Field>
+          <Label htmlFor={phoneId}>{t("phone")}</Label>
           <Controller
-            name="password"
+            name="phone"
             control={control}
             render={({ field, fieldState }) => (
-              <Field>
-                <Label htmlFor="password">Password</Label>
-                <Password
-                  id="password"
-                  autoComplete="new-password"
+              <>
+                <PhoneInput
+                  id={phoneId}
+                  defaultCountry="ID"
+                  autoComplete="tel"
+                  placeholder="+62 812 3456 7890"
+                  countryAriaLabel={t("phoneCountry")}
                   aria-invalid={Boolean(fieldState.error)}
-                  {...field}
+                  value={field.value ?? ""}
+                  onChange={field.onChange}
                 />
                 <FieldFeedback
                   visible={Boolean(fieldState.error)}
@@ -67,19 +140,77 @@ export default function RegisterForm() {
                 >
                   {fieldState.error?.message}
                 </FieldFeedback>
-                <p className="text-sm text-muted-foreground">{t("passwordMinLengthHint")}</p>
-              </Field>
+              </>
             )}
           />
+        </Field>
+        <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+          <Field>
+            <Label htmlFor={passwordId}>{t("password")}</Label>
+            <Controller
+              name="password"
+              control={control}
+              render={({ field, fieldState }) => (
+                <>
+                  <Password
+                    id={passwordId}
+                    autoComplete="new-password"
+                    aria-invalid={Boolean(fieldState.error)}
+                    {...field}
+                  />
+                  <FieldFeedback
+                    visible={Boolean(fieldState.error)}
+                    intent="danger"
+                    role={fieldState.error ? "alert" : undefined}
+                  >
+                    {fieldState.error?.message}
+                  </FieldFeedback>
+                  <p className="text-xs text-muted-foreground">{t("passwordMinLengthHint")}</p>
+                </>
+              )}
+            />
+          </Field>
+          <Field>
+            <Label htmlFor={confirmPasswordId}>{t("confirmPassword")}</Label>
+            <Controller
+              name="confirmPassword"
+              control={control}
+              render={({ field, fieldState }) => (
+                <>
+                  <Password
+                    id={confirmPasswordId}
+                    autoComplete="new-password"
+                    aria-invalid={Boolean(fieldState.error)}
+                    {...field}
+                  />
+                  <FieldFeedback
+                    visible={Boolean(fieldState.error)}
+                    intent="danger"
+                    role={fieldState.error ? "alert" : undefined}
+                  >
+                    {fieldState.error?.message}
+                  </FieldFeedback>
+                </>
+              )}
+            />
+          </Field>
         </div>
-        <div className="mt-8 flex flex-col">
-          <SubmitButton variant="default" size="lg" loading={formState.isSubmitting}>
-            {t("registerButton")}
-          </SubmitButton>
+        <SubmitButton
+          className="w-full"
+          variant="default"
+          size="lg"
+          loading={formState.isSubmitting}
+        >
+          {t("registerButton")}
+        </SubmitButton>
+        <div className="flex items-center gap-3">
+          <Separator className="flex-1" />
+          <span className="text-label uppercase text-muted-foreground">{t("orContinue")}</span>
+          <Separator className="flex-1" />
         </div>
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          <Button type="button" variant="outline" className="w-full">
-            <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true">
+        <div className="grid grid-cols-2 gap-3">
+          <Button type="button" variant="outline" className="w-full min-w-0">
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="size-4">
               <path
                 d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92a5.06 5.06 0 0 1-2.2 3.32v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.1z"
                 fill="#4285F4"
@@ -97,16 +228,16 @@ export default function RegisterForm() {
                 fill="#EA4335"
               />
             </svg>
-            Google
+            <span>Google</span>
           </Button>
-          <Button type="button" variant="outline" className="w-full">
-            <svg viewBox="0 0 24 24" className="size-4" aria-hidden="true">
+          <Button type="button" variant="outline" className="w-full min-w-0">
+            <svg viewBox="0 0 24 24" aria-hidden="true" className="size-4">
               <path
                 d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"
                 fill="#1877F2"
               />
             </svg>
-            Facebook
+            <span>Facebook</span>
           </Button>
         </div>
       </form>

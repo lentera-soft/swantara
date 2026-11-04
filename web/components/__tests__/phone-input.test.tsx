@@ -1,23 +1,24 @@
-import { render, screen } from "@testing-library/react";
+import { screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { PhoneInput } from "@/components/phone-input";
+import { renderWithIntl } from "@/lib/tests/intl";
 
 describe("PhoneInput", () => {
   it("renders the design system control recipe on the group root", () => {
-    const { container } = render(<PhoneInput />);
+    const { container } = renderWithIntl(<PhoneInput />);
 
-    const group = screen.getByRole("group");
+    const group = container.querySelector('[data-slot="phone-input"]');
 
-    expect(group).toHaveAttribute("data-slot", "phone-input");
-    expect(group.className).toContain("h-11");
-    expect(group.className).toContain("border-input");
-    expect(group.className).toContain("rounded-lg");
-    expect(container.querySelector(".PhoneInputCountry")).toBeTruthy();
+    expect(group).not.toBeNull();
+    expect(group?.className).toContain("h-11");
+    expect(group?.className).toContain("border-input");
+    expect(group?.className).toContain("rounded-lg");
+    expect(container.querySelector('[data-slot="input-group-addon"]')).toBeTruthy();
   });
 
   it("exposes the phone field as an input group control", () => {
-    render(<PhoneInput id="phone" placeholder="+6281234567890" />);
+    renderWithIntl(<PhoneInput id="phone" placeholder="+6281234567890" />);
 
     const input = screen.getByRole("textbox");
 
@@ -28,16 +29,15 @@ describe("PhoneInput", () => {
   });
 
   it("labels the country select for assistive technology", () => {
-    render(<PhoneInput />);
+    renderWithIntl(<PhoneInput />);
 
-    expect(screen.getByRole("combobox", { name: "Country code" })).toHaveAttribute(
-      "data-slot",
-      "phone-input-country",
-    );
+    const countrySelect = screen.getByRole("combobox", { name: "Country code" });
+
+    expect(countrySelect).toHaveAttribute("data-slot", "input-group-control");
   });
 
   it("forwards state attributes to the control", () => {
-    render(<PhoneInput disabled aria-invalid />);
+    renderWithIntl(<PhoneInput disabled aria-invalid />);
 
     const input = screen.getByRole("textbox");
 
@@ -48,7 +48,7 @@ describe("PhoneInput", () => {
   it("emits the parsed phone number on change", async () => {
     const user = userEvent.setup();
     const onChange = vi.fn();
-    render(<PhoneInput onChange={onChange} />);
+    renderWithIntl(<PhoneInput onChange={onChange} />);
 
     await user.type(screen.getByRole("textbox"), "81234567890");
 

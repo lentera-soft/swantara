@@ -206,17 +206,6 @@ export function LeadsSection({ orgId }: { orgId: string }) {
                 },
               ]
             : []),
-          ...(actions.disqualify
-            ? [
-                {
-                  label: t("actionDisqualify"),
-                  icon: <Ban aria-hidden />,
-                  destructive: true,
-                  disabled: transitionMutation.isPending,
-                  onSelect: () => setDisqualifyId(String(row.original.id)),
-                },
-              ]
-            : []),
           ...(canPromote(row.original)
             ? [
                 {
@@ -233,6 +222,19 @@ export function LeadsSection({ orgId }: { orgId: string }) {
             confirmTitle={t("deleteLeadTitle")}
             confirmDescription={t("deleteLeadDescription")}
             items={items.length > 0 ? items : undefined}
+            trailingItems={
+              actions.disqualify
+                ? [
+                    {
+                      label: t("actionDisqualify"),
+                      icon: <Ban aria-hidden />,
+                      destructive: true,
+                      disabled: transitionMutation.isPending,
+                      onSelect: () => setDisqualifyId(String(row.original.id)),
+                    },
+                  ]
+                : undefined
+            }
             onEdit={() => {
               router.push(`/crm/leads/${row.original.id}/edit`);
             }}

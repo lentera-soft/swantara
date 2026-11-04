@@ -1,5 +1,4 @@
 import { screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 import { renderWithProviders, server } from "@/lib/tests";
@@ -40,13 +39,14 @@ describe("WarehousesSection", () => {
     expect(screen.getByText("WH-01")).toBeInTheDocument();
   });
 
-  it("opens the create dialog from the add button", async () => {
-    const user = userEvent.setup();
+  it("links the add button to the dedicated create page", async () => {
     renderWithProviders(<WarehousesSection orgId="1" />);
 
     await screen.findByText("Main Warehouse");
-    await user.click(screen.getByRole("button", { name: "Tambah gudang" }));
 
-    expect(await screen.findByRole("heading", { name: "Gudang baru" })).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Tambah gudang" })).toHaveAttribute(
+      "href",
+      "/stock/warehouses/new",
+    );
   });
 });

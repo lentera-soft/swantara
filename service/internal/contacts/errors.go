@@ -17,4 +17,7 @@ var (
 	ErrBankAccountNotFound      = errors.New("bank account not found")
 	ErrAddressNotForContact     = errors.New("address does not belong to contact")
 	ErrBankAccountNotForContact = errors.New("bank account does not belong to contact")
+	ErrAvatarEmpty              = errors.New("avatar content cannot be empty")
+	ErrAvatarInvalidType        = errors.New("avatar must be an image")
+	ErrAvatarNotFound           = errors.New("avatar not found")
 )

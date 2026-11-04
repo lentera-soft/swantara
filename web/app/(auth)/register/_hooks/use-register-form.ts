@@ -26,6 +26,7 @@ export function useRegisterForm({
   ) => string;
   const registerFormSchema = useRegisterFormSchema({
     firstNameRequired: tx("firstNameRequired"),
+    lastNameRequired: tx("lastNameRequired"),
     invalidEmail: tx("invalidEmail"),
     emailRequired: tx("emailRequired"),
     invalidPhone: tx("invalidPhone"),
@@ -42,8 +43,9 @@ export function useRegisterForm({
   });
 
   const handleSubmit = form.handleSubmit(async (data: RegisterFormSchema) => {
+    const { confirmPassword: _confirmPassword, ...payload } = data;
     try {
-      await register(data);
+      await register(payload);
       try {
         await login({
           email: data.email.trim(),

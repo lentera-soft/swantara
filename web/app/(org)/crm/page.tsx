@@ -101,12 +101,14 @@ export default async function OrgCrmPage() {
             <p className="mt-1 text-sm text-muted-foreground">{t("workspaceLinksDescription")}</p>
           </div>
         </div>
-        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {destinations.map(({ href, title, description, icon: Icon, iconClassName }) => (
+        <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-5">
+          {destinations.map(({ href, title, description, icon: Icon, iconClassName }, index) => (
             <Link
               key={href}
               href={href}
-              className="group flex min-h-40 flex-col rounded-xl border border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/35 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:p-5"
+              className={`group flex min-h-40 flex-col rounded-xl border border-border bg-card p-4 transition-all hover:-translate-y-0.5 hover:border-primary/35 focus-visible:outline-none focus-visible:ring-3 focus-visible:ring-ring/50 sm:p-5 ${
+                index === destinations.length - 1 ? "sm:col-span-2 xl:col-span-1" : ""
+              }`}
             >
               <span
                 className={`mb-4 flex size-10 items-center justify-center rounded-xl ${iconClassName}`}

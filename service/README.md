@@ -28,7 +28,8 @@ Item overview and setup live in `../README.md`. This file is the single source o
 ```
 cmd/http/main.go        Fiber server entry point
 cmd/queue/main.go       Asynq worker entry point
-cmd/seeder/main.go      Database seeder
+cmd/seeder/main.go      Database seeder (supports -mode foundation|dummy|example|case)
+cmd/dummyseeder/main.go  Dummy case seeder
 internal/<domain>/      models, errors, ports, dao, service, handler
 internal/kernel/        Shared infrastructure (dao, model, query, amount, audit, state, sequence)
 internal/httpx/         HTTP server, middleware, response helpers, context, validation
@@ -43,6 +44,7 @@ cp .env.example .env
 just db-up
 just migrate
 just seed
+just seed-dummy
 just dev
 just dev-queue
 ```
@@ -923,7 +925,8 @@ data access, business logic, and HTTP handlers.
 cmd/
   http/main.go        ← Fiber server entry point
   queue/main.go       ← Asynq worker entry point
-  seeder/main.go      ← Database seeder
+  seeder/main.go      ← Database seeder (foundation or dummy case via -mode)
+  dummyseeder/main.go ← Dummy case seeder
 internal/
   <domain>/
     models.go         ← GORM entity structs

@@ -1,9 +1,9 @@
 import { screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
-import { beforeEach, describe, expect, it, vi } from "vitest";
-import { renderWithProviders, server } from "@/lib/tests";
-import { WarehouseFormDialog } from "../warehouse-form-dialog";
+import { beforeEach, describe, expect, it } from "vitest";
+import { navigationMock, renderWithProviders, server } from "@/lib/tests";
+import { WarehouseForm } from "../warehouse-form";
 
 function seedCreate(status = 200) {
   server.use(
@@ -87,19 +87,13 @@ const editInitialFilled = {
   countryCode: "ID",
 } as never;
 
-beforeEach(() => {});
+beforeEach(() => {
+  navigationMock.push.mockClear();
+});
 
-describe("WarehouseFormDialog branches", () => {
+describe("WarehouseForm branches", () => {
   it("shows edit title with prefilled values", async () => {
-    renderWithProviders(
-      <WarehouseFormDialog
-        open={true}
-        onOpenChange={vi.fn()}
-        orgId="1"
-        initial={editInitialFilled}
-        onSave={vi.fn()}
-      />,
-    );
+    renderWithProviders(<WarehouseForm orgId="1" initial={editInitialFilled} />);
 
     expect(await screen.findByRole("heading", { name: "Ubah gudang" })).toBeInTheDocument();
     expect(screen.getByDisplayValue("WH-02")).toBeInTheDocument();
@@ -108,40 +102,31 @@ describe("WarehouseFormDialog branches", () => {
 
   it("blocks submit when name is empty", async () => {
     const user = userEvent.setup();
-    const onSave = vi.fn();
     seedCreate();
-    renderWithProviders(
-      <WarehouseFormDialog open={true} onOpenChange={vi.fn()} orgId="1" onSave={onSave} />,
-    );
+    renderWithProviders(<WarehouseForm orgId="1" />);
 
     await screen.findByRole("heading", { name: "Gudang baru" });
-    await user.click(screen.getByRole("button", { name: "Simpan" }));
+    await user.click(screen.getByRole("button", { name: "Tambah gudang" }));
 
     expect(await screen.findByText("Nama gudang wajib diisi.")).toBeInTheDocument();
-    expect(onSave).not.toHaveBeenCalled();
+    expect(navigationMock.push).not.toHaveBeenCalled();
   });
 
   it("creates a warehouse with only a name", async () => {
     const user = userEvent.setup();
-    const onSave = vi.fn();
     seedCreate();
-    renderWithProviders(
-      <WarehouseFormDialog open={true} onOpenChange={vi.fn()} orgId="1" onSave={onSave} />,
-    );
+    renderWithProviders(<WarehouseForm orgId="1" />);
 
     await user.type(await screen.findByPlaceholderText("Nama"), "East Warehouse");
-    await user.click(screen.getByRole("button", { name: "Simpan" }));
+    await user.click(screen.getByRole("button", { name: "Tambah gudang" }));
 
-    await waitFor(() => expect(onSave).toHaveBeenCalledWith("9"));
+    await waitFor(() => expect(navigationMock.push).toHaveBeenCalledWith("/stock/warehouses/9"));
   });
 
   it("creates a warehouse with a full address", async () => {
     const user = userEvent.setup();
-    const onSave = vi.fn();
     seedCreate();
-    renderWithProviders(
-      <WarehouseFormDialog open={true} onOpenChange={vi.fn()} orgId="1" onSave={onSave} />,
-    );
+    renderWithProviders(<WarehouseForm orgId="1" />);
 
     await user.type(await screen.findByPlaceholderText("Nama"), "East Warehouse");
     await user.type(screen.getByPlaceholderText("Kode"), "WH-02");
@@ -151,82 +136,52 @@ describe("WarehouseFormDialog branches", () => {
     await user.type(screen.getByPlaceholderText("Provinsi"), "DKI");
     await user.type(screen.getByPlaceholderText("Kode pos"), "10110");
     await user.type(screen.getByPlaceholderText("Kode negara"), "ID");
-    await user.click(screen.getByRole("button", { name: "Simpan" }));
+    await user.click(screen.getByRole("button", { name: "Tambah gudang" }));
 
-    await waitFor(() => expect(onSave).toHaveBeenCalledWith("9"));
+    await waitFor(() => expect(navigationMock.push).toHaveBeenCalledWith("/stock/warehouses/9"));
   });
 
   it("does not save when creation fails", async () => {
     const user = userEvent.setup();
-    const onSave = vi.fn();
     seedCreate(500);
-    renderWithProviders(
-      <WarehouseFormDialog open={true} onOpenChange={vi.fn()} orgId="1" onSave={onSave} />,
-    );
+    renderWithProviders(<WarehouseForm orgId="1" />);
 
     await user.type(await screen.findByPlaceholderText("Nama"), "East Warehouse");
-    await user.click(screen.getByRole("button", { name: "Simpan" }));
+    await user.click(screen.getByRole("button", { name: "Tambah gudang" }));
 
     await waitFor(() =>
       expect(screen.getByRole("heading", { name: "Gudang baru" })).toBeInTheDocument(),
     );
-    expect(onSave).not.toHaveBeenCalled();
+    expect(navigationMock.push).not.toHaveBeenCalled();
   });
 
   it("updates a warehouse from empty optionals", async () => {
     const user = userEvent.setup();
-    const onSave = vi.fn();
     seedUpdate();
-    renderWithProviders(
-      <WarehouseFormDialog
-        open={true}
-        onOpenChange={vi.fn()}
-        orgId="1"
-        initial={editInitial}
-        onSave={onSave}
-      />,
-    );
+    renderWithProviders(<WarehouseForm orgId="1" initial={editInitial} />);
 
     await screen.findByRole("heading", { name: "Ubah gudang" });
     await user.click(screen.getByRole("button", { name: "Simpan" }));
 
-    await waitFor(() => expect(onSave).toHaveBeenCalledWith("4"));
+    await waitFor(() => expect(navigationMock.push).toHaveBeenCalledWith("/stock/warehouses/4"));
   });
 
   it("updates a warehouse with filled optionals", async () => {
     const user = userEvent.setup();
-    const onSave = vi.fn();
     seedUpdate();
-    renderWithProviders(
-      <WarehouseFormDialog
-        open={true}
-        onOpenChange={vi.fn()}
-        orgId="1"
-        initial={editInitialFilled}
-        onSave={onSave}
-      />,
-    );
+    renderWithProviders(<WarehouseForm orgId="1" initial={editInitialFilled} />);
 
     await screen.findByRole("heading", { name: "Ubah gudang" });
     await user.clear(screen.getByDisplayValue("Block B"));
     await user.click(screen.getByRole("button", { name: "Simpan" }));
 
-    await waitFor(() => expect(onSave).toHaveBeenCalledWith("4"));
+    await waitFor(() => expect(navigationMock.push).toHaveBeenCalledWith("/stock/warehouses/5"));
   });
 
   it("does not save when update fails", async () => {
     const user = userEvent.setup();
-    const onSave = vi.fn();
     seedUpdate(500);
-    renderWithProviders(
-      <WarehouseFormDialog
-        open={true}
-        onOpenChange={vi.fn()}
-        orgId="1"
-        initial={editInitial}
-        onSave={onSave}
-      />,
-    );
+    renderWithProviders(<WarehouseForm orgId="1" initial={editInitial} />);
 
     await screen.findByRole("heading", { name: "Ubah gudang" });
     await user.click(screen.getByRole("button", { name: "Simpan" }));
@@ -234,19 +189,18 @@ describe("WarehouseFormDialog branches", () => {
     await waitFor(() =>
       expect(screen.getByRole("heading", { name: "Ubah gudang" })).toBeInTheDocument(),
     );
-    expect(onSave).not.toHaveBeenCalled();
+    expect(navigationMock.push).not.toHaveBeenCalled();
   });
 
-  it("closes without saving on cancel", async () => {
-    const user = userEvent.setup();
-    const onOpenChange = vi.fn();
-    renderWithProviders(
-      <WarehouseFormDialog open={true} onOpenChange={onOpenChange} orgId="1" onSave={vi.fn()} />,
-    );
+  it("cancels with a link back to the list", async () => {
+    renderWithProviders(<WarehouseForm orgId="1" />);
 
     await screen.findByRole("heading", { name: "Gudang baru" });
-    await user.click(screen.getByRole("button", { name: "Batal" }));
 
-    expect(onOpenChange).toHaveBeenCalledWith(false);
+    expect(screen.getByRole("link", { name: "Batal" })).toHaveAttribute(
+      "href",
+      "/stock/warehouses",
+    );
+    expect(navigationMock.push).not.toHaveBeenCalled();
   });
 });

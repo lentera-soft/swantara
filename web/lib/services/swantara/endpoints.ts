@@ -98,12 +98,16 @@ const endpoints = {
   },
 
   paymentTerms: {
-    list: "/api/v1/payment-terms",
-    create: "/api/v1/payment-terms",
-    get: (id: string) => `/api/v1/payment-terms/${id}`,
-    update: (id: string) => `/api/v1/payment-terms/${id}`,
-    delete: (id: string) => `/api/v1/payment-terms/${id}`,
-    splits: (id: string) => `/api/v1/payment-terms/${id}/splits`,
+    list: (organizationId: string) => `/api/v1/organizations/${organizationId}/payment-terms`,
+    create: (organizationId: string) => `/api/v1/organizations/${organizationId}/payment-terms`,
+    get: (organizationId: string, id: string) =>
+      `/api/v1/organizations/${organizationId}/payment-terms/${id}`,
+    update: (organizationId: string, id: string) =>
+      `/api/v1/organizations/${organizationId}/payment-terms/${id}`,
+    delete: (organizationId: string, id: string) =>
+      `/api/v1/organizations/${organizationId}/payment-terms/${id}`,
+    splits: (organizationId: string, id: string) =>
+      `/api/v1/organizations/${organizationId}/payment-terms/${id}/splits`,
   },
 
   accounts: {

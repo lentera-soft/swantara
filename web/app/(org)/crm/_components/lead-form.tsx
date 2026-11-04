@@ -181,6 +181,7 @@ export function LeadForm({
   });
 
   const contacts = contactsQuery.data?.contacts ?? [];
+  const employeeContacts = contacts.filter((contact) => contact.isEmployee);
   const stages = stagesQuery.data?.stages ?? [];
   const teams = teamsQuery.data?.teams ?? [];
   const campaigns = campaignsQuery.data?.campaigns ?? [];
@@ -828,7 +829,7 @@ export function LeadForm({
                 </SelectTrigger>
                 <SelectContent>
                   <SelectItem value="">{t("unassigned")}</SelectItem>
-                  {contacts.map((p) => (
+                  {employeeContacts.map((p) => (
                     <SelectItem key={p.id} value={String(p.id)}>
                       {p.displayName || p.name}
                     </SelectItem>

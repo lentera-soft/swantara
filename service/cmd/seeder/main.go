@@ -1,6 +1,7 @@
 package main
 
 import (
+	"flag"
 	"fmt"
 	"log/slog"
 	"time"
@@ -43,14 +44,26 @@ func main() {
 		logger.Fatalf("Failed to initialize seeder %v", err)
 	}
 
-	if err := seeder.SeedFoundation(); err != nil {
-		logger.Fatalf("Failed to seed foundation reference data %v", err)
-	}
-	if err := seeder.SeedPermissions(); err != nil {
-		logger.Fatalf("Failed to seed permissions %v", err)
-	}
-	if err := seeder.SeedDemoUsers(); err != nil {
-		logger.Fatalf("Failed to seed demo users %v", err)
+	mode := flag.String("mode", "foundation", "seeding mode: foundation|dummy|example|case")
+	flag.Parse()
+
+	if *mode == "dummy" || *mode == "example" || *mode == "case" {
+		if err := seeder.SeedPermissions(); err != nil {
+			logger.Fatalf("Failed to seed permissions %v", err)
+		}
+		if err := seeder.SeedDummyCase(); err != nil {
+			logger.Fatalf("Failed to seed dummy case %v", err)
+		}
+	} else {
+		if err := seeder.SeedFoundation(); err != nil {
+			logger.Fatalf("Failed to seed foundation reference data %v", err)
+		}
+		if err := seeder.SeedPermissions(); err != nil {
+			logger.Fatalf("Failed to seed permissions %v", err)
+		}
+		if err := seeder.SeedDemoUsers(); err != nil {
+			logger.Fatalf("Failed to seed demo users %v", err)
+		}
 	}
 
 	elapsed := time.Since(startEstimation)

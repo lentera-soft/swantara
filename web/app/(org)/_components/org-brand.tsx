@@ -110,7 +110,7 @@ export function OrgBrand() {
             aria-label={current?.name ?? tx("selectOrganization")}
             title={current?.name ?? tx("selectOrganization")}
             className={cn(
-              "group/brand flex min-h-11 w-full items-center gap-2.5 rounded-lg p-2 text-left outline-none transition-colors hover:bg-sidebar-accent/70 focus-visible:ring-3 focus-visible:ring-sidebar-ring/50",
+              "group/brand flex min-h-11 w-full items-center gap-2.5 rounded-lg p-2 text-left outline-none transition-colors hover:bg-sidebar-accent focus-visible:ring-3 focus-visible:ring-sidebar-ring/50",
               collapsed && "justify-center",
             )}
           >

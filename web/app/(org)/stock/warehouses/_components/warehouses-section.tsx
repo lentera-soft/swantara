@@ -4,13 +4,11 @@ import type { LegacyColumnDef as ColumnDef } from "@tanstack/react-table/legacy"
 import { Plus } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 import { InteractiveEntityTable } from "@/app/(org)/_components/interactive-entity-table";
 import { Button } from "@/components/button";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { Warehouse } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
-import { WarehouseFormDialog } from "./warehouse-form-dialog";
 
 function toRow(warehouse: Warehouse) {
   return {
@@ -21,13 +19,12 @@ function toRow(warehouse: Warehouse) {
   };
 }
 
-export function WarehousesSection({ orgId }: { orgId: string }) {
+export function WarehousesSection(_props: { orgId: string }) {
   const t = (
     useTranslations as unknown as (
       ns: string,
     ) => (key: string, values?: Record<string, string | number>) => string
   )("Stock");
-  const [dialogOpen, setDialogOpen] = useState(false);
 
   const warehousesQuery = useOrgListQuery<{ warehouses: Warehouse[] }, Record<string, never>>(
     "warehouses",
@@ -35,11 +32,6 @@ export function WarehousesSection({ orgId }: { orgId: string }) {
   );
 
   const rows = (warehousesQuery.data?.warehouses ?? []).map(toRow);
-
-  function handleSave(_warehouseId: string) {
-    setDialogOpen(false);
-    void warehousesQuery.refetch();
-  }
 
   const columns: ColumnDef<ReturnType<typeof toRow>>[] = [
     {
@@ -90,20 +82,14 @@ export function WarehousesSection({ orgId }: { orgId: string }) {
               : undefined
         }
         actions={
-          <Button size="sm" onClick={() => setDialogOpen(true)}>
-            <Plus />
-            <span>{t("addWarehouse")}</span>
+          <Button size="sm" asChild>
+            <Link href="/stock/warehouses/new">
+              <Plus />
+              <span>{t("addWarehouse")}</span>
+            </Link>
           </Button>
         }
       />
-      {dialogOpen ? (
-        <WarehouseFormDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          orgId={orgId}
-          onSave={handleSave}
-        />
-      ) : null}
     </div>
   );
 }

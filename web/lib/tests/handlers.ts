@@ -1016,14 +1016,14 @@ export const handlers = [
       message: "Deleted.",
     });
   }),
-  http.get("*/api/v1/payment-terms", () =>
+  http.get("*/api/v1/organizations/:organizationId/payment-terms", () =>
     HttpResponse.json({
       success: true,
       message: "OK.",
       data: { payment_terms: paymentTermFixtures },
     }),
   ),
-  http.post("*/api/v1/payment-terms", async ({ request }) => {
+  http.post("*/api/v1/organizations/:organizationId/payment-terms", async ({ request }) => {
     const body = (await request.json()) as { name: string; note?: string };
     const paymentTerm = {
       id: nextFixtureId(paymentTermFixtures),
@@ -1042,31 +1042,37 @@ export const handlers = [
       { status: 201 },
     );
   }),
-  http.put("*/api/v1/payment-terms/:paymentTermId", async ({ request, params }) => {
-    const body = (await request.json()) as { name?: string; note?: string };
-    const paymentTerm = paymentTermFixtures.find(
-      (item) => item.id === Number(params.paymentTermId),
-    );
-    if (!paymentTerm) {
-      return HttpResponse.json({ success: false, message: "Not found." }, { status: 404 });
-    }
-    if (body.name !== undefined) paymentTerm.name = body.name;
-    if (body.note !== undefined) paymentTerm.note = body.note;
-    return HttpResponse.json({
-      success: true,
-      message: "OK.",
-      data: { payment_term: paymentTerm },
-    });
-  }),
-  http.delete("*/api/v1/payment-terms/:paymentTermId", ({ params }) => {
-    paymentTermFixtures = paymentTermFixtures.filter(
-      (item) => item.id !== Number(params.paymentTermId),
-    );
-    return HttpResponse.json({
-      success: true,
-      message: "Deleted.",
-    });
-  }),
+  http.put(
+    "*/api/v1/organizations/:organizationId/payment-terms/:paymentTermId",
+    async ({ request, params }) => {
+      const body = (await request.json()) as { name?: string; note?: string };
+      const paymentTerm = paymentTermFixtures.find(
+        (item) => item.id === Number(params.paymentTermId),
+      );
+      if (!paymentTerm) {
+        return HttpResponse.json({ success: false, message: "Not found." }, { status: 404 });
+      }
+      if (body.name !== undefined) paymentTerm.name = body.name;
+      if (body.note !== undefined) paymentTerm.note = body.note;
+      return HttpResponse.json({
+        success: true,
+        message: "OK.",
+        data: { payment_term: paymentTerm },
+      });
+    },
+  ),
+  http.delete(
+    "*/api/v1/organizations/:organizationId/payment-terms/:paymentTermId",
+    ({ params }) => {
+      paymentTermFixtures = paymentTermFixtures.filter(
+        (item) => item.id !== Number(params.paymentTermId),
+      );
+      return HttpResponse.json({
+        success: true,
+        message: "Deleted.",
+      });
+    },
+  ),
   http.get("*/api/v1/organizations/:organizationId/contacts/:contactId/addresses", () =>
     HttpResponse.json({
       success: true,

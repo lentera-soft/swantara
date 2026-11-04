@@ -12,7 +12,7 @@ func ParseDateStr(raw string) (time.Time, error) {
 func ParseDuration(value string) (time.Duration, error) {
 	duration, err := time.ParseDuration(value)
 	if err != nil {
-		return 0, fmt.Errorf("%s must be a valid duration: %w", err)
+		return 0, fmt.Errorf("%s must be a valid duration: %w", value, err)
 	}
 	return duration, nil
 }

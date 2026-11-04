@@ -17,7 +17,7 @@ describe("OrgBreadcrumbs", () => {
     renderWithProviders(<OrgBreadcrumbs />);
 
     expect(screen.getByRole("link", { name: "Beranda" })).toHaveAttribute("href", "/dashboard");
-    expect(screen.getByRole("link", { name: "Produk" })).toHaveAttribute("href", "/products");
+    expect(screen.getByRole("link", { name: "Barang" })).toHaveAttribute("href", "/products");
     expect(screen.getByText("Resep")).toHaveAttribute("aria-current", "page");
   });
 

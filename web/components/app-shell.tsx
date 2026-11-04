@@ -425,10 +425,9 @@ function SidebarMenuButton({
 
   const classes = cn(
     "relative flex min-h-11 w-full items-center gap-3 rounded-lg px-3 text-[13px] font-normal text-sidebar-foreground/75 outline-none transition-colors",
-    "hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground",
+    "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
     "focus-visible:ring-3 focus-visible:ring-sidebar-ring/50",
     "data-[active=true]:bg-sidebar-primary/10 data-[active=true]:text-sidebar-primary",
-    "data-[active=true]:before:absolute data-[active=true]:before:inset-y-2.5 data-[active=true]:before:start-0.5 data-[active=true]:before:w-0.5 data-[active=true]:before:rounded-full data-[active=true]:before:bg-sidebar-primary",
     "[&>svg]:size-[18px] [&>svg]:shrink-0",
     collapsed && "size-11 justify-center px-0",
     className,
@@ -591,7 +590,7 @@ export function AppShell({
         <SidebarContent>{nav}</SidebarContent>
         {footer ? <SidebarFooter>{footer}</SidebarFooter> : null}
       </Sidebar>
-      <SidebarInset className="bg-surface-sunken">
+      <SidebarInset className="bg-canvas">
         <header className="sticky top-0 z-header flex shrink-0 items-center gap-3 border-b border-border bg-background/80 px-4 backdrop-blur-xl h-16 sm:px-6">
           <SidebarTrigger label={labels?.toggleSidebar} />
           {search ? (

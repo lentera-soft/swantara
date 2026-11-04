@@ -2,8 +2,8 @@
 
 import type { LegacyColumnDef as ColumnDef } from "@tanstack/react-table/legacy";
 import { Plus } from "lucide-react";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 import { InteractiveEntityTable } from "@/app/(org)/_components/interactive-entity-table";
 import { Button } from "@/components/button";
 import { StateBadge } from "@/components/state-badge";
@@ -11,7 +11,6 @@ import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { Contact } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
 import { humanizeKey } from "@/lib/utils/case";
-import { CustomerFormDialog } from "./customer-form-dialog";
 
 export type CustomerRow = {
   id: string;
@@ -31,9 +30,8 @@ function toCustomerRow(contact: Contact): CustomerRow {
   };
 }
 
-export function CustomersTable({ orgId }: { orgId: string }) {
+export function CustomersTable() {
   const t = useTranslations("Sales");
-  const [dialogOpen, setDialogOpen] = useState(false);
 
   const query = useOrgListQuery<{ contacts: Contact[] }, { size: number }>(
     "contacts",
@@ -44,11 +42,6 @@ export function CustomersTable({ orgId }: { orgId: string }) {
   const customers = (query.data?.contacts ?? [])
     .filter((contact) => contact.isCustomer)
     .map(toCustomerRow);
-
-  function handleCreate() {
-    setDialogOpen(false);
-    void query.refetch();
-  }
 
   function statusLabel(status: CustomerRow["status"]): string {
     try {
@@ -95,47 +88,41 @@ export function CustomersTable({ orgId }: { orgId: string }) {
   ];
 
   return (
-    <>
-      <InteractiveEntityTable
-        columns={columns}
-        data={customers}
-        getRowId={(row) => row.id}
-        searchKeys={["name", "email"]}
-        statusKey="status"
-        statusOptions={[
-          { value: "active", label: t("statusActive") },
-          { value: "dormant", label: t("statusDormant") },
-        ]}
-        searchPlaceholder={t("searchCustomersPlaceholder")}
-        filterLabel={t("filterByStatus")}
-        allLabel={t("allStatuses")}
-        ariaLabel={t("allCustomers")}
-        emptyTitle={t("emptyCustomers")}
-        emptyDescription={t("emptyCustomersDescription")}
-        status={
-          query.isLoading
-            ? { type: "loading" }
-            : query.isError
-              ? {
-                  type: "error",
-                  message: query.error.message,
-                  onRetry: () => void query.refetch(),
-                }
-              : undefined
-        }
-        actions={
-          <Button onClick={() => setDialogOpen(true)}>
+    <InteractiveEntityTable
+      columns={columns}
+      data={customers}
+      getRowId={(row) => row.id}
+      searchKeys={["name", "email"]}
+      statusKey="status"
+      statusOptions={[
+        { value: "active", label: t("statusActive") },
+        { value: "dormant", label: t("statusDormant") },
+      ]}
+      searchPlaceholder={t("searchCustomersPlaceholder")}
+      filterLabel={t("filterByStatus")}
+      allLabel={t("allStatuses")}
+      ariaLabel={t("allCustomers")}
+      emptyTitle={t("emptyCustomers")}
+      emptyDescription={t("emptyCustomersDescription")}
+      status={
+        query.isLoading
+          ? { type: "loading" }
+          : query.isError
+            ? {
+                type: "error",
+                message: query.error.message,
+                onRetry: () => void query.refetch(),
+              }
+            : undefined
+      }
+      actions={
+        <Button asChild>
+          <Link href="/sale-orders/customers/new">
             <Plus aria-hidden />
             <span>{t("addCustomer")}</span>
-          </Button>
-        }
-      />
-      <CustomerFormDialog
-        open={dialogOpen}
-        onOpenChange={setDialogOpen}
-        orgId={orgId}
-        onSave={handleCreate}
-      />
-    </>
+          </Link>
+        </Button>
+      }
+    />
   );
 }

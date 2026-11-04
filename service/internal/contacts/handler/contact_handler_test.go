@@ -2,6 +2,7 @@ package handler
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"net/http"
 	"net/http/httptest"
@@ -69,7 +70,7 @@ func contactsTestSvc(
 	customers contacts.CustomerProfileDAOMock,
 	suppliers contacts.SupplierProfileDAOMock,
 ) contacts.ContactService {
-	return contacts.NewContactService(contactDAO, addresses, banks, customers, suppliers)
+	return contacts.NewContactService(contactDAO, addresses, banks, customers, suppliers, contacts.EmployeeRoleReaderMock{})
 }
 
 func emptyContactSvc() contacts.ContactService {
@@ -2341,5 +2342,46 @@ func TestContactRelationHandler_DisableSupplier_ReturnsServerError(t *testing.T)
 	}
 	if resp.StatusCode != http.StatusInternalServerError {
 		t.Fatalf("status = %d, want 500", resp.StatusCode)
+	}
+}
+
+func TestContactHandler_Get_IncludesEmployeeRole(t *testing.T) {
+	contactsDAO := contactCRUD(dao.CRUDMock[contacts.Contact]{
+		FindFunc: func(_ context.Context, _ uint64) (*contacts.Contact, error) {
+			return sampleContact(), nil
+		},
+	})
+	reader := contacts.EmployeeRoleReaderMock{
+		ListEmployeeContactIDsFunc: func(_ context.Context, _ []uint64) ([]uint64, error) {
+			return []uint64{1}, nil
+		},
+	}
+	svc := contacts.NewContactService(
+		contactsDAO,
+		contacts.ContactAddressDAOMock{},
+		contacts.ContactBankAccountDAOMock{},
+		contacts.CustomerProfileDAOMock{},
+		contacts.SupplierProfileDAOMock{},
+		reader,
+	)
+
+	app := fiber.New()
+	app.Use(func(c fiber.Ctx) error {
+		c.Locals(httpx.LocalOrganizationID, uint64(10))
+		c.Locals(model.ActorKey, uint64(5))
+		return c.Next()
+	})
+	NewContactHandler(svc).Register(app, passthroughGuards())
+
+	resp, err := doRequest(app, http.MethodGet, "/contacts/1", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	var envelope GetContactResponseEnvelope
+	if err := json.NewDecoder(resp.Body).Decode(&envelope); err != nil {
+		t.Fatal(err)
+	}
+	if !envelope.Data.Contact.IsEmployee {
+		t.Error("expected is_employee to be true in response")
 	}
 }

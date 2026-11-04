@@ -5,9 +5,18 @@ import { activeOrgCookieKey } from "./active-org-cookie";
 export async function getActiveOrgId(): Promise<number | null> {
   const store = await cookies();
   const raw = store.get(activeOrgCookieKey)?.value;
-  if (!raw) return null;
-  const parsed = Number(raw);
-  return Number.isInteger(parsed) && parsed > 0 ? parsed : null;
+
+  if (!raw) {
+    return null;
+  }
+
+  const orgId = Number(raw);
+
+  if(!Number.isSafeInteger(orgId)  || orgId < 0) {
+    return null;
+  }
+
+  return orgId;
 }
 
 export async function requireActiveOrgId(): Promise<number> {

@@ -19,7 +19,7 @@ func TestContactService_Update_PropagatesLookupError(t *testing.T) {
 			},
 		},
 	}
-	svc := NewContactService(contacts, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, SupplierProfileDAOMock{})
+	svc := NewContactService(contacts, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, SupplierProfileDAOMock{}, EmployeeRoleReaderMock{})
 
 	_, err := svc.Update(ctx, 1, &Contact{Name: "Acme"})
 
@@ -37,7 +37,7 @@ func TestContactService_EnableCustomer_PropagatesContactLookupError(t *testing.T
 			},
 		},
 	}
-	svc := NewContactService(contacts, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, SupplierProfileDAOMock{})
+	svc := NewContactService(contacts, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, SupplierProfileDAOMock{}, EmployeeRoleReaderMock{})
 
 	_, err := svc.EnableCustomer(ctx, 1, &CustomerProfile{})
 
@@ -60,7 +60,7 @@ func TestContactService_EnableCustomer_PropagatesRoleLookupError(t *testing.T) {
 			return nil, errors.New("db down")
 		},
 	}
-	svc := NewContactService(contacts, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, customers, SupplierProfileDAOMock{})
+	svc := NewContactService(contacts, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, customers, SupplierProfileDAOMock{}, EmployeeRoleReaderMock{})
 
 	_, err := svc.EnableCustomer(ctx, 1, &CustomerProfile{})
 
@@ -76,7 +76,7 @@ func TestContactService_DisableCustomer_PropagatesRoleLookupError(t *testing.T) 
 			return nil, errors.New("db down")
 		},
 	}
-	svc := NewContactService(ContactDAOMock{}, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, customers, SupplierProfileDAOMock{})
+	svc := NewContactService(ContactDAOMock{}, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, customers, SupplierProfileDAOMock{}, EmployeeRoleReaderMock{})
 
 	if err := svc.DisableCustomer(ctx, 1); helper.AssertError(t, err, true, nil) {
 		return
@@ -95,7 +95,7 @@ func TestContactService_DisableCustomer_PropagatesUpdateError(t *testing.T) {
 			},
 		},
 	}
-	svc := NewContactService(ContactDAOMock{}, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, customers, SupplierProfileDAOMock{})
+	svc := NewContactService(ContactDAOMock{}, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, customers, SupplierProfileDAOMock{}, EmployeeRoleReaderMock{})
 
 	if err := svc.DisableCustomer(ctx, 1); helper.AssertError(t, err, true, nil) {
 		return
@@ -111,7 +111,7 @@ func TestContactService_EnableSupplier_PropagatesContactLookupError(t *testing.T
 			},
 		},
 	}
-	svc := NewContactService(contacts, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, SupplierProfileDAOMock{})
+	svc := NewContactService(contacts, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, SupplierProfileDAOMock{}, EmployeeRoleReaderMock{})
 
 	_, err := svc.EnableSupplier(ctx, 1, &SupplierProfile{})
 
@@ -134,7 +134,7 @@ func TestContactService_EnableSupplier_PropagatesRoleLookupError(t *testing.T) {
 			return nil, errors.New("db down")
 		},
 	}
-	svc := NewContactService(contacts, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, suppliers)
+	svc := NewContactService(contacts, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, suppliers, EmployeeRoleReaderMock{})
 
 	_, err := svc.EnableSupplier(ctx, 1, &SupplierProfile{})
 
@@ -150,7 +150,7 @@ func TestContactService_DisableSupplier_PropagatesRoleLookupError(t *testing.T) 
 			return nil, errors.New("db down")
 		},
 	}
-	svc := NewContactService(ContactDAOMock{}, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, suppliers)
+	svc := NewContactService(ContactDAOMock{}, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, suppliers, EmployeeRoleReaderMock{})
 
 	if err := svc.DisableSupplier(ctx, 1); helper.AssertError(t, err, true, nil) {
 		return
@@ -169,7 +169,7 @@ func TestContactService_DisableSupplier_PropagatesUpdateError(t *testing.T) {
 			},
 		},
 	}
-	svc := NewContactService(ContactDAOMock{}, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, suppliers)
+	svc := NewContactService(ContactDAOMock{}, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, suppliers, EmployeeRoleReaderMock{})
 
 	if err := svc.DisableSupplier(ctx, 1); helper.AssertError(t, err, true, nil) {
 		return
@@ -185,7 +185,7 @@ func TestContactService_SetDefaultAddress_PropagatesLookupError(t *testing.T) {
 			},
 		},
 	}
-	svc := NewContactService(ContactDAOMock{}, addresses, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, SupplierProfileDAOMock{})
+	svc := NewContactService(ContactDAOMock{}, addresses, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, SupplierProfileDAOMock{}, EmployeeRoleReaderMock{})
 
 	if err := svc.SetDefaultAddress(ctx, 1, 1); helper.AssertError(t, err, true, nil) {
 		return

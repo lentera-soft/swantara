@@ -1,10 +1,11 @@
 "use client";
 
 import { useQueryClient } from "@tanstack/react-query";
-import { Check, LogOut, Moon, Settings, Sun, UserRound } from "lucide-react";
+import { Check, Globe, LogOut, Moon, Settings, Sun, UserRound } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
+import { useTransition } from "react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback } from "@/components/avatar";
 import {
@@ -22,8 +23,11 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/tooltip";
 import { getCsrfToken } from "@/lib/constants/cookies";
 import { useMeQuery } from "@/lib/hooks/use-me-query";
+import { setAppLocale } from "@/lib/i18n/actions";
+import { type Locale, localeNames, locales } from "@/lib/i18n/config";
 import { clearActiveOrg } from "@/lib/server/active-org-actions";
 import { getInitials } from "@/lib/utils";
+import { cn } from "@/lib/utils/style";
 import { useThemeStore } from "@/stores/theme.store";
 
 export function OrgUserMenu() {
@@ -32,7 +36,18 @@ export function OrgUserMenu() {
   const theme = useThemeStore((s) => s.theme);
   const setTheme = useThemeStore((s) => s.setTheme);
   const t = useTranslations("UserMenu");
+  const tLocale = useTranslations("Locale");
+  const locale = useLocale() as Locale;
+  const [isPending, startTransition] = useTransition();
   const { data: meData } = useMeQuery();
+
+  function handleLocaleChange(next: Locale) {
+    if (next === locale) return;
+    startTransition(async () => {
+      await setAppLocale(next);
+      router.refresh();
+    });
+  }
   const meUser = meData?.user;
   const currentUser = {
     name: meUser ? `${meUser.firstName}${meUser.lastName ? ` ${meUser.lastName}` : ""}`.trim() : "",
@@ -68,6 +83,7 @@ export function OrgUserMenu() {
 
   return (
     <DropdownMenu>
+      <style>{"[data-nested][data-anchor-hidden]{pointer-events:auto !important}"}</style>
       <Tooltip>
         <TooltipTrigger
           render={
@@ -121,6 +137,28 @@ export function OrgUserMenu() {
               <span>{t("dark")}</span>
               {theme === "dark" && <Check className="ml-auto" />}
             </DropdownMenuItem>
+          </DropdownMenuSubContent>
+        </DropdownMenuSub>
+        <DropdownMenuSeparator />
+        <DropdownMenuSub>
+          <DropdownMenuSubTrigger>
+            <Globe />
+            {tLocale("label")}
+          </DropdownMenuSubTrigger>
+          <DropdownMenuSubContent>
+            {locales.map((code) => (
+              <DropdownMenuItem
+                key={code}
+                onClick={() => handleLocaleChange(code)}
+                disabled={isPending}
+                className={cn(code === locale && "font-medium")}
+              >
+                <span className="flex w-full items-center justify-between gap-2">
+                  {localeNames[code]}
+                  {code === locale ? <Check className="ml-auto" /> : null}
+                </span>
+              </DropdownMenuItem>
+            ))}
           </DropdownMenuSubContent>
         </DropdownMenuSub>
         <DropdownMenuSeparator />

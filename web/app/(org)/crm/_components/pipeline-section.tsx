@@ -106,11 +106,7 @@ export function PipelineSection({ orgId }: { orgId: string }) {
             )}
           </CardContent>
         </Card>
-        <Card>
-          <CardContent>
-            <CrmAnalytics pipeline={pipeline} />
-          </CardContent>
-        </Card>
+        <CrmAnalytics pipeline={pipeline} />
       </div>
     </div>
   );

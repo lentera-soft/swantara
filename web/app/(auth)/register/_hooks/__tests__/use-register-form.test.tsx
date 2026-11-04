@@ -8,8 +8,11 @@ import { useRegisterForm } from "../use-register-form";
 describe("useRegisterForm submission", () => {
   async function fillValidForm(form: ReturnType<typeof useRegisterForm>["form"]) {
     await act(async () => {
+      form.setValue("firstName", "Jane");
+      form.setValue("lastName", "Doe");
       form.setValue("email", "new@example.com");
       form.setValue("password", "password1");
+      form.setValue("confirmPassword", "password1");
     });
   }
 

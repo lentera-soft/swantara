@@ -979,47 +979,55 @@ export class Dimensions {
 export class PaymentTerms {
   constructor(private readonly axios: AxiosInstance) {}
 
-  async list(params?: ListQuery): Promise<{ paymentTerms: PaymentTerm[] }> {
+  async list(organizationId: number, params?: ListQuery): Promise<{ paymentTerms: PaymentTerm[] }> {
     const response = await this.axios.get<SuccessEnvelope<{ paymentTerms: PaymentTerm[] }>>(
-      endpoints.paymentTerms.list,
+      endpoints.paymentTerms.list(String(organizationId)),
       { params },
     );
     return withListMeta(response.data);
   }
 
-  async get(id: number): Promise<{ paymentTerm: PaymentTerm }> {
+  async get(organizationId: number, id: number): Promise<{ paymentTerm: PaymentTerm }> {
     const response = await this.axios.get<SuccessEnvelope<{ paymentTerm: PaymentTerm }>>(
-      endpoints.paymentTerms.get(String(id)),
+      endpoints.paymentTerms.get(String(organizationId), String(id)),
     );
     return withListMeta(response.data);
   }
 
-  async create(request: CreatePaymentTermRequest): Promise<{ paymentTerm: PaymentTerm }> {
+  async create(
+    organizationId: number,
+    request: CreatePaymentTermRequest,
+  ): Promise<{ paymentTerm: PaymentTerm }> {
     const response = await this.axios.post<SuccessEnvelope<{ paymentTerm: PaymentTerm }>>(
-      endpoints.paymentTerms.create,
+      endpoints.paymentTerms.create(String(organizationId)),
       request,
     );
     return withListMeta(response.data);
   }
 
   async update(
+    organizationId: number,
     id: number,
     request: UpdatePaymentTermRequest,
   ): Promise<{ paymentTerm: PaymentTerm }> {
     const response = await this.axios.put<SuccessEnvelope<{ paymentTerm: PaymentTerm }>>(
-      endpoints.paymentTerms.update(String(id)),
+      endpoints.paymentTerms.update(String(organizationId), String(id)),
       request,
     );
     return withListMeta(response.data);
   }
 
-  async delete(id: number): Promise<void> {
-    await this.axios.delete(endpoints.paymentTerms.delete(String(id)));
+  async delete(organizationId: number, id: number): Promise<void> {
+    await this.axios.delete(endpoints.paymentTerms.delete(String(organizationId), String(id)));
   }
 
-  async splits(id: number, request: SplitPaymentTermRequest): Promise<{ splits: PaymentSplit[] }> {
+  async splits(
+    organizationId: number,
+    id: number,
+    request: SplitPaymentTermRequest,
+  ): Promise<{ splits: PaymentSplit[] }> {
     const response = await this.axios.post<SuccessEnvelope<{ splits: PaymentSplit[] }>>(
-      endpoints.paymentTerms.splits(String(id)),
+      endpoints.paymentTerms.splits(String(organizationId), String(id)),
       request,
     );
     return withListMeta(response.data);

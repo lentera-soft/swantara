@@ -14,16 +14,16 @@ const ITEMS: OrgNavItem[] = [
     icon: LayoutDashboard,
   },
   {
-    key: "products",
+    key: "items",
     group: "modules",
-    module: "products",
+    module: "inventory",
     href: "/products",
     icon: Package,
   },
   {
     key: "recipes",
     group: "modules",
-    module: "products",
+    module: "production",
     href: "/products/recipes",
     icon: Layers,
   },
@@ -42,7 +42,7 @@ describe("SidebarTree", () => {
     renderTree();
 
     expect(screen.getByRole("link", { name: "Dasbor" })).toHaveAttribute("href", "/dashboard");
-    expect(screen.getByRole("link", { name: "Produk" })).toHaveAttribute("href", "/products");
+    expect(screen.getByRole("link", { name: "Barang" })).toHaveAttribute("href", "/products");
     expect(screen.getByRole("link", { name: "Resep" })).toHaveAttribute(
       "href",
       "/products/recipes",
@@ -54,14 +54,14 @@ describe("SidebarTree", () => {
     renderTree();
 
     expect(screen.getByRole("link", { name: "Dasbor" })).toHaveAttribute("data-active", "true");
-    expect(screen.getByRole("link", { name: "Produk" })).toHaveAttribute("data-active", "false");
+    expect(screen.getByRole("link", { name: "Barang" })).toHaveAttribute("data-active", "false");
   });
 
   it("highlights only the most specific matching route", () => {
     navigationMock.setPathname("/products/recipes");
     renderTree();
 
-    expect(screen.getByRole("link", { name: "Produk" })).toHaveAttribute("data-active", "false");
+    expect(screen.getByRole("link", { name: "Barang" })).toHaveAttribute("data-active", "false");
     expect(screen.getByRole("link", { name: "Resep" })).toHaveAttribute("data-active", "true");
     expect(screen.getByRole("link", { name: "Resep" })).toHaveAttribute("aria-current", "page");
   });
@@ -70,6 +70,6 @@ describe("SidebarTree", () => {
     renderTree();
 
     const links = screen.getAllByRole("link").map((link) => link.textContent);
-    expect(links.indexOf("Dasbor")).toBeLessThan(links.indexOf("Produk"));
+    expect(links.indexOf("Dasbor")).toBeLessThan(links.indexOf("Barang"));
   });
 });

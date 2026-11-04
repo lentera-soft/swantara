@@ -58,6 +58,7 @@ func buildContactLinks(c fiber.Ctx, contactID uint64) []httpx.Link {
 	base := fmt.Sprintf("%s/contacts/%d", httpx.LinkBaseFor(c), contactID)
 	return []httpx.Link{
 		{Rel: "self", Method: fiber.MethodGet, Href: base},
+		{Rel: "avatar", Method: fiber.MethodPatch, Href: base + "/avatar"},
 		{Rel: "update", Method: fiber.MethodPut, Href: base},
 		{Rel: "delete", Method: fiber.MethodDelete, Href: base},
 	}

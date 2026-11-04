@@ -23,6 +23,7 @@ import { Form, FormField, SubmitButton } from "@/components/form";
 import { Input } from "@/components/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/table";
+import { useOrganizationId } from "@/lib/hooks/use-org-context";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { PaymentTerm } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
@@ -61,10 +62,11 @@ export function PaymentTermsSection(_props: { orgId: string }) {
   const t = useTranslations("Reference");
   const [editing, setEditing] = useState<PaymentTermRow | null>(null);
   const [open, setOpen] = useState(false);
+  const organizationId = useOrganizationId();
 
   const query = useOrgListQuery<{ paymentTerms: PaymentTerm[] }, Record<string, never>>(
     "paymentTerms",
-    () => getSwantaraService().paymentTerms.list(),
+    (orgId) => getSwantaraService().paymentTerms.list(orgId),
   );
 
   const terms = (query.data?.paymentTerms ?? []).map(toPaymentTermRow);
@@ -162,9 +164,10 @@ export function PaymentTermsSection(_props: { orgId: string }) {
       })),
     };
 
+    if (organizationId == null) return Promise.resolve();
     if (editing) {
       return getSwantaraService()
-        .paymentTerms.update(Number(editing.id), payload)
+        .paymentTerms.update(organizationId, Number(editing.id), payload)
         .then(() => {
           toast.success(t("paymentTermSaved"));
           setOpen(false);
@@ -177,7 +180,7 @@ export function PaymentTermsSection(_props: { orgId: string }) {
         });
     } else {
       return getSwantaraService()
-        .paymentTerms.create(payload)
+        .paymentTerms.create(organizationId, payload)
         .then(() => {
           toast.success(t("paymentTermSaved"));
           setOpen(false);
@@ -221,13 +224,15 @@ export function PaymentTermsSection(_props: { orgId: string }) {
           confirmDescription={t("deleteTermDescription")}
           onEdit={() => openEdit(row.original)}
           onDelete={() =>
-            void getSwantaraService()
-              .paymentTerms.delete(Number(row.original.id))
-              .then(() => void query.refetch())
-              .catch((error) => {
-                logger.error("Failed to delete payment term", error);
-                toast.error(t("toastFailed"));
-              })
+            organizationId == null
+              ? undefined
+              : void getSwantaraService()
+                  .paymentTerms.delete(organizationId, Number(row.original.id))
+                  .then(() => void query.refetch())
+                  .catch((error) => {
+                    logger.error("Failed to delete payment term", error);
+                    toast.error(t("toastFailed"));
+                  })
           }
         />
       ),

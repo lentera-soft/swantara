@@ -30,7 +30,7 @@ import { SidebarTree } from "./sidebar-tree";
 
 export const moduleKey: Record<OrgNavModule, string> = {
   crm: "Customer",
-  products: "Produk",
+  production: "Produksi",
   inventory: "Persediaan",
   procurement: "Pengadaan",
   hr: "HR",
@@ -43,7 +43,7 @@ export const moduleKey: Record<OrgNavModule, string> = {
 
 export const moduleIcons: Record<OrgNavModule, LucideIcon> = {
   crm: Handshake,
-  products: Package,
+  production: Package,
   inventory: Warehouse,
   procurement: Truck,
   hr: Users,
@@ -107,9 +107,9 @@ export function ModuleCollapsible({ mod, items }: ModuleCollapsibleProps) {
             className={cn(
               "flex min-h-11 w-full cursor-pointer items-center gap-2 rounded-lg px-3 text-[13px] font-normal text-sidebar-foreground/70",
               "justify-between",
-              "hover:bg-sidebar-accent/80 hover:text-sidebar-accent-foreground",
+              "hover:bg-sidebar-accent hover:text-sidebar-accent-foreground",
               "focus-visible:ring-3 focus-visible:ring-sidebar-ring/50",
-              "[data-panel-open]:bg-sidebar-accent/40 [data-panel-open]:text-sidebar-foreground",
+              "[data-panel-open]:bg-sidebar-accent [data-panel-open]:text-sidebar-foreground",
             )}
           >
             <span className="flex min-w-0 items-center gap-2">

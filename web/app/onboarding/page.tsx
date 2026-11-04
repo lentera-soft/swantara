@@ -4,6 +4,7 @@ import { createServerSwantaraService } from "@/lib/server/api-client";
 import { SwantaraError } from "@/lib/services/swantara/errors";
 import { AcceptOrganization } from "./_components/accept-organization";
 import OnboardingForm from "./_components/onboarding-form";
+import { OnboardingShell } from "./_components/onboarding-shell";
 
 export const dynamic = "force-dynamic";
 
@@ -23,8 +24,16 @@ export default async function OnboardingPage() {
   );
 
   if (validOrganizations.length > 0) {
-    return <AcceptOrganization orgId={validOrganizations[0]!.id} />;
+    return (
+      <OnboardingShell>
+        <AcceptOrganization orgId={validOrganizations[0]!.id} />
+      </OnboardingShell>
+    );
   }
 
-  return <OnboardingForm />;
+  return (
+    <OnboardingShell>
+      <OnboardingForm />
+    </OnboardingShell>
+  );
 }

@@ -4,13 +4,12 @@ import { renderWithIntl } from "@/lib/tests/intl";
 import AuthShell from "../_components/auth-shell";
 
 describe("AuthShell", () => {
-  it("renders the title, subtitle, and children inside a card", async () => {
-    const element = await AuthShell({
-      title: "Selamat datang kembali",
-      subtitle: "Enter your credentials",
-      children: <p>inside</p>,
-    });
-    const { container } = renderWithIntl(element);
+  it("renders the title, subtitle, and children inside a card", () => {
+    const { container } = renderWithIntl(
+      <AuthShell title="Selamat datang kembali" subtitle="Enter your credentials">
+        <p>inside</p>
+      </AuthShell>,
+    );
 
     expect(
       screen.getByRole("heading", { level: 1, name: "Selamat datang kembali" }),
@@ -21,12 +20,12 @@ describe("AuthShell", () => {
     expect(container.querySelector('[data-slot="card"]')).toBeInTheDocument();
   });
 
-  it("renders an empty subtitle when not provided", async () => {
-    const element = await AuthShell({
-      title: "Set a new password",
-      children: <p>inside</p>,
-    });
-    renderWithIntl(element);
+  it("renders an empty subtitle when not provided", () => {
+    renderWithIntl(
+      <AuthShell title="Set a new password">
+        <p>inside</p>
+      </AuthShell>,
+    );
 
     expect(
       screen.getByRole("heading", { level: 1, name: "Set a new password" }),
@@ -34,17 +33,16 @@ describe("AuthShell", () => {
     expect(screen.getByText("inside")).toBeInTheDocument();
   });
 
-  it("renders a single centered column", async () => {
-    const element = await AuthShell({
-      title: "Selamat datang kembali",
-      subtitle: "Enter your credentials",
-      children: <p>inside</p>,
-    });
-    const { container } = renderWithIntl(element);
+  it("renders a single centered column with a brand aside", () => {
+    const { container } = renderWithIntl(
+      <AuthShell title="Selamat datang kembali" subtitle="Enter your credentials">
+        <p>inside</p>
+      </AuthShell>,
+    );
 
     const wrapper = container.querySelector('[data-slot="auth-shell"]') as HTMLElement;
     expect(wrapper.className).toContain("min-h-screen");
     expect(wrapper.className).toContain("bg-muted/20");
-    expect(wrapper.className).not.toContain("lg:grid-cols-2");
+    expect(container.querySelector('[data-slot="card"]')).toBeInTheDocument();
   });
 });

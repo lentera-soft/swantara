@@ -150,7 +150,7 @@ func TestConfig_TrustedProxyList(t *testing.T) {
 }
 
 func TestParseDuration(t *testing.T) {
-	d, err := helper.ParseDuration("RATE_LIMITER_EXPIRATION", "2m")
+	d, err := helper.ParseDuration("2m")
 	if err != nil {
 		t.Fatalf("ParseDuration() error = %v", err)
 	}
@@ -158,7 +158,7 @@ func TestParseDuration(t *testing.T) {
 		t.Errorf("duration = %v, want 2m", d)
 	}
 
-	if _, err := helper.ParseDuration("RATE_LIMITER_EXPIRATION", "oops"); err == nil {
+	if _, err := helper.ParseDuration("oops"); err == nil {
 		t.Fatal("ParseDuration() expected error for invalid value")
 	}
 }

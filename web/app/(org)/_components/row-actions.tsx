@@ -36,6 +36,7 @@ export type RowActionsProps = {
   onEdit?: () => void;
   onDelete?: () => void;
   items?: RowActionItem[];
+  trailingItems?: RowActionItem[];
 };
 
 export function RowActions({
@@ -47,12 +48,14 @@ export function RowActions({
   onEdit,
   onDelete,
   items,
+  trailingItems,
 }: RowActionsProps) {
   const t = useTranslations("Common");
   const [confirmTarget, setConfirmTarget] = useState<RowActionItem | "delete" | null>(null);
 
   const hasItems = Boolean(items && items.length > 0);
-  if (!onEdit && !onDelete && !hasItems) return null;
+  const hasTrailing = Boolean(trailingItems && trailingItems.length > 0);
+  if (!onEdit && !onDelete && !hasItems && !hasTrailing) return null;
 
   const deleteDialog =
     confirmTarget === "delete" && onDelete
@@ -110,7 +113,25 @@ export function RowActions({
               {item.label}
             </DropdownMenuItem>
           ))}
-          {onDelete && (onEdit || hasItems) ? <DropdownMenuSeparator /> : null}
+          {hasTrailing && (onEdit || hasItems) ? <DropdownMenuSeparator /> : null}
+          {trailingItems?.map((item) => (
+            <DropdownMenuItem
+              key={item.label}
+              variant={item.destructive ? "destructive" : "default"}
+              disabled={item.disabled}
+              onClick={() => {
+                if (item.confirm) {
+                  setConfirmTarget(item);
+                } else {
+                  item.onSelect();
+                }
+              }}
+            >
+              {item.icon}
+              {item.label}
+            </DropdownMenuItem>
+          ))}
+          {onDelete && !hasTrailing && (onEdit || hasItems) ? <DropdownMenuSeparator /> : null}
           {onDelete ? (
             <DropdownMenuItem variant="destructive" onClick={() => setConfirmTarget("delete")}>
               <Trash2Icon aria-hidden />

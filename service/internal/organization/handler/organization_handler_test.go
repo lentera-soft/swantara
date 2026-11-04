@@ -10,6 +10,7 @@ import (
 
 	"github.com/gofiber/fiber/v3"
 	"github.com/jalusw/swantara/apps/service/internal/httpx"
+	"github.com/jalusw/swantara/apps/service/internal/iam"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/dao"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/model"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/query"
@@ -28,9 +29,21 @@ func organizationHandlerTest(
 		c.Locals(model.ActorKey, uint64(5))
 		return c.Next()
 	})
-	h := NewOrganizationHandler(svc, orgs)
+	h := NewOrganizationHandler(svc, orgs, memberDAOForOrgsMock(orgs))
 	h.Register(app, passthroughGuards())
 	return app
+}
+
+func memberDAOForOrgsMock(orgs dao.CRUDMock[reference.Organization]) iam.MemberDAOMock {
+	return iam.MemberDAOMock{
+		ListOrganizationsByUserFunc: func(ctx context.Context, _ uint64) ([]*reference.Organization, error) {
+			page, err := orgs.List(ctx, nil)
+			if err != nil {
+				return nil, err
+			}
+			return page.Items, nil
+		},
+	}
 }
 
 func organizationTestSvc(
@@ -48,7 +61,7 @@ func organizationHandlerTestNoCaller(
 ) *fiber.App {
 	t.Helper()
 	app := fiber.New()
-	h := NewOrganizationHandler(svc, orgs)
+	h := NewOrganizationHandler(svc, orgs, nil)
 	h.Register(app, passthroughGuards())
 	return app
 }

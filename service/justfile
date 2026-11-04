@@ -176,5 +176,33 @@ seed:
     CONFIG_FILE=.env go run cmd/seeder/main.go
 
 [group('db')]
+seed-dummy:
+    CONFIG_FILE=.env go run cmd/dummyseeder/main.go
+
+[group('db')]
+seed-dummy-case:
+    CONFIG_FILE=.env go run cmd/dummyseeder/main.go
+
+[group('db')]
+seed-case:
+    CONFIG_FILE=.env go run cmd/dummyseeder/main.go
+
+[group('db')]
+seed-example:
+    CONFIG_FILE=.env go run cmd/dummyseeder/main.go
+
+[group('db')]
+seed-demo-case:
+    CONFIG_FILE=.env go run cmd/dummyseeder/main.go
+
+[group('build')]
+build-dummy:
+    go build -o bin/dummyseeder cmd/dummyseeder/main.go
+
+[group('build')]
+build-seeder:
+    go build -o bin/seeder cmd/seeder/main.go
+
+[group('db')]
 setup: db-up migrate seed
     @echo "Development environment ready"

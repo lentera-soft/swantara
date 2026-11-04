@@ -17,6 +17,7 @@ type ContactResponse struct {
 	Phone          *string   `json:"phone"`
 	Mobile         *string   `json:"mobile"`
 	Website        *string   `json:"website"`
+	Avatar         *string   `json:"avatar"`
 	TaxID          *string   `json:"tax_id"`
 	Industry       *string   `json:"industry"`
 	CurrencyCode   *string   `json:"currency_code"`
@@ -24,6 +25,7 @@ type ContactResponse struct {
 	Active         bool      `json:"active"`
 	IsCustomer     bool      `json:"is_customer"`
 	IsSupplier     bool      `json:"is_supplier"`
+	IsEmployee     bool      `json:"is_employee"`
 	CreatedAt      time.Time `json:"created_at"`
 	UpdatedAt      time.Time `json:"updated_at"`
 }
@@ -40,6 +42,7 @@ func newContactResponse(contact *contacts.Contact) ContactResponse {
 		Phone:          contact.Phone,
 		Mobile:         contact.Mobile,
 		Website:        contact.Website,
+		Avatar:         contact.Avatar,
 		TaxID:          contact.TaxID,
 		Industry:       contact.Industry,
 		CurrencyCode:   contact.CurrencyCode,
@@ -47,6 +50,7 @@ func newContactResponse(contact *contacts.Contact) ContactResponse {
 		Active:         contact.Active,
 		IsCustomer:     contact.IsCustomer,
 		IsSupplier:     contact.IsSupplier,
+		IsEmployee:     contact.IsEmployee,
 		CreatedAt:      contact.CreatedAt,
 		UpdatedAt:      contact.UpdatedAt,
 	}

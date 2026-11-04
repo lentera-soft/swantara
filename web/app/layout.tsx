@@ -69,7 +69,7 @@ export default async function RootLayout({ children }: RootLayoutProps) {
         <NextIntlClientProvider locale={locale} messages={messages}>
           <SkipToMain label={tCommon("skipToMain")} />
           <DevtoolWarning />
-          <SerwistProvider swUrl="/serwist/sw.js">
+          <SerwistProvider swUrl="/serwist/sw.js" disable={process.env.NODE_ENV !== "production"}>
             <ProviderContainer>{children}</ProviderContainer>
           </SerwistProvider>
           <ReportWebVitals />

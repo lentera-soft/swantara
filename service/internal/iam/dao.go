@@ -272,7 +272,13 @@ func (s permissionDAO) FindByCode(ctx context.Context, code string) (*Permission
 	return entity, nil
 }
 
-func (s permissionDAO) UserHasOrganizationPermission(ctx context.Context, userID, organizationID uint64, resource, action string) (bool, error) {
+func (s permissionDAO) UserHasOrganizationPermission(
+	ctx context.Context,
+	userID,
+	organizationID uint64,
+	resource,
+	action string,
+) (bool, error) {
 	var count int64
 
 	err := s.db.WithContext(ctx).

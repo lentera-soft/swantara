@@ -84,3 +84,14 @@ func (m SupplierProfileDAOMock) FindByContact(ctx context.Context, contactID uin
 	}
 	return nil, nil
 }
+
+type EmployeeRoleReaderMock struct {
+	ListEmployeeContactIDsFunc func(ctx context.Context, contactIDs []uint64) ([]uint64, error)
+}
+
+func (m EmployeeRoleReaderMock) ListEmployeeContactIDs(ctx context.Context, contactIDs []uint64) ([]uint64, error) {
+	if m.ListEmployeeContactIDsFunc != nil {
+		return m.ListEmployeeContactIDsFunc(ctx, contactIDs)
+	}
+	return nil, nil
+}

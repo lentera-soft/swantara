@@ -11,11 +11,12 @@ import (
 )
 
 type ContactService struct {
-	contacts  ContactDAO
-	addresses ContactAddressDAO
-	customers CustomerProfileDAO
-	suppliers SupplierProfileDAO
-	banks     ContactBankAccountDAO
+	contacts      ContactDAO
+	addresses     ContactAddressDAO
+	customers     CustomerProfileDAO
+	suppliers     SupplierProfileDAO
+	banks         ContactBankAccountDAO
+	employeeRoles EmployeeRoleReader
 }
 
 func NewContactService(
@@ -24,13 +25,15 @@ func NewContactService(
 	banks ContactBankAccountDAO,
 	customers CustomerProfileDAO,
 	suppliers SupplierProfileDAO,
+	employeeRoles EmployeeRoleReader,
 ) ContactService {
 	return ContactService{
-		contacts:  contacts,
-		addresses: addresses,
-		banks:     banks,
-		customers: customers,
-		suppliers: suppliers,
+		contacts:      contacts,
+		addresses:     addresses,
+		banks:         banks,
+		customers:     customers,
+		suppliers:     suppliers,
+		employeeRoles: employeeRoles,
 	}
 }
 
@@ -334,8 +337,10 @@ func (s ContactService) FindInOrg(ctx context.Context, id, organizationID uint64
 	return e, nil
 }
 
-// annotateRoles marks each contact with the active customer and supplier roles
-// stored in their profile tables so callers can tell role-specific lists apart.
+// annotateRoles marks each contact with the active customer, supplier, and
+// employee roles so callers can tell role-specific lists apart. The employee
+// role lives in the payroll module and is resolved through the injected
+// EmployeeRoleReader.
 func (s ContactService) annotateRoles(ctx context.Context, page *query.Page[Contact]) error {
 	if page == nil || len(page.Items) == 0 {
 		return nil
@@ -381,12 +386,24 @@ func (s ContactService) annotateRoles(ctx context.Context, page *query.Page[Cont
 		}
 	}
 
+	employeeIDs := make(map[uint64]struct{})
+	if s.employeeRoles != nil {
+		linked, err := s.employeeRoles.ListEmployeeContactIDs(ctx, ids)
+		if err != nil {
+			return err
+		}
+		for _, contactID := range linked {
+			employeeIDs[contactID] = struct{}{}
+		}
+	}
+
 	for _, contact := range page.Items {
 		if contact == nil {
 			continue
 		}
 		_, contact.IsCustomer = customerIDs[contact.ID]
 		_, contact.IsSupplier = supplierIDs[contact.ID]
+		_, contact.IsEmployee = employeeIDs[contact.ID]
 	}
 	return nil
 }

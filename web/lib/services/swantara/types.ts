@@ -865,6 +865,7 @@ export type Contact = {
   active: boolean;
   isCustomer: boolean;
   isSupplier: boolean;
+  isEmployee: boolean;
   createdAt: Date;
   updatedAt: Date;
 };

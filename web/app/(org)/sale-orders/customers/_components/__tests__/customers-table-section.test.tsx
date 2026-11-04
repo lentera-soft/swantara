@@ -1,5 +1,4 @@
 import { screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 import { renderWithProviders, server } from "@/lib/tests";
@@ -81,26 +80,24 @@ beforeEach(() => {
 
 describe("CustomersTable", () => {
   it("renders seeded customers", async () => {
-    renderWithProviders(<CustomersTable orgId="1" />);
+    renderWithProviders(<CustomersTable />);
 
     expect(await screen.findByText("Acme Corp")).toBeInTheDocument();
     expect(screen.getByText("Globex Inc")).toBeInTheDocument();
   });
 
   it("excludes contacts that are only suppliers", async () => {
-    renderWithProviders(<CustomersTable orgId="1" />);
+    renderWithProviders(<CustomersTable />);
 
     await screen.findByText("Acme Corp");
     expect(screen.queryByText("Supplier Only")).not.toBeInTheDocument();
   });
 
-  it("opens the create dialog from the add button", async () => {
-    const user = userEvent.setup();
-    renderWithProviders(<CustomersTable orgId="1" />);
+  it("links to the create page from the add button", async () => {
+    renderWithProviders(<CustomersTable />);
 
     await screen.findByText("Acme Corp");
-    await user.click(screen.getByRole("button", { name: "Tambah Pelanggan" }));
-
-    expect(await screen.findByRole("heading", { name: "Pelanggan baru" })).toBeInTheDocument();
+    const link = screen.getByRole("link", { name: /Tambah Pelanggan/ });
+    expect(link).toHaveAttribute("href", "/sale-orders/customers/new");
   });
 });

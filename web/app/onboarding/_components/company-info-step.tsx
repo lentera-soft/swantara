@@ -12,6 +12,7 @@ import {
   ComboboxItem,
   ComboboxList,
 } from "@/components/combobox";
+import { CountryFlag } from "@/components/country-flag";
 import { Field } from "@/components/field";
 import { FieldFeedback } from "@/components/field-feedback";
 import { InputGroupAddon } from "@/components/input-group";
@@ -58,8 +59,12 @@ export function CompanyInfoStep() {
 
   return (
     <QuestionnaireItem name="companyInfo" required>
-      <QuestionnaireTitle>{tx("companyInfoTitle")}</QuestionnaireTitle>
-      <QuestionnaireDescription>{tx("companyInfoDescription")}</QuestionnaireDescription>
+      <QuestionnaireTitle className="font-heading text-2xl leading-tight font-medium tracking-tight">
+        {tx("companyInfoTitle")}
+      </QuestionnaireTitle>
+      <QuestionnaireDescription className="mt-0">
+        {tx("companyInfoDescription")}
+      </QuestionnaireDescription>
       <Controller
         name="name"
         control={control}
@@ -119,6 +124,7 @@ export function CompanyInfoStep() {
                 >
                   {field.value ? (
                     <InputGroupAddon align="inline-start" className="pointer-events-none">
+                      <CountryFlag code={field.value} />
                       <span className="text-xs font-medium">{field.value}</span>
                     </InputGroupAddon>
                   ) : null}
@@ -131,9 +137,7 @@ export function CompanyInfoStep() {
                       return (
                         <ComboboxItem key={country.code} value={country.code}>
                           <span className="flex items-center gap-2">
-                            <span className="w-5 text-center text-xs font-medium">
-                              {country.code}
-                            </span>
+                            <CountryFlag code={country.code} />
                             <span>{country.name}</span>
                             <span className="text-muted-foreground text-xs">{country.code}</span>
                           </span>

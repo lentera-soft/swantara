@@ -4,7 +4,6 @@ import { useTranslations } from "next-intl";
 import type { ReactNode } from "react";
 import { AppShell } from "@/components/app-shell";
 
-import { LocaleSwitcher } from "@/components/locale-switcher";
 import { NotificationBell } from "@/components/notification-bell";
 import { Separator } from "@/components/separator";
 import { OrgBrand } from "./org-brand";
@@ -29,7 +28,6 @@ export function OrgShell({ children }: { children: ReactNode }) {
       actions={
         <>
           <NotificationBell tooltip={t("notifications")} />
-          <LocaleSwitcher />
           <Separator orientation="vertical" className="h-6" />
           <OrgUserMenu />
         </>

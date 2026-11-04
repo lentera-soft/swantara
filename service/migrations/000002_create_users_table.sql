@@ -46,6 +46,7 @@ CREATE TABLE contacts (
   phone TEXT,
   mobile TEXT,
   website TEXT,
+  avatar TEXT,
   tax_id TEXT,
   industry TEXT,
   currency_code CHAR(3),

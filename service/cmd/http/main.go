@@ -373,7 +373,9 @@ func main() {
 		contactBankAccountDAO,
 		customerProfileDAO,
 		supplierProfileDAO,
+		employeeDAO,
 	)
+	contactAvatarSvc := contacts.NewContactAvatarService(contactDAO, objectStore)
 	configSvc := xtradata.NewConfigService(orgSystemConfigDAO)
 	idemSvc := xtradata.NewIdempotencyService(orgIdempotencyKeyDAO)
 	integrationEventSvc := xtradata.NewEventService(integrationEventDAO, nil)
@@ -880,6 +882,7 @@ func main() {
 	)
 	memberHandler := handler.NewMemberHandler(memberSvc)
 	contactHandler := contactsHandler.NewContactHandler(contactSvc)
+	contactAvatarHandler := contactsHandler.NewContactAvatarHandler(contactAvatarSvc)
 	contactRelationHandler := contactsHandler.NewContactRelationHandler(
 		contactSvc,
 	)
@@ -1032,6 +1035,7 @@ func main() {
 	orgHandler.Register(api, guards)
 	memberHandler.Register(orgAPI, guards)
 	contactHandler.Register(orgAPI, guards)
+	contactAvatarHandler.Register(orgAPI, guards)
 	contactRelationHandler.Register(orgAPI, guards)
 	carrierHandler.RegisterOrg(orgAPI, guards)
 	campaignHandler.RegisterOrg(orgAPI, guards)

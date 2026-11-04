@@ -80,7 +80,7 @@ export function PromoteDialog({
     (organizationId) => getSwantaraService().systemConfigs.list(organizationId),
   );
   const stages = (stagesQuery.data?.stages ?? []).filter((stage) => !stage.isWon && !stage.isLost);
-  const contacts = contactsQuery.data?.contacts ?? [];
+  const contacts = (contactsQuery.data?.contacts ?? []).filter((contact) => contact.isEmployee);
   const teams = teamsQuery.data?.teams ?? [];
   const canOverride = permissions.has("prospect.override");
   const requiredFields = useMemo(() => {

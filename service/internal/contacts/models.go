@@ -15,6 +15,7 @@ type Contact struct {
 	Phone          *string `json:"phone" audit:"redact"`
 	Mobile         *string `json:"mobile" audit:"redact"`
 	Website        *string `json:"website"`
+	Avatar         *string `json:"avatar"`
 	TaxID          *string `json:"tax_id" audit:"redact"`
 	Industry       *string `json:"industry"`
 	CurrencyCode   *string `json:"currency_code"`
@@ -22,6 +23,7 @@ type Contact struct {
 	Active         bool    `json:"active"`
 	IsCustomer     bool    `json:"is_customer" gorm:"-"`
 	IsSupplier     bool    `json:"is_supplier" gorm:"-"`
+	IsEmployee     bool    `json:"is_employee" gorm:"-"`
 }
 
 type ContactAddress struct {

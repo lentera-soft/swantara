@@ -83,7 +83,7 @@ export function FormField<TFieldValues extends FieldValues, TName extends FieldP
   const feedbackId = `${inputId}-feedback`;
 
   return (
-    <Field className={className}>
+    <Field className={cn("gap-y-2", className)}>
       {label ? (
         <Label htmlFor={inputId} className="mb-0 justify-start">
           {label}

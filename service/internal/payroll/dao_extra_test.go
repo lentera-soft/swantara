@@ -605,3 +605,43 @@ func TestAttendanceDAOWithOrg_ListOpen(t *testing.T) {
 }
 
 var _ = time.Now
+
+func TestEmployeeDAO_ListEmployeeContactIDs(t *testing.T) {
+	ctx := context.Background()
+
+	t.Run("short-circuits empty input", func(t *testing.T) {
+		db, _ := query.NewMockDB(t)
+		ids, err := NewEmployeeDAO(db).ListEmployeeContactIDs(ctx, nil)
+		if err != nil {
+			t.Fatalf("err = %v", err)
+		}
+		if len(ids) != 0 {
+			t.Errorf("ids = %v, want empty", ids)
+		}
+	})
+
+	t.Run("returns linked contact ids", func(t *testing.T) {
+		db, mock := query.NewMockDB(t)
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT DISTINCT contact_id FROM "employees"`)).
+			WillReturnRows(sqlmock.NewRows([]string{"contact_id"}).AddRow(3))
+
+		ids, err := NewEmployeeDAO(db).ListEmployeeContactIDs(ctx, []uint64{3, 4})
+		if helper.AssertError(t, err, false, nil) {
+			return
+		}
+		if len(ids) != 1 || ids[0] != 3 {
+			t.Errorf("ids = %v, want [3]", ids)
+		}
+		query.AssertDBMockDone(t, mock)
+	})
+
+	t.Run("propagates error", func(t *testing.T) {
+		db, mock := query.NewMockDB(t)
+		dbErr := errors.New("db down")
+		mock.ExpectQuery(regexp.QuoteMeta(`SELECT DISTINCT contact_id FROM "employees"`)).WillReturnError(dbErr)
+
+		_, err := NewEmployeeDAO(db).ListEmployeeContactIDs(ctx, []uint64{3})
+		helper.AssertError(t, err, true, dbErr)
+		query.AssertDBMockDone(t, mock)
+	})
+}

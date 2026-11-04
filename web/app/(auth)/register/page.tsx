@@ -6,7 +6,7 @@ import RegisterForm from "./_components/register-form";
 export default async function RegisterPage() {
   const t = await getTranslations("Auth");
   return (
-    <AuthShell title={t("registerTitle")} subtitle={t("registerSubtitle")} className="max-w-6xl">
+    <AuthShell title={t("registerTitle")} subtitle={t("registerSubtitle")}>
       <RegisterForm />
       <p className="text-sm text-muted-foreground">
         {t("haveAccount")}{" "}

@@ -86,7 +86,7 @@ export function SaleQuoteFormDialog({
   );
   const paymentTermsQuery = useOrgListQuery<{ paymentTerms: PaymentTerm[] }, Record<string, never>>(
     "paymentTerms",
-    () => getSwantaraService().paymentTerms.list({ size: 100 }),
+    (orgId) => getSwantaraService().paymentTerms.list(orgId, { size: 100 }),
   );
   const editQuery = useOrgQuery<{ quote: SaleQuote }>(
     "saleQuoteForEdit",

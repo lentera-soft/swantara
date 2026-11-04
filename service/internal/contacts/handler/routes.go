@@ -15,6 +15,13 @@ func (h ContactHandler) Register(api fiber.Router, guards httpx.RouteGuards) {
 	contacts.Delete("/:id", guards.Guard("contact", "delete"), h.Delete)
 }
 
+func (h ContactAvatarHandler) Register(api fiber.Router, guards httpx.RouteGuards) {
+	contacts := api.Group("/contacts", guards.AuthN)
+
+	contacts.Patch("/:id/avatar", guards.Guard("contact", "update"), h.Update)
+	contacts.Get("/:id/avatar", guards.Guard("contact", "view"), h.Get)
+}
+
 func (h ContactRelationHandler) Register(api fiber.Router, guards httpx.RouteGuards) {
 	contacts := api.Group("/contacts", guards.AuthN)
 

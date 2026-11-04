@@ -51,7 +51,10 @@ export function EntityFormDialog<TFieldValues extends FieldValues = FieldValues>
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
         data-slot="entity-form-dialog"
-        className={cn("flex max-h-[85vh] flex-col overflow-hidden", className ?? "sm:max-w-2xl")}
+        className={cn(
+          "flex max-h-[85vh] flex-col gap-5 overflow-hidden",
+          className ?? "sm:max-w-2xl",
+        )}
       >
         <DialogHeader className="shrink-0">
           <div className="flex items-center gap-2 pr-8">
@@ -61,7 +64,9 @@ export function EntityFormDialog<TFieldValues extends FieldValues = FieldValues>
           {description && <DialogDescription>{description}</DialogDescription>}
         </DialogHeader>
         <Form form={form} onSubmit={onSubmit} className="flex min-h-0 flex-1 flex-col gap-0">
-          <div className="-mx-4 min-h-0 flex-1 overflow-y-auto px-4 py-1">{children}</div>
+          <div className="-mx-4 flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 py-2">
+            {children}
+          </div>
           <DialogFooter className="items-center sm:items-center">
             {footerHint ? (
               <p className="mr-auto hidden text-xs text-muted-foreground sm:block">{footerHint}</p>

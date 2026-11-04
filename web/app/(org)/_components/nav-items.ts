@@ -40,7 +40,7 @@ export type OrgNavGroup = "overview" | "modules" | "settings";
 
 export type OrgNavModule =
   | "crm"
-  | "products"
+  | "production"
   | "inventory"
   | "procurement"
   | "hr"
@@ -61,7 +61,7 @@ export type OrgNavItem = {
 
 export const orgNavModuleOrder: OrgNavModule[] = [
   "crm",
-  "products",
+  "production",
   "inventory",
   "procurement",
   "hr",
@@ -175,7 +175,7 @@ export const orgNavItems: OrgNavItem[] = [
   {
     key: "productionOrders",
     group: "modules",
-    module: "products",
+    module: "production",
     href: "/production-orders",
     icon: Factory,
     permission: "production_order.view",
@@ -183,7 +183,7 @@ export const orgNavItems: OrgNavItem[] = [
   {
     key: "planning",
     group: "modules",
-    module: "products",
+    module: "production",
     href: "/planning",
     icon: BrainCircuit,
     permission: "production_order.view",
@@ -229,17 +229,9 @@ export const orgNavItems: OrgNavItem[] = [
     permission: "purchase_order.view",
   },
   {
-    key: "products",
-    group: "modules",
-    module: "products",
-    href: "/products",
-    icon: Package,
-    permission: "item.view",
-  },
-  {
     key: "recipes",
     group: "modules",
-    module: "products",
+    module: "production",
     href: "/products/recipes",
     icon: Layers,
     permission: "item.view",
@@ -247,9 +239,17 @@ export const orgNavItems: OrgNavItem[] = [
   {
     key: "priceBooks",
     group: "modules",
-    module: "products",
+    module: "production",
     href: "/products/price-books",
     icon: DollarSign,
+    permission: "item.view",
+  },
+  {
+    key: "items",
+    group: "modules",
+    module: "inventory",
+    href: "/products",
+    icon: Package,
     permission: "item.view",
   },
   {
@@ -617,6 +617,7 @@ const NAV_LABEL_OVERRIDES: Record<string, string> = {
   planning: "Perencanaan Produksi",
   purchases: "Pesanan Pembelian",
   products: "Produk",
+  items: "Barang",
   stock: "Stok",
   employees: "Karyawan",
   leaveRequests: "Pengajuan Cuti",

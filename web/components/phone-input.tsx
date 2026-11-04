@@ -1,38 +1,104 @@
 "use client";
 
-import "react-phone-number-input/style.css";
-
+import { GlobeIcon } from "lucide-react";
+import { useLocale } from "next-intl";
 import type * as React from "react";
-import PhoneInputLibrary, { type Country } from "react-phone-number-input";
+import PhoneInputLibrary, { type Country, getCountryCallingCode } from "react-phone-number-input";
 
-import { InputGroup, InputGroupInput } from "@/components/input-group";
-import { cn } from "@/lib/utils";
+import { CountryFlag } from "@/components/country-flag";
+import { InputGroup, InputGroupAddon, InputGroupInput } from "@/components/input-group";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "@/components/select";
 
-const COUNTRY_SELECT_SLOT = "phone-input-country";
+const INTERNATIONAL_COUNTRY = "XX" as unknown as Country;
 
-/**
- * The library owns the country `<select/>` markup (`.PhoneInputCountry`), so the
- * design system control tokens are handed over through its CSS custom properties
- * and scoped descendant utilities instead of a second border/focus recipe.
- */
-const controlClasses = cn(
-  "group/phone-input",
-  "[--PhoneInput-color--focus:var(--color-ring)]",
-  "[--PhoneInputCountrySelect-marginRight:0]",
-  "[--PhoneInputCountrySelectArrow-color:var(--color-muted-foreground)]",
-  "[--PhoneInputCountrySelectArrow-color--focus:var(--color-ring)]",
-  "[--PhoneInputCountryFlag-borderColor:var(--color-input)]",
-  "[--PhoneInputCountryFlag-borderColor--focus:var(--color-ring)]",
-  "[&_.PhoneInputCountry]:h-full",
-  "[&_.PhoneInputCountry]:pl-2",
-  "[&_.PhoneInputCountry]:pr-1",
-  "[&_.PhoneInputCountry]:text-muted-foreground",
-  "has-[[data-slot=phone-input-country]:focus-visible]:border-ring",
-  "has-[[data-slot=phone-input-country]:focus-visible]:ring-3",
-  "has-[[data-slot=phone-input-country]:focus-visible]:ring-ring/50",
-);
+// Registering the country trigger as a group control reuses the InputGroup focus,
+// disabled, and invalid recipes instead of a second border/focus recipe here.
+const COUNTRY_SELECT_SLOT = "input-group-control";
 
-const inputClasses = cn("h-full", "pl-0 pr-2.5");
+type CountryOption = { country: Country; label?: string };
+
+type CountrySelectComponentProps = {
+  value?: Country;
+  options?: CountryOption[];
+  onChange?: (country?: Country) => void;
+  onFocus?: React.FocusEventHandler<HTMLElement>;
+  onBlur?: React.FocusEventHandler<HTMLElement>;
+  disabled?: boolean;
+  "aria-label"?: string;
+  "data-slot"?: string;
+};
+
+function callingCode(country?: Country): string {
+  if (!country || country === INTERNATIONAL_COUNTRY) return "";
+  try {
+    return `+${getCountryCallingCode(country)}`;
+  } catch {
+    return "";
+  }
+}
+
+function regionName(option: CountryOption, locale: string): string {
+  const fallback = option.label ?? String(option.country);
+  if (option.country === INTERNATIONAL_COUNTRY) return fallback;
+  try {
+    return new Intl.DisplayNames([locale], { type: "region" }).of(option.country) ?? fallback;
+  } catch {
+    return fallback;
+  }
+}
+
+function CountryIcon({ country }: { country: Country }) {
+  if (country === INTERNATIONAL_COUNTRY) {
+    return <GlobeIcon className="text-muted-foreground" />;
+  }
+  return <CountryFlag code={country} />;
+}
+
+function PhoneInputCountrySelect({
+  value,
+  options = [],
+  onChange,
+  onFocus,
+  onBlur,
+  disabled,
+  "aria-label": ariaLabel,
+  "data-slot": dataSlot,
+}: CountrySelectComponentProps) {
+  const locale = useLocale();
+
+  return (
+    <InputGroupAddon align="inline-start" className="pr-0">
+      <Select
+        value={value ?? null}
+        onValueChange={(next) => onChange?.(next ?? undefined)}
+        disabled={disabled}
+      >
+        <SelectTrigger
+          size="sm"
+          aria-label={ariaLabel}
+          data-slot={dataSlot}
+          onFocus={onFocus}
+          onBlur={onBlur}
+          className="h-full min-h-0 w-auto rounded-none border-0 bg-transparent shadow-none ring-0 focus-visible:ring-0"
+        >
+          {value ? <CountryIcon country={value} /> : null}
+          <span className="text-xs">{callingCode(value)}</span>
+        </SelectTrigger>
+        <SelectContent>
+          {options.map((option) => (
+            <SelectItem key={option.country} value={option.country}>
+              <span className="flex items-center gap-2">
+                <CountryIcon country={option.country} />
+                <span>{regionName(option, locale)}</span>
+                <span className="text-xs text-muted-foreground">{callingCode(option.country)}</span>
+              </span>
+            </SelectItem>
+          ))}
+        </SelectContent>
+      </Select>
+    </InputGroupAddon>
+  );
+}
 
 export type PhoneInputProps = Omit<
   React.ComponentProps<"input">,
@@ -65,10 +131,10 @@ export function PhoneInput({
       countries={countries}
       containerComponent={InputGroup}
       containerComponentProps={{ "data-slot": "phone-input" }}
-      inputComponent={InputGroupInput}
-      numberInputProps={{ className: inputClasses }}
+      countrySelectComponent={PhoneInputCountrySelect}
       countrySelectProps={{ "aria-label": countryAriaLabel, "data-slot": COUNTRY_SELECT_SLOT }}
-      className={cn(controlClasses, className)}
+      inputComponent={InputGroupInput}
+      className={className}
       {...props}
     />
   );

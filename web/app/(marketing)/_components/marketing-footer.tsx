@@ -1,8 +1,13 @@
 "use client";
 
+import Image from "next/image";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { SwissBrandMark } from "./swiss-grid-mark";
+
+// TODO: replace with the real store listing URLs once published
+const APP_STORE_URL = "https://apps.apple.com/";
+const PLAY_STORE_URL = "https://play.google.com/store/apps";
 
 const FOOTER_GROUPS = [
   {
@@ -67,6 +72,38 @@ export function MarketingFooter() {
             <div className="inline-flex items-center gap-2 rounded-full border border-border-subtle bg-background px-3 py-1.5 text-xs text-muted-foreground">
               <span className="size-1.5 rounded-full bg-success" aria-hidden="true" />
               <span>{tFooter("status")}</span>
+            </div>
+            <div className="flex flex-wrap items-center gap-3 pt-1">
+              <a
+                href={APP_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={tFooter("downloadAppStore")}
+                className="inline-flex transition-opacity hover:opacity-80"
+              >
+                <Image
+                  src="/store-badges/app-store.svg"
+                  alt={tFooter("downloadAppStore")}
+                  width={120}
+                  height={40}
+                  className="h-10 w-auto"
+                />
+              </a>
+              <a
+                href={PLAY_STORE_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                aria-label={tFooter("downloadGooglePlay")}
+                className="inline-flex transition-opacity hover:opacity-80"
+              >
+                <Image
+                  src="/store-badges/google-play.png"
+                  alt={tFooter("downloadGooglePlay")}
+                  width={646}
+                  height={250}
+                  className="h-10 w-auto"
+                />
+              </a>
             </div>
           </div>
 

@@ -59,7 +59,7 @@ func TestContactService_Create(t *testing.T) {
 					return contact, nil
 				},
 			}
-			svc := NewContactService(contacts, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, SupplierProfileDAOMock{})
+			svc := NewContactService(contacts, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, SupplierProfileDAOMock{}, EmployeeRoleReaderMock{})
 
 			created, err := svc.Create(ctx, tt.contact, tt.addresses, nil, nil, nil)
 			if helper.AssertError(t, err, tt.wantErrV != nil, tt.wantErrV) {
@@ -82,7 +82,7 @@ func TestContactService_Update_NotFound(t *testing.T) {
 			},
 		},
 	}
-	svc := NewContactService(contacts, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, SupplierProfileDAOMock{})
+	svc := NewContactService(contacts, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, SupplierProfileDAOMock{}, EmployeeRoleReaderMock{})
 
 	_, err := svc.Update(ctx, 1, &Contact{Name: "Acme"})
 	if helper.AssertError(t, err, true, ErrContactNotFound) {
@@ -141,7 +141,7 @@ func TestContactService_EnableCustomer_GetOrCreate(t *testing.T) {
 					},
 				},
 			}
-			svc := NewContactService(contacts, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, customers, SupplierProfileDAOMock{})
+			svc := NewContactService(contacts, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, customers, SupplierProfileDAOMock{}, EmployeeRoleReaderMock{})
 
 			_, err := svc.EnableCustomer(ctx, 1, &CustomerProfile{})
 			if helper.AssertError(t, err, false, nil) {
@@ -170,7 +170,7 @@ func TestContactService_DisableSupplier(t *testing.T) {
 			},
 		},
 	}
-	svc := NewContactService(ContactDAOMock{}, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, suppliers)
+	svc := NewContactService(ContactDAOMock{}, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, suppliers, EmployeeRoleReaderMock{})
 
 	if err := svc.DisableSupplier(ctx, 1); helper.AssertError(t, err, false, nil) {
 		return
@@ -190,7 +190,7 @@ func TestContactService_Create_WithCustomerAndSupplierRoles(t *testing.T) {
 			return contact, nil
 		},
 	}
-	svc := NewContactService(contacts, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, SupplierProfileDAOMock{})
+	svc := NewContactService(contacts, ContactAddressDAOMock{}, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, SupplierProfileDAOMock{}, EmployeeRoleReaderMock{})
 
 	created, err := svc.Create(ctx, &Contact{Name: "Acme Corp"}, nil, nil, &CustomerProfile{Active: true}, &SupplierProfile{Active: true})
 	if helper.AssertError(t, err, false, nil) {
@@ -226,7 +226,7 @@ func TestContactService_SetDefaultAddress_Success(t *testing.T) {
 			return nil
 		},
 	}
-	svc := NewContactService(ContactDAOMock{}, addresses, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, SupplierProfileDAOMock{})
+	svc := NewContactService(ContactDAOMock{}, addresses, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, SupplierProfileDAOMock{}, EmployeeRoleReaderMock{})
 
 	if err := svc.SetDefaultAddress(ctx, 1, 1); !helper.AssertError(t, err, false, nil) {
 		return
@@ -246,7 +246,7 @@ func TestContactService_SetDefaultAddress_ValidatesOwnership(t *testing.T) {
 			},
 		},
 	}
-	svc := NewContactService(ContactDAOMock{}, addresses, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, SupplierProfileDAOMock{})
+	svc := NewContactService(ContactDAOMock{}, addresses, ContactBankAccountDAOMock{}, CustomerProfileDAOMock{}, SupplierProfileDAOMock{}, EmployeeRoleReaderMock{})
 
 	if err := svc.SetDefaultAddress(ctx, 1, 1); !helper.AssertError(t, err, true, ErrAddressNotForContact) {
 		return
@@ -264,7 +264,7 @@ func TestContactService_BankAccountOwnership(t *testing.T) {
 			},
 		},
 	}
-	svc := NewContactService(ContactDAOMock{}, ContactAddressDAOMock{}, banks, CustomerProfileDAOMock{}, SupplierProfileDAOMock{})
+	svc := NewContactService(ContactDAOMock{}, ContactAddressDAOMock{}, banks, CustomerProfileDAOMock{}, SupplierProfileDAOMock{}, EmployeeRoleReaderMock{})
 
 	if err := svc.DeleteBankAccount(context.Background(), 1, 2); !helper.AssertError(t, err, true, ErrBankAccountNotFound) {
 		return
