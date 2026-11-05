@@ -1,0 +1,61 @@
+export const GUIDE_COLLECTIONS = [
+  {
+    id: "getting-started",
+    index: "01",
+    code: "GUIDE // 01",
+    titleKey: "collection1Title",
+    descriptionKey: "collection1Description",
+    readTimeKey: "collection1ReadTime",
+  },
+  {
+    id: "sales",
+    index: "02",
+    code: "GUIDE // 02",
+    titleKey: "collection2Title",
+    descriptionKey: "collection2Description",
+    readTimeKey: "collection2ReadTime",
+  },
+  {
+    id: "inventory",
+    index: "03",
+    code: "GUIDE // 03",
+    titleKey: "collection3Title",
+    descriptionKey: "collection3Description",
+    readTimeKey: "collection3ReadTime",
+  },
+  {
+    id: "close",
+    index: "04",
+    code: "GUIDE // 04",
+    titleKey: "collection4Title",
+    descriptionKey: "collection4Description",
+    readTimeKey: "collection4ReadTime",
+  },
+  {
+    id: "payroll",
+    index: "05",
+    code: "GUIDE // 05",
+    titleKey: "collection5Title",
+    descriptionKey: "collection5Description",
+    readTimeKey: "collection5ReadTime",
+  },
+  {
+    id: "service",
+    index: "06",
+    code: "GUIDE // 06",
+    titleKey: "collection6Title",
+    descriptionKey: "collection6Description",
+    readTimeKey: "collection6ReadTime",
+  },
+] as const;
+
+export const GUIDE_TOPICS = [
+  { id: "onboarding", index: "01", name: "Onboarding", spec: "Setup and imports" },
+  { id: "o2c", index: "02", name: "O2C", spec: "Quotes to cash" },
+  { id: "i2f", index: "03", name: "I2F", spec: "Stock and fulfillment" },
+  { id: "r2r", index: "04", name: "R2R", spec: "Ledger and close" },
+  { id: "h2r", index: "05", name: "H2R", spec: "People and payroll" },
+  { id: "s2c", index: "06", name: "S2C", spec: "Service and field" },
+  { id: "api", index: "07", name: "API", spec: "Webhooks and REST" },
+  { id: "reports", index: "08", name: "Reports", spec: "Dashboards and exports" },
+] as const;

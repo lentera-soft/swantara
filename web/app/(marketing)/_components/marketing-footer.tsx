@@ -14,9 +14,9 @@ const FOOTER_GROUPS = [
     id: "product",
     titleKey: "product",
     links: [
-      { id: "features", labelKey: "features", href: "/product" },
+      { id: "features", labelKey: "features", href: "/features" },
       { id: "pricing", labelKey: "pricing", href: "/pricing" },
-      { id: "security", labelKey: "security", href: "/product#security" },
+      { id: "security", labelKey: "security", href: "/security" },
     ],
   },
   {
@@ -24,7 +24,7 @@ const FOOTER_GROUPS = [
     titleKey: "company",
     links: [
       { id: "about", labelKey: "about", href: "/about" },
-      { id: "careers", labelKey: "careers", href: "/about#careers" },
+      { id: "careers", labelKey: "careers", href: "/careers" },
       { id: "contact", labelKey: "contact", href: "/contact" },
     ],
   },
@@ -32,18 +32,18 @@ const FOOTER_GROUPS = [
     id: "resources",
     titleKey: "resources",
     links: [
-      { id: "guides", labelKey: "guides", href: "/product" },
-      { id: "changelog", labelKey: "changelog", href: "/product#modules" },
-      { id: "support", labelKey: "support", href: "/contact" },
+      { id: "guides", labelKey: "guides", href: "/guides" },
+      { id: "changelog", labelKey: "changelog", href: "/changelog" },
+      { id: "support", labelKey: "support", href: "/support" },
     ],
   },
   {
     id: "legal",
     titleKey: "legal",
     links: [
-      { id: "privacy", labelKey: "privacy", href: "/licenses" },
-      { id: "terms", labelKey: "terms", href: "/licenses" },
-      { id: "dpa", labelKey: "dpa", href: "/contact" },
+      { id: "privacy", labelKey: "privacy", href: "/privacy" },
+      { id: "terms", labelKey: "terms", href: "/terms" },
+      { id: "dpa", labelKey: "dpa", href: "/dpa" },
     ],
   },
 ] as const;
