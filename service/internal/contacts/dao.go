@@ -2,6 +2,7 @@ package contacts
 
 import (
 	"context"
+	"errors"
 
 	"github.com/jalusw/swantara/apps/service/internal/kernel/dao"
 	"github.com/jalusw/swantara/apps/service/internal/kernel/query"
@@ -21,6 +22,14 @@ type ContactDAO interface {
 	CreateWithDetailsTx(
 		ctx context.Context,
 		tx *gorm.DB,
+		contact *Contact,
+		addresses []*ContactAddress,
+		banks []*ContactBankAccount,
+		customer *CustomerProfile,
+		supplier *SupplierProfile,
+	) (*Contact, error)
+	UpdateWithDetails(
+		ctx context.Context,
 		contact *Contact,
 		addresses []*ContactAddress,
 		banks []*ContactBankAccount,
@@ -95,6 +104,95 @@ func (d contactDAO) CreateWithDetailsTx(
 		}
 	}
 	return contact, nil
+}
+
+func (d contactDAO) UpdateWithDetails(
+	ctx context.Context,
+	contact *Contact,
+	addresses []*ContactAddress,
+	banks []*ContactBankAccount,
+	customer *CustomerProfile,
+	supplier *SupplierProfile,
+) (*Contact, error) {
+	err := d.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if err := tx.WithContext(ctx).Save(contact).Error; err != nil {
+			return err
+		}
+		if addresses != nil {
+			if err := tx.WithContext(ctx).
+				Where("contact_id = ?", contact.ID).
+				Delete(&ContactAddress{}).Error; err != nil {
+				return err
+			}
+			for _, address := range addresses {
+				address.ContactID = contact.ID
+				if err := tx.WithContext(ctx).Create(address).Error; err != nil {
+					return err
+				}
+			}
+		}
+		if banks != nil {
+			if err := tx.WithContext(ctx).
+				Where("contact_id = ?", contact.ID).
+				Delete(&ContactBankAccount{}).Error; err != nil {
+				return err
+			}
+			for _, bank := range banks {
+				bank.ContactID = contact.ID
+				if err := tx.WithContext(ctx).Create(bank).Error; err != nil {
+					return err
+				}
+			}
+		}
+		if customer != nil {
+			if err := upsertCustomerTx(ctx, tx, contact.ID, customer); err != nil {
+				return err
+			}
+		}
+		if supplier != nil {
+			if err := upsertSupplierTx(ctx, tx, contact.ID, supplier); err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return contact, nil
+}
+
+func upsertCustomerTx(ctx context.Context, tx *gorm.DB, contactID uint64, profile *CustomerProfile) error {
+	var existing CustomerProfile
+	err := tx.WithContext(ctx).Where("contact_id = ?", contactID).First(&existing).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		profile.ContactID = contactID
+		return tx.WithContext(ctx).Create(profile).Error
+	}
+	if err != nil {
+		return err
+	}
+	existing.CustomerPaymentTermID = profile.CustomerPaymentTermID
+	existing.CreditLimit = profile.CreditLimit
+	existing.ReceivableAccountID = profile.ReceivableAccountID
+	existing.Active = profile.Active
+	return tx.WithContext(ctx).Save(&existing).Error
+}
+
+func upsertSupplierTx(ctx context.Context, tx *gorm.DB, contactID uint64, profile *SupplierProfile) error {
+	var existing SupplierProfile
+	err := tx.WithContext(ctx).Where("contact_id = ?", contactID).First(&existing).Error
+	if errors.Is(err, gorm.ErrRecordNotFound) {
+		profile.ContactID = contactID
+		return tx.WithContext(ctx).Create(profile).Error
+	}
+	if err != nil {
+		return err
+	}
+	existing.SupplierPaymentTermID = profile.SupplierPaymentTermID
+	existing.PayableAccountID = profile.PayableAccountID
+	existing.Active = profile.Active
+	return tx.WithContext(ctx).Save(&existing).Error
 }
 
 type ContactAddressDAO interface {

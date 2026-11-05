@@ -11,20 +11,24 @@ import (
 )
 
 type UpdateContactRequest struct {
-	OrganizationID *uint64 `json:"organization_id"`
-	Name           string  `json:"name" validate:"required"`
-	DisplayName    *string `json:"display_name"`
-	IsOrganization bool    `json:"is_organization"`
-	ParentID       *uint64 `json:"parent_id"`
-	Email          *string `json:"email" validate:"omitempty,email"`
-	Phone          *string `json:"phone"`
-	Mobile         *string `json:"mobile"`
-	Website        *string `json:"website"`
-	TaxID          *string `json:"tax_id"`
-	Industry       *string `json:"industry"`
-	CurrencyCode   *string `json:"currency_code"`
-	Lang           string  `json:"lang"`
-	Active         bool    `json:"active"`
+	OrganizationID *uint64                      `json:"organization_id"`
+	Name           string                       `json:"name" validate:"required"`
+	DisplayName    *string                      `json:"display_name"`
+	IsOrganization bool                         `json:"is_organization"`
+	ParentID       *uint64                      `json:"parent_id"`
+	Email          *string                      `json:"email" validate:"omitempty,email"`
+	Phone          *string                      `json:"phone"`
+	Mobile         *string                      `json:"mobile"`
+	Website        *string                      `json:"website"`
+	TaxID          *string                      `json:"tax_id"`
+	Industry       *string                      `json:"industry"`
+	CurrencyCode   *string                      `json:"currency_code"`
+	Lang           string                       `json:"lang"`
+	Active         bool                         `json:"active"`
+	Addresses      *[]ContactAddressRequest     `json:"addresses"`
+	BankAccounts   *[]ContactBankAccountRequest `json:"bank_accounts"`
+	Customer       *CustomerProfileRequest      `json:"customer"`
+	Supplier       *SupplierProfileRequest      `json:"supplier"`
 }
 
 type UpdateContactResponseEnvelope struct {
@@ -36,7 +40,7 @@ type UpdateContactResponse struct {
 }
 
 // @Summary Update contact
-// @Description Updates a contact's base identity fields after enforcing tenant ownership, returning 404 when the contact is missing or not owned by the caller's organization. A non-empty name is required, and the updated contact is returned with HATEOAS links.
+// @Description Updates a contact's base identity fields after enforcing tenant ownership, returning 404 when the contact is missing or not owned by the caller's organization. A non-empty name is required. When addresses, bank_accounts, customer, or supplier are present they are replaced or upserted atomically with the contact; omitted sections are left unchanged. The updated contact is returned with HATEOAS links.
 // @Tags Contacts
 // @Accept json
 // @Produce json
@@ -80,7 +84,7 @@ func (h ContactHandler) Update(c fiber.Ctx) error {
 		return httpx.CreateNotFoundResponse(c, "Contact not found.")
 	}
 
-	contact, err := h.svc.Update(c, contactID, &contacts.Contact{
+	base := &contacts.Contact{
 		OrganizationID: httpx.TenantOrganizationID(c, existing.OrganizationID),
 		Name:           request.Name,
 		DisplayName:    request.DisplayName,
@@ -95,7 +99,62 @@ func (h ContactHandler) Update(c fiber.Ctx) error {
 		CurrencyCode:   request.CurrencyCode,
 		Lang:           request.Lang,
 		Active:         request.Active,
-	})
+	}
+
+	contact := base
+	if request.Addresses != nil || request.BankAccounts != nil || request.Customer != nil || request.Supplier != nil {
+		var addresses []*contacts.ContactAddress
+		var banks []*contacts.ContactBankAccount
+		if request.Addresses != nil {
+			addresses = make([]*contacts.ContactAddress, len(*request.Addresses))
+			for i, address := range *request.Addresses {
+				addresses[i] = &contacts.ContactAddress{
+					Type:        address.Type,
+					Line1:       address.Line1,
+					Line2:       address.Line2,
+					City:        address.City,
+					State:       address.State,
+					PostalCode:  address.PostalCode,
+					CountryCode: address.CountryCode,
+					IsDefault:   address.IsDefault,
+				}
+			}
+		}
+		if request.BankAccounts != nil {
+			banks = make([]*contacts.ContactBankAccount, len(*request.BankAccounts))
+			for i, bank := range *request.BankAccounts {
+				banks[i] = &contacts.ContactBankAccount{
+					AccountHolder: bank.AccountHolder,
+					BankName:      bank.BankName,
+					IBAN:          bank.IBAN,
+					SwiftBIC:      bank.SwiftBIC,
+					AccountNumber: bank.AccountNumber,
+					RoutingNumber: bank.RoutingNumber,
+					CurrencyCode:  bank.CurrencyCode,
+				}
+			}
+		}
+		var customer *contacts.CustomerProfile
+		if request.Customer != nil {
+			customer = &contacts.CustomerProfile{
+				CustomerPaymentTermID: request.Customer.CustomerPaymentTermID,
+				CreditLimit:           request.Customer.CreditLimit,
+				ReceivableAccountID:   request.Customer.ReceivableAccountID,
+				Active:                request.Customer.Active,
+			}
+		}
+		var supplier *contacts.SupplierProfile
+		if request.Supplier != nil {
+			supplier = &contacts.SupplierProfile{
+				SupplierPaymentTermID: request.Supplier.SupplierPaymentTermID,
+				PayableAccountID:      request.Supplier.PayableAccountID,
+				Active:                request.Supplier.Active,
+			}
+		}
+		contact, err = h.svc.UpdateWithDetails(c, contactID, base, addresses, banks, customer, supplier)
+	} else {
+		contact, err = h.svc.Update(c, contactID, base)
+	}
 	if err != nil {
 		return writeContactError(c, err)
 	}

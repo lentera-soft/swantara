@@ -656,6 +656,10 @@ func (contactDAOMock) CreateWithDetailsTx(_ context.Context, _ *gorm.DB, _ *cont
 	return nil, nil
 }
 
+func (contactDAOMock) UpdateWithDetails(_ context.Context, contact *contacts.Contact, _ []*contacts.ContactAddress, _ []*contacts.ContactBankAccount, _ *contacts.CustomerProfile, _ *contacts.SupplierProfile) (*contacts.Contact, error) {
+	return contact, nil
+}
+
 type orderCreatorMock struct {
 	createFunc func(ctx context.Context, order *PurchaseOrder, lines []*PurchaseOrderLine) (*PurchaseOrder, error)
 }

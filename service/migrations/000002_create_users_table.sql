@@ -13,6 +13,9 @@ CREATE TABLE organizations (
   tax_year_start_month SMALLINT DEFAULT 1,
   auto_checkout_hour SMALLINT,
   rounding_minutes SMALLINT DEFAULT 0,
+  address TEXT,
+  city TEXT,
+  postal_code TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP,
@@ -51,6 +54,7 @@ CREATE TABLE contacts (
   industry TEXT,
   currency_code CHAR(3),
   lang TEXT DEFAULT 'en',
+  code TEXT,
   active BOOLEAN DEFAULT true,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -72,6 +76,9 @@ CREATE TABLE contacts (
     ON UPDATE NO ACTION
 );
 
+CREATE UNIQUE INDEX IF NOT EXISTS idx_contacts_code_unique_active
+  ON contacts(organization_id, code) WHERE deleted_at IS NULL AND code IS NOT NULL;
+
 CREATE TABLE users(
   id BIGINT GENERATED ALWAYS AS IDENTITY PRIMARY KEY,
   username TEXT NOT NULL,
@@ -89,6 +96,8 @@ CREATE TABLE users(
   address TEXT,
   city TEXT,
   postal_code TEXT,
+  country TEXT,
+  country_code CHAR(2),
   email_verified_at TIMESTAMP DEFAULT NULL,
   phone_verified_at TIMESTAMP DEFAULT NULL,
   contact_id BIGINT,

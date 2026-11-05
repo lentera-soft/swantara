@@ -22,6 +22,7 @@ CREATE TABLE invoices (
   amount_total NUMERIC(18,4) DEFAULT 0,
   amount_residual NUMERIC(18,4) DEFAULT 0,
   tax_rule TEXT,
+  is_advance BOOLEAN NOT NULL DEFAULT FALSE,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP,

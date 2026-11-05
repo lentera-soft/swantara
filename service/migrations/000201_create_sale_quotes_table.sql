@@ -19,6 +19,7 @@ CREATE TABLE sale_quotes (
   amount_untaxed NUMERIC(18,4) DEFAULT 0,
   amount_tax NUMERIC(18,4) DEFAULT 0,
   amount_total NUMERIC(18,4) DEFAULT 0,
+  expected_revenue NUMERIC(18,4),
   version INTEGER NOT NULL DEFAULT 1,
   root_quote_id BIGINT,
   previous_quote_id BIGINT,

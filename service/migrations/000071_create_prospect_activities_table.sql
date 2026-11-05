@@ -11,6 +11,10 @@ CREATE TABLE prospect_activities (
   done BOOLEAN DEFAULT false,
   done_at TIMESTAMP,
   user_id BIGINT,
+  outcome TEXT,
+  next_step TEXT,
+  next_step_due DATE,
+  participants TEXT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP,
@@ -28,7 +32,12 @@ CREATE TABLE prospect_activities (
     FOREIGN KEY (user_id)
     REFERENCES users(id)
     ON DELETE RESTRICT
-    ON UPDATE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT prospect_activities_outcome_check
+    CHECK (outcome IS NULL OR outcome IN (
+      'connected','no_answer','left_message','meeting_held','demo_done',
+      'proposal_sent','follow_up','not_interested','other'
+    ))
 );
 
 -- +goose Down

@@ -84,6 +84,51 @@ func TestOrganizationService_QuickCreate(t *testing.T) {
 		}
 	})
 
+	t.Run("uses the selected currency and address", func(t *testing.T) {
+		orgs := DAOMock{
+			CRUDMock: dao.CRUDMock[reference.Organization]{
+				CreateFunc: func(_ context.Context, org *reference.Organization) (*reference.Organization, error) {
+					org.ID = 11
+					return org, nil
+				},
+			},
+		}
+		currencies := currencyDAOMock{
+			searchFunc: func(_ context.Context, _ string, value any) (*reference.Currency, error) {
+				if value == "USD" {
+					return &reference.Currency{Code: "USD"}, nil
+				}
+				return nil, nil
+			},
+		}
+		svc := NewOrganizationService(orgs, currencies, countryDAOMock{}, memberProvisionerMock{}, nil)
+		address := "Jl. Sudirman 1"
+		city := "Jakarta"
+		postalCode := "10220"
+
+		created, err := svc.QuickCreate(ctx, "Toko Maju", "ID", 5, QuickCreateOptions{
+			BaseCurrency: "usd",
+			Address:      &address,
+			City:         &city,
+			PostalCode:   &postalCode,
+		})
+		if helper.AssertError(t, err, false, nil) {
+			return
+		}
+		if created.BaseCurrency != "USD" {
+			t.Errorf("currency = %q, want USD", created.BaseCurrency)
+		}
+		if created.Address == nil || *created.Address != address {
+			t.Errorf("address = %+v, want %q", created.Address, address)
+		}
+		if created.City == nil || *created.City != city {
+			t.Errorf("city = %+v, want %q", created.City, city)
+		}
+		if created.PostalCode == nil || *created.PostalCode != postalCode {
+			t.Errorf("postal code = %+v, want %q", created.PostalCode, postalCode)
+		}
+	})
+
 	t.Run("seeds base data when seeder configured", func(t *testing.T) {
 		orgs, currencies, members := quickCreateMocks("USD", nil)
 		seeder := &seederStub{}

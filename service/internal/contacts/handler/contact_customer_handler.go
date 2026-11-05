@@ -41,6 +41,46 @@ type EnableCustomerResponse struct {
 	Customer CustomerProfileResponse `json:"customer"`
 }
 
+type GetCustomerResponseEnvelope struct {
+	httpx.EnvelopeBase
+	Data EnableCustomerResponse `json:"data"`
+}
+
+// @Summary Get customer role profile
+// @Description Retrieves the customer profile of a tenant-owned contact, returning 404 when the contact does not carry the customer role. The response contains payment term, credit limit, receivable account, and active state.
+// @Tags Contacts
+// @Produce json
+// @Param id path integer true "Contact ID"
+// @Success 200 {object} GetCustomerResponseEnvelope "Customer profile retrieved successfully."
+// @Failure 404 {object} httpx.ErrorResponse "Contact or customer profile not found"
+// @Failure 500 {object} httpx.ErrorResponse "Internal server error"
+// @Security BearerAuth
+// @Param organization_id path integer true "Organization ID"
+// @Router /organizations/{organization_id}/contacts/{id}/customer [get]
+func (h ContactRelationHandler) GetCustomer(c fiber.Ctx) error {
+	contactID, ok := h.contactID(c)
+	if !ok {
+		return nil
+	}
+	if !h.contactExists(c, contactID) {
+		return nil
+	}
+
+	record, err := h.svc.FindCustomerProfile(c, contactID)
+	if err != nil {
+		httpx.RequestLog(c).Error("get customer profile failed", "contact_id", contactID, "error", err)
+		return httpx.CreateInternalServerErrorResponse(c, "Failed to get customer profile.", err)
+	}
+	if record == nil {
+		return httpx.CreateNotFoundResponse(c, "Customer profile not found.")
+	}
+
+	httpx.RequestLog(c).Info("operation completed")
+	return httpx.CreateSuccessResponse(c, "Customer profile retrieved successfully.", EnableCustomerResponse{
+		Customer: newCustomerProfileResponse(record),
+	})
+}
+
 // @Summary Enable or update customer role
 // @Description Enables the customer role for a tenant-owned contact, creating the customer record when it does not exist or updating it when it does, with payment term, credit limit, and receivable account. The role is always activated regardless of the submitted active flag, and the resulting customer record is returned.
 // @Tags Contacts

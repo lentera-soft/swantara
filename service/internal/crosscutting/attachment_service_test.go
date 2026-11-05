@@ -55,7 +55,7 @@ func TestAttachmentServiceUploadStoresAndRecordsChecksum(t *testing.T) {
 		return attachment, nil
 	}
 
-	created, err := svc.Upload(context.Background(), 7, "purchase_order", 10, 2, "scan.pdf", "application/pdf", bytes.NewReader(content))
+	created, err := svc.Upload(context.Background(), 7, "purchase_order", 10, 2, "scan.pdf", "application/pdf", 0, false, bytes.NewReader(content))
 
 	helper.AssertError(t, err, false, nil)
 	if created.ID != 5 {
@@ -84,7 +84,7 @@ func TestAttachmentServiceUploadStoresAndRecordsChecksum(t *testing.T) {
 func TestAttachmentServiceUploadRequiresOrganization(t *testing.T) {
 	svc := NewAttachmentService(&AttachmentDAOMock{}, newStoreMock())
 
-	_, err := svc.Upload(context.Background(), 0, "purchase_order", 10, 2, "scan.pdf", "application/pdf", bytes.NewReader([]byte("x")))
+	_, err := svc.Upload(context.Background(), 0, "purchase_order", 10, 2, "scan.pdf", "application/pdf", 0, false, bytes.NewReader([]byte("x")))
 
 	helper.AssertError(t, err, true, ErrAttachmentOrganization)
 }
@@ -92,7 +92,7 @@ func TestAttachmentServiceUploadRequiresOrganization(t *testing.T) {
 func TestAttachmentServiceUploadRequiresOwner(t *testing.T) {
 	svc := NewAttachmentService(&AttachmentDAOMock{}, newStoreMock())
 
-	_, err := svc.Upload(context.Background(), 7, "purchase_order", 0, 2, "scan.pdf", "application/pdf", bytes.NewReader([]byte("x")))
+	_, err := svc.Upload(context.Background(), 7, "purchase_order", 0, 2, "scan.pdf", "application/pdf", 0, false, bytes.NewReader([]byte("x")))
 
 	helper.AssertError(t, err, true, ErrAttachmentOwner)
 }
@@ -100,9 +100,101 @@ func TestAttachmentServiceUploadRequiresOwner(t *testing.T) {
 func TestAttachmentServiceUploadRequiresContent(t *testing.T) {
 	svc := NewAttachmentService(&AttachmentDAOMock{}, newStoreMock())
 
-	_, err := svc.Upload(context.Background(), 7, "purchase_order", 10, 2, "empty.pdf", "application/pdf", bytes.NewReader(nil))
+	_, err := svc.Upload(context.Background(), 7, "purchase_order", 10, 2, "empty.pdf", "application/pdf", 0, false, bytes.NewReader(nil))
 
 	helper.AssertError(t, err, true, ErrAttachmentEmpty)
+}
+
+func TestAttachmentServiceUploadAppendsSortOrderWhenUnset(t *testing.T) {
+	attachments := &AttachmentDAOMock{}
+	attachments.ListByOwnerFunc = func(_ context.Context, _ string, _ uint64) ([]*Attachment, error) {
+		return []*Attachment{
+			{Base: model.Base{ID: 1}, OrganizationID: 7, OwnerType: "product", OwnerID: 10},
+			{Base: model.Base{ID: 2}, OrganizationID: 7, OwnerType: "product", OwnerID: 10, SortOrder: 20},
+		}, nil
+	}
+	svc := NewAttachmentService(attachments, newStoreMock())
+
+	created, err := svc.Upload(context.Background(), 7, "product", 10, 2, "back.png", "image/png", 0, false, bytes.NewReader([]byte("png")))
+
+	helper.AssertError(t, err, false, nil)
+	if created.SortOrder != 30 {
+		t.Errorf("sort_order = %d, want 30 (appended after highest existing)", created.SortOrder)
+	}
+}
+
+func TestAttachmentServiceUploadRecordsPlacementAndClearsSiblingPrimary(t *testing.T) {
+	attachments := &AttachmentDAOMock{}
+	siblings := []*Attachment{
+		{Base: model.Base{ID: 1}, OrganizationID: 7, OwnerType: "product", OwnerID: 10, IsPrimary: true},
+		{Base: model.Base{ID: 2}, OrganizationID: 7, OwnerType: "product", OwnerID: 10, SortOrder: 40},
+	}
+	attachments.ListByOwnerFunc = func(_ context.Context, _ string, _ uint64) ([]*Attachment, error) {
+		return siblings, nil
+	}
+	var updates []*Attachment
+	attachments.UpdateFunc = func(_ context.Context, attachment *Attachment) (*Attachment, error) {
+		updates = append(updates, attachment)
+		return attachment, nil
+	}
+	svc := NewAttachmentService(attachments, newStoreMock())
+
+	created, err := svc.Upload(context.Background(), 7, "product", 10, 2, "front.png", "image/png", 5, true, bytes.NewReader([]byte("png")))
+
+	helper.AssertError(t, err, false, nil)
+	if created.SortOrder != 5 || !created.IsPrimary {
+		t.Errorf("placement not recorded: %+v", created)
+	}
+	if len(updates) != 1 || updates[0].ID != 1 || updates[0].IsPrimary {
+		t.Errorf("sibling primary not cleared: %+v", updates)
+	}
+}
+
+func TestAttachmentServiceUpdateSetsSortOrderAndPrimary(t *testing.T) {
+	attachments := &AttachmentDAOMock{}
+	attachments.FindFunc = func(_ context.Context, _ uint64) (*Attachment, error) {
+		return &Attachment{Base: model.Base{ID: 5}, OrganizationID: 7, OwnerType: "product", OwnerID: 10, Filename: "a.png"}, nil
+	}
+	attachments.ListByOwnerFunc = func(_ context.Context, _ string, _ uint64) ([]*Attachment, error) {
+		return []*Attachment{
+			{Base: model.Base{ID: 5}, OrganizationID: 7, OwnerType: "product", OwnerID: 10},
+			{Base: model.Base{ID: 6}, OrganizationID: 7, OwnerType: "product", OwnerID: 10, IsPrimary: true},
+		}, nil
+	}
+	var updates []*Attachment
+	attachments.UpdateFunc = func(_ context.Context, attachment *Attachment) (*Attachment, error) {
+		updates = append(updates, attachment)
+		return attachment, nil
+	}
+	svc := NewAttachmentService(attachments, newStoreMock())
+
+	sortOrder := 15
+	isPrimary := true
+	updated, err := svc.Update(context.Background(), 7, 5, &sortOrder, &isPrimary)
+
+	helper.AssertError(t, err, false, nil)
+	if updated.SortOrder != 15 || !updated.IsPrimary {
+		t.Errorf("fields not applied: %+v", updated)
+	}
+	if len(updates) != 2 {
+		t.Fatalf("updates = %d, want self plus sibling demotion", len(updates))
+	}
+	if updates[0].ID != 5 || updates[1].ID != 6 || updates[1].IsPrimary {
+		t.Errorf("unexpected update sequence: %+v %+v", updates[0], updates[1])
+	}
+}
+
+func TestAttachmentServiceUpdateRejectsForeignOrganization(t *testing.T) {
+	attachments := &AttachmentDAOMock{}
+	attachments.FindFunc = func(_ context.Context, _ uint64) (*Attachment, error) {
+		return &Attachment{Base: model.Base{ID: 5}, OrganizationID: 8}, nil
+	}
+	svc := NewAttachmentService(attachments, newStoreMock())
+
+	sortOrder := 15
+	_, err := svc.Update(context.Background(), 7, 5, &sortOrder, nil)
+
+	helper.AssertError(t, err, true, ErrAttachmentNotFound)
 }
 
 func TestAttachmentServiceDownloadReturnsNotFound(t *testing.T) {

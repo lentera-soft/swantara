@@ -7,6 +7,7 @@ CREATE TABLE units (
   factor NUMERIC(28,8) NOT NULL,
   unit_type TEXT CHECK (unit_type IN ('reference','bigger','smaller')),
   rounding NUMERIC(12,6) DEFAULT 0.01,
+  organization_id BIGINT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
   deleted_at TIMESTAMP,
@@ -14,8 +15,15 @@ CREATE TABLE units (
     FOREIGN KEY (category_id)
     REFERENCES unit_groups(id)
     ON DELETE RESTRICT
+    ON UPDATE NO ACTION,
+  CONSTRAINT fk_units_organization_id
+    FOREIGN KEY (organization_id)
+    REFERENCES organizations(id)
+    ON DELETE RESTRICT
     ON UPDATE NO ACTION
 );
+
+CREATE INDEX idx_units_organization_id ON units(organization_id);
 
 -- +goose Down
 SELECT 'down SQL query';

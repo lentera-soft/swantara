@@ -1595,7 +1595,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Creates an organization with just a name and country code. Currency, timezone, and tax year are auto-provisioned based on the country. Base data is provisioned asynchronously in the background. The creator is assigned as the organization owner.",
+                "description": "Creates an organization with just a name and country code. Currency, timezone, and tax year are auto-provisioned based on the country, while an optional base currency and address can be supplied. Base data is provisioned asynchronously in the background. The creator is assigned as the organization owner.",
                 "consumes": [
                     "application/json"
                 ],
@@ -1608,7 +1608,7 @@ const docTemplate = `{
                 "summary": "Quick create organization",
                 "parameters": [
                     {
-                        "description": "Name and country code",
+                        "description": "Name, country code, and optional currency/address",
                         "name": "body",
                         "in": "body",
                         "required": true,
@@ -2888,7 +2888,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Lists attachment metadata with pagination, sorting, and filtering. Filters by owner type, owner id, filename, and mime type are supported so files attached to a resource can be browsed.",
+                "description": "Lists attachment metadata with pagination, sorting, and filtering. Filters by owner type, owner id, filename, mime type, sort order, and primary flag are supported so files attached to a resource can be browsed; sort by sort_order to honor gallery order.",
                 "consumes": [
                     "application/json"
                 ],
@@ -2960,7 +2960,7 @@ const docTemplate = `{
                         "BearerAuth": []
                     }
                 ],
-                "description": "Uploads a file and associates it with the given owner type and owner id, recording the filename, mime type, byte size, and checksum. The authenticated user is recorded as the uploader, and empty files or missing owners are rejected.",
+                "description": "Uploads a file and associates it with the given owner type and owner id, recording the filename, mime type, byte size, and checksum. The authenticated user is recorded as the uploader, and empty files or missing owners are rejected. Optional sort_order places the file within the owner's gallery (defaults to appending after the highest existing value); optional is_primary marks it as the owner's primary file and clears the flag on siblings.",
                 "consumes": [
                     "multipart/form-data"
                 ],
@@ -2985,6 +2985,18 @@ const docTemplate = `{
                         "name": "owner_id",
                         "in": "formData",
                         "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Sort order within the owner's attachments",
+                        "name": "sort_order",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Mark as the owner's primary attachment",
+                        "name": "is_primary",
+                        "in": "formData"
                     },
                     {
                         "type": "file",
@@ -3126,6 +3138,74 @@ const docTemplate = `{
                     },
                     "422": {
                         "description": "Invalid attachment id",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates an attachment's gallery metadata. sort_order repositions the file within its owner's list; is_primary marks it as the owner's primary file and clears the flag on the previous primary. At least one field is required.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Attachments"
+                ],
+                "summary": "Update attachment placement",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Attachment ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Fields to update",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.UpdateAttachmentRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Attachment updated successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/handler.UpdateAttachmentResponseEnvelope"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Attachment not found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
                         "schema": {
                             "$ref": "#/definitions/httpx.ErrorResponse"
                         }
@@ -6977,6 +7057,138 @@ const docTemplate = `{
                     },
                     "404": {
                         "description": "Contact or address not found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/organizations/{organization_id}/contacts/{id}/avatar": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Streams the stored avatar image for a contact after enforcing tenant ownership, returning 404 when the contact or avatar does not exist.",
+                "produces": [
+                    "image/png"
+                ],
+                "tags": [
+                    "Contacts"
+                ],
+                "summary": "Get contact avatar",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "organization_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Contact ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Avatar image",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Avatar not found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "patch": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Uploads an image file to storage and links it to the contact after enforcing tenant ownership. The multipart form must include a \"file\" field containing an image.",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Contacts"
+                ],
+                "summary": "Upload contact avatar",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "organization_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Contact ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "Avatar image file",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Avatar updated successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/handler.UpdateContactAvatarResponseEnvelope"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Contact not found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
                         "schema": {
                             "$ref": "#/definitions/httpx.ErrorResponse"
                         }
@@ -45690,6 +45902,9 @@ const docTemplate = `{
                 "id": {
                     "type": "integer"
                 },
+                "is_primary": {
+                    "type": "boolean"
+                },
                 "mime_type": {
                     "type": "string"
                 },
@@ -45701,6 +45916,9 @@ const docTemplate = `{
                 },
                 "owner_type": {
                     "type": "string"
+                },
+                "sort_order": {
+                    "type": "integer"
                 },
                 "uploaded_by": {
                     "type": "integer"
@@ -47221,6 +47439,12 @@ const docTemplate = `{
                 "active": {
                     "type": "boolean"
                 },
+                "avatar": {
+                    "type": "string"
+                },
+                "code": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -48645,6 +48869,9 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/handler.ContactBankAccountRequest"
                     }
+                },
+                "code": {
+                    "type": "string"
                 },
                 "currency_code": {
                     "type": "string"
@@ -50265,7 +50492,13 @@ const docTemplate = `{
                 "name"
             ],
             "properties": {
+                "address": {
+                    "type": "string"
+                },
                 "base_currency": {
+                    "type": "string"
+                },
+                "city": {
                     "type": "string"
                 },
                 "country_code": {
@@ -50282,6 +50515,9 @@ const docTemplate = `{
                 },
                 "parent_id": {
                     "type": "integer"
+                },
+                "postal_code": {
+                    "type": "string"
                 },
                 "tax_id": {
                     "type": "string"
@@ -63982,7 +64218,13 @@ const docTemplate = `{
         "handler.OrganizationResponse": {
             "type": "object",
             "properties": {
+                "address": {
+                    "type": "string"
+                },
                 "base_currency": {
+                    "type": "string"
+                },
+                "city": {
                     "type": "string"
                 },
                 "country_code": {
@@ -64005,6 +64247,9 @@ const docTemplate = `{
                 },
                 "parent_id": {
                     "type": "integer"
+                },
+                "postal_code": {
+                    "type": "string"
                 },
                 "tax_id": {
                     "type": "string"
@@ -66151,10 +66396,22 @@ const docTemplate = `{
                 "name"
             ],
             "properties": {
+                "address": {
+                    "type": "string"
+                },
+                "base_currency": {
+                    "type": "string"
+                },
+                "city": {
+                    "type": "string"
+                },
                 "country_code": {
                     "type": "string"
                 },
                 "name": {
+                    "type": "string"
+                },
+                "postal_code": {
                     "type": "string"
                 }
             }
@@ -70342,6 +70599,48 @@ const docTemplate = `{
                 }
             }
         },
+        "handler.UpdateAttachmentRequest": {
+            "type": "object",
+            "properties": {
+                "is_primary": {
+                    "type": "boolean"
+                },
+                "sort_order": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handler.UpdateAttachmentResponse": {
+            "type": "object",
+            "properties": {
+                "attachment": {
+                    "$ref": "#/definitions/handler.AttachmentResponse"
+                }
+            }
+        },
+        "handler.UpdateAttachmentResponseEnvelope": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/handler.UpdateAttachmentResponse"
+                },
+                "links": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpx.Link"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {
+                    "$ref": "#/definitions/httpx.Meta"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "handler.UpdateAttendanceRequest": {
             "type": "object",
             "properties": {
@@ -70617,6 +70916,37 @@ const docTemplate = `{
             "properties": {
                 "data": {
                     "$ref": "#/definitions/handler.UpdateContactAddressResponse"
+                },
+                "links": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpx.Link"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {
+                    "$ref": "#/definitions/httpx.Meta"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "handler.UpdateContactAvatarResponse": {
+            "type": "object",
+            "properties": {
+                "avatar": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.UpdateContactAvatarResponseEnvelope": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/handler.UpdateContactAvatarResponse"
                 },
                 "links": {
                     "type": "array",
@@ -71237,7 +71567,13 @@ const docTemplate = `{
                 "name"
             ],
             "properties": {
+                "address": {
+                    "type": "string"
+                },
                 "base_currency": {
+                    "type": "string"
+                },
+                "city": {
                     "type": "string"
                 },
                 "country_code": {
@@ -71254,6 +71590,9 @@ const docTemplate = `{
                 },
                 "parent_id": {
                     "type": "integer"
+                },
+                "postal_code": {
+                    "type": "string"
                 },
                 "tax_id": {
                     "type": "string"
@@ -73703,6 +74042,12 @@ const docTemplate = `{
                 "city": {
                     "type": "string"
                 },
+                "country": {
+                    "type": "string"
+                },
+                "country_code": {
+                    "type": "string"
+                },
                 "created_at": {
                     "type": "string"
                 },
@@ -74699,10 +75044,16 @@ const docTemplate = `{
         "reference.Organization": {
             "type": "object",
             "properties": {
+                "address": {
+                    "type": "string"
+                },
                 "auto_checkout_hour": {
                     "type": "integer"
                 },
                 "base_currency": {
+                    "type": "string"
+                },
+                "city": {
                     "type": "string"
                 },
                 "country_code": {
@@ -74728,6 +75079,9 @@ const docTemplate = `{
                 },
                 "parent_id": {
                     "type": "integer"
+                },
+                "postal_code": {
+                    "type": "string"
                 },
                 "rounding_minutes": {
                     "type": "integer"

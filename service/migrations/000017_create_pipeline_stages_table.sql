@@ -5,6 +5,8 @@ CREATE TABLE pipeline_stages (
   name TEXT,
   sequence INT,
   is_won BOOLEAN DEFAULT false,
+  is_lost BOOLEAN NOT NULL DEFAULT false,
+  exit_criteria TEXT,
   probability NUMERIC(5,2),
   organization_id BIGINT,
   created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
@@ -14,7 +16,9 @@ CREATE TABLE pipeline_stages (
     FOREIGN KEY (organization_id)
     REFERENCES organizations(id)
     ON DELETE RESTRICT
-    ON UPDATE NO ACTION
+    ON UPDATE NO ACTION,
+  CONSTRAINT pipeline_stages_not_won_and_lost
+    CHECK (NOT (is_won AND is_lost))
 );
 
 CREATE INDEX idx_pipeline_stages_organization_id ON pipeline_stages(organization_id);

@@ -209,6 +209,55 @@ func (s ContactService) Update(ctx context.Context, contactID uint64, contact *C
 	return s.contacts.Update(ctx, existing)
 }
 
+// UpdateWithDetails updates a contact and, when non-nil, replaces its addresses
+// and bank accounts and upserts its customer and supplier profiles atomically.
+// A nil slice means "leave as is"; an empty slice clears all rows.
+func (s ContactService) UpdateWithDetails(
+	ctx context.Context,
+	contactID uint64,
+	contact *Contact,
+	addresses []*ContactAddress,
+	banks []*ContactBankAccount,
+	customer *CustomerProfile,
+	supplier *SupplierProfile,
+) (*Contact, error) {
+	existing, err := s.contacts.Find(ctx, contactID)
+	if err != nil {
+		return nil, dao.NotFound(err, ErrContactNotFound)
+	}
+	if existing == nil {
+		return nil, ErrContactNotFound
+	}
+	if err := s.validateName(contact.Name); err != nil {
+		return nil, err
+	}
+	if addresses != nil {
+		if err := s.validateAddresses(addresses); err != nil {
+			return nil, err
+		}
+	}
+
+	existing.Name = contact.Name
+	existing.DisplayName = contact.DisplayName
+	existing.IsOrganization = contact.IsOrganization
+	existing.ParentID = contact.ParentID
+	existing.Email = contact.Email
+	existing.Phone = contact.Phone
+	existing.Mobile = contact.Mobile
+	existing.Website = contact.Website
+	existing.TaxID = contact.TaxID
+	existing.Industry = contact.Industry
+	existing.CurrencyCode = contact.CurrencyCode
+	existing.Lang = contact.Lang
+	existing.Active = contact.Active
+
+	return s.contacts.UpdateWithDetails(ctx, existing, addresses, banks, customer, supplier)
+}
+
+func (s ContactService) FindCustomerProfile(ctx context.Context, contactID uint64) (*CustomerProfile, error) {
+	return s.customers.FindByContact(ctx, contactID)
+}
+
 func (s ContactService) EnableCustomer(ctx context.Context, contactID uint64, extension *CustomerProfile) (*CustomerProfile, error) {
 	existing, err := s.contacts.Find(ctx, contactID)
 	if err != nil {

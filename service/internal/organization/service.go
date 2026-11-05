@@ -42,7 +42,14 @@ func (s Service) WithProvisionEnqueuer(enqueuer queue.TaskEnqueuer) Service {
 	return s
 }
 
-func (s Service) QuickCreate(ctx context.Context, name string, countryCode string, ownerUserID uint64) (*reference.Organization, error) {
+type QuickCreateOptions struct {
+	BaseCurrency string
+	Address      *string
+	City         *string
+	PostalCode   *string
+}
+
+func (s Service) QuickCreate(ctx context.Context, name string, countryCode string, ownerUserID uint64, options ...QuickCreateOptions) (*reference.Organization, error) {
 
 	if strings.TrimSpace(name) == "" {
 		return nil, ErrNameRequired
@@ -62,15 +69,28 @@ func (s Service) QuickCreate(ctx context.Context, name string, countryCode strin
 		return nil, ErrCountryCodeInvalid
 	}
 
-	if err := s.validateBaseCurrency(ctx, country.CurrencyCode); err != nil {
+	var opts QuickCreateOptions
+	if len(options) > 0 {
+		opts = options[0]
+	}
+
+	currencyCode := country.CurrencyCode
+	if strings.TrimSpace(opts.BaseCurrency) != "" {
+		currencyCode = strings.ToUpper(strings.TrimSpace(opts.BaseCurrency))
+	}
+
+	if err := s.validateBaseCurrency(ctx, currencyCode); err != nil {
 		return nil, err
 	}
 
 	cc := country.Code
 	org := &reference.Organization{
 		Name:              name,
-		BaseCurrency:      country.CurrencyCode,
+		BaseCurrency:      currencyCode,
 		CountryCode:       &cc,
+		Address:           opts.Address,
+		City:              opts.City,
+		PostalCode:        opts.PostalCode,
 		Timezone:          country.Timezone,
 		TaxYearStartMonth: 1,
 	}

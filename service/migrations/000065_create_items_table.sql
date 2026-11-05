@@ -13,7 +13,7 @@ CREATE TABLE items (
   is_purchasable BOOLEAN DEFAULT true,
   is_sellable BOOLEAN DEFAULT true,
   is_manufactured BOOLEAN DEFAULT false,
-  tracking TEXT CHECK (tracking IN ('none','lot','serial')),
+  tracking TEXT CHECK (tracking IN ('none','batch','serial')),
   weight NUMERIC(18,4),
   volume NUMERIC(18,4),
   hs_code TEXT,

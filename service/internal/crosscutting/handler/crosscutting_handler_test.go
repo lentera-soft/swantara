@@ -790,6 +790,66 @@ func TestAttachmentHandler_Upload_ReturnsServerError(t *testing.T) {
 	}
 }
 
+func TestAttachmentHandler_Update_AdjustsPlacementAndPrimary(t *testing.T) {
+	attachments := crosscutting.AttachmentDAOMock{
+		CRUDMock: daoCRUDMockFind(&crosscutting.Attachment{Base: model.Base{ID: 1}, OrganizationID: 10, OwnerType: "product", OwnerID: 3, Filename: "a.png"}),
+	}
+	svc := crosscutting.NewAttachmentService(attachments, crosscutting.StoreMock{})
+	app := attachmentTestApp(attachments, svc)
+
+	resp, err := doRequest(app, http.MethodPatch, "/attachments/1", `{"sort_order": 20, "is_primary": true}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d, want 200", resp.StatusCode)
+	}
+}
+
+func TestAttachmentHandler_Update_RequiresAtLeastOneField(t *testing.T) {
+	attachments := crosscutting.AttachmentDAOMock{}
+	svc := crosscutting.NewAttachmentService(attachments, crosscutting.StoreMock{})
+	app := attachmentTestApp(attachments, svc)
+
+	resp, err := doRequest(app, http.MethodPatch, "/attachments/1", `{}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.StatusCode != http.StatusUnprocessableEntity {
+		t.Fatalf("status = %d, want 422", resp.StatusCode)
+	}
+}
+
+func TestAttachmentHandler_Update_RejectsInvalidID(t *testing.T) {
+	attachments := crosscutting.AttachmentDAOMock{}
+	svc := crosscutting.NewAttachmentService(attachments, crosscutting.StoreMock{})
+	app := attachmentTestApp(attachments, svc)
+
+	resp, err := doRequest(app, http.MethodPatch, "/attachments/abc", `{"sort_order": 20}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.StatusCode != http.StatusUnprocessableEntity {
+		t.Fatalf("status = %d, want 422", resp.StatusCode)
+	}
+}
+
+func TestAttachmentHandler_Update_ReturnsNotFound(t *testing.T) {
+	attachments := crosscutting.AttachmentDAOMock{
+		CRUDMock: daoCRUDMockFindNil(crosscutting.Attachment{}),
+	}
+	svc := crosscutting.NewAttachmentService(attachments, crosscutting.StoreMock{})
+	app := attachmentTestApp(attachments, svc)
+
+	resp, err := doRequest(app, http.MethodPatch, "/attachments/99", `{"is_primary": true}`)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("status = %d, want 404", resp.StatusCode)
+	}
+}
+
 func TestAttachmentHandler_Delete_DeletesAttachment(t *testing.T) {
 	attachments := crosscutting.AttachmentDAOMock{
 		CRUDMock: daoCRUDMockFind(&crosscutting.Attachment{Base: model.Base{ID: 1}, OrganizationID: 10, StorageURL: "attachments/10/abc"}),

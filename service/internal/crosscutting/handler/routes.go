@@ -20,6 +20,7 @@ func (h AttachmentHandler) Register(api fiber.Router, guards httpx.RouteGuards) 
 	attachments.Get("/", guards.Guard("attachment", "view"), h.List)
 	attachments.Post("/", guards.Guard("attachment", "create"), httpx.IdempotencyGuard(guards.Idempotency, "attachment-create"), h.Upload)
 	attachments.Get("/:id", guards.Guard("attachment", "view"), h.Get)
+	attachments.Patch("/:id", guards.Guard("attachment", "update"), h.Update)
 	attachments.Get("/:id/download", guards.Guard("attachment", "view"), h.Download)
 	attachments.Delete("/:id", guards.Guard("attachment", "delete"), httpx.IdempotencyGuard(guards.Idempotency, "attachment-delete"), h.Delete)
 }

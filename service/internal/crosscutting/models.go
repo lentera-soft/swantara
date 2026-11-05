@@ -54,6 +54,8 @@ type Attachment struct {
 	ByteSize       int64      `json:"byte_size"`
 	StorageURL     string     `gorm:"type:text" json:"storage_url"`
 	Checksum       string     `gorm:"type:text" json:"checksum"`
+	SortOrder      int        `gorm:"not null;default:0" json:"sort_order"`
+	IsPrimary      bool       `gorm:"not null;default:false" json:"is_primary"`
 	UploadedBy     uint64     `json:"uploaded_by"`
 	UploadedAt     *time.Time `json:"uploaded_at"`
 }

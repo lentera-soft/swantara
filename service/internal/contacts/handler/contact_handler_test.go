@@ -603,6 +603,73 @@ func TestContactHandler_Update_ReturnsServerErrorOnSave(t *testing.T) {
 	}
 }
 
+func TestContactHandler_Update_WithDetailsReplacesChildren(t *testing.T) {
+	var gotAddresses []*contacts.ContactAddress
+	var gotBanks []*contacts.ContactBankAccount
+	var gotCustomer *contacts.CustomerProfile
+	contactsDAO := contactCRUD(dao.CRUDMock[contacts.Contact]{
+		FindFunc: func(_ context.Context, _ uint64) (*contacts.Contact, error) {
+			return sampleContact(), nil
+		},
+	})
+	contactsDAO.UpdateWithDetailsFunc = func(
+		_ context.Context,
+		_ *contacts.Contact,
+		addresses []*contacts.ContactAddress,
+		banks []*contacts.ContactBankAccount,
+		customer *contacts.CustomerProfile,
+		_ *contacts.SupplierProfile,
+	) (*contacts.Contact, error) {
+		gotAddresses = addresses
+		gotBanks = banks
+		gotCustomer = customer
+		return sampleContact(), nil
+	}
+	svc := contactsTestSvc(contactsDAO, contacts.ContactAddressDAOMock{}, contacts.ContactBankAccountDAOMock{}, contacts.CustomerProfileDAOMock{}, contacts.SupplierProfileDAOMock{})
+	app := contactsHandlerTest(t, contactsDAO, svc)
+
+	body := `{"name":"Acme","lang":"en","addresses":[{"type":"billing","line1":"Jl. Sudirman","is_default":true}],"bank_accounts":[{"bank_name":"BCA","account_number":"123"}],"customer":{"active":true,"credit_limit":5000}}`
+	resp, err := doRequest(app, http.MethodPut, "/contacts/1", body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d, want 200", resp.StatusCode)
+	}
+	if len(gotAddresses) != 1 || gotAddresses[0] == nil || *gotAddresses[0].Line1 != "Jl. Sudirman" {
+		t.Fatalf("addresses = %+v, want one billing line", gotAddresses)
+	}
+	if len(gotBanks) != 1 || gotBanks[0] == nil || *gotBanks[0].BankName != "BCA" {
+		t.Fatalf("banks = %+v, want one BCA account", gotBanks)
+	}
+	if gotCustomer == nil || gotCustomer.CreditLimit == nil || *gotCustomer.CreditLimit != 5000 {
+		t.Fatalf("customer = %+v, want credit limit 5000", gotCustomer)
+	}
+}
+
+func TestContactHandler_Update_WithDetailsRejectsMultipleDefaults(t *testing.T) {
+	contactsDAO := contactCRUD(dao.CRUDMock[contacts.Contact]{
+		FindFunc: func(_ context.Context, _ uint64) (*contacts.Contact, error) {
+			return sampleContact(), nil
+		},
+	})
+	contactsDAO.UpdateWithDetailsFunc = func(_ context.Context, _ *contacts.Contact, _ []*contacts.ContactAddress, _ []*contacts.ContactBankAccount, _ *contacts.CustomerProfile, _ *contacts.SupplierProfile) (*contacts.Contact, error) {
+		t.Fatal("UpdateWithDetails must not be called when validation fails")
+		return nil, nil
+	}
+	svc := contactsTestSvc(contactsDAO, contacts.ContactAddressDAOMock{}, contacts.ContactBankAccountDAOMock{}, contacts.CustomerProfileDAOMock{}, contacts.SupplierProfileDAOMock{})
+	app := contactsHandlerTest(t, contactsDAO, svc)
+
+	body := `{"name":"Acme","lang":"en","addresses":[{"type":"billing","line1":"A","is_default":true},{"type":"billing","line1":"B","is_default":true}]}`
+	resp, err := doRequest(app, http.MethodPut, "/contacts/1", body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.StatusCode != http.StatusUnprocessableEntity {
+		t.Fatalf("status = %d, want 422", resp.StatusCode)
+	}
+}
+
 func TestContactHandler_Delete_DeletesContact(t *testing.T) {
 	contactsDAO := contactCRUD(dao.CRUDMock[contacts.Contact]{
 		FindFunc: func(_ context.Context, _ uint64) (*contacts.Contact, error) {
@@ -2073,6 +2140,51 @@ func TestContactRelationHandler_EnableCustomer_ReturnsServerError(t *testing.T) 
 	}
 	if resp.StatusCode != http.StatusInternalServerError {
 		t.Fatalf("status = %d, want 500", resp.StatusCode)
+	}
+}
+
+func TestContactRelationHandler_GetCustomer_ReturnsProfile(t *testing.T) {
+	contactsDAO := contactCRUD(dao.CRUDMock[contacts.Contact]{
+		FindFunc: func(_ context.Context, _ uint64) (*contacts.Contact, error) {
+			return sampleContact(), nil
+		},
+	})
+	customers := customerCRUD(dao.CRUDMock[contacts.CustomerProfile]{})
+	limit := 5000.0
+	customers.FindByContactFunc = func(_ context.Context, _ uint64) (*contacts.CustomerProfile, error) {
+		return &contacts.CustomerProfile{CreditLimit: &limit, Active: true}, nil
+	}
+	svc := contactsTestSvc(contactsDAO, contacts.ContactAddressDAOMock{}, contacts.ContactBankAccountDAOMock{}, customers, contacts.SupplierProfileDAOMock{})
+	app := contactRelationHandlerTest(t, contactsDAO, addressCRUD(dao.CRUDMock[contacts.ContactAddress]{}), bankCRUD(dao.CRUDMock[contacts.ContactBankAccount]{}), customers, supplierCRUD(dao.CRUDMock[contacts.SupplierProfile]{}), svc)
+
+	resp, err := doRequest(app, http.MethodGet, "/contacts/1/customer", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("status = %d, want 200", resp.StatusCode)
+	}
+}
+
+func TestContactRelationHandler_GetCustomer_ReturnsNotFoundWithoutProfile(t *testing.T) {
+	contactsDAO := contactCRUD(dao.CRUDMock[contacts.Contact]{
+		FindFunc: func(_ context.Context, _ uint64) (*contacts.Contact, error) {
+			return sampleContact(), nil
+		},
+	})
+	customers := customerCRUD(dao.CRUDMock[contacts.CustomerProfile]{})
+	customers.FindByContactFunc = func(_ context.Context, _ uint64) (*contacts.CustomerProfile, error) {
+		return nil, nil
+	}
+	svc := contactsTestSvc(contactsDAO, contacts.ContactAddressDAOMock{}, contacts.ContactBankAccountDAOMock{}, customers, contacts.SupplierProfileDAOMock{})
+	app := contactRelationHandlerTest(t, contactsDAO, addressCRUD(dao.CRUDMock[contacts.ContactAddress]{}), bankCRUD(dao.CRUDMock[contacts.ContactBankAccount]{}), customers, supplierCRUD(dao.CRUDMock[contacts.SupplierProfile]{}), svc)
+
+	resp, err := doRequest(app, http.MethodGet, "/contacts/1/customer", "")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.StatusCode != http.StatusNotFound {
+		t.Fatalf("status = %d, want 404", resp.StatusCode)
 	}
 }
 

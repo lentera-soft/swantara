@@ -108,7 +108,7 @@ func NewAttachmentDAO(db *gorm.DB) AttachmentDAO {
 
 func (d attachmentDAO) ListByOwner(ctx context.Context, ownerType string, ownerID uint64) ([]*Attachment, error) {
 	var entities []Attachment
-	err := d.db.WithContext(ctx).Where("owner_type = ? AND owner_id = ?", ownerType, ownerID).Find(&entities).Error
+	err := d.db.WithContext(ctx).Where("owner_type = ? AND owner_id = ?", ownerType, ownerID).Order("sort_order, id").Find(&entities).Error
 	if err != nil {
 		return nil, err
 	}

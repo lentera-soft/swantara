@@ -69,7 +69,7 @@ func TestCrosscuttingService_Upload(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			svc := tt.svc()
-			_, err := svc.Upload(context.Background(), 7, "purchase_order", 10, 2, tt.filename, "application/pdf", tt.reader)
+			_, err := svc.Upload(context.Background(), 7, "purchase_order", 10, 2, tt.filename, "application/pdf", 0, false, tt.reader)
 			helper.AssertError(t, err, tt.wantErr, tt.wantErrVal)
 		})
 	}

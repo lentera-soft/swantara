@@ -3,6 +3,7 @@ package handler
 import (
 	"github.com/gofiber/fiber/v3"
 	"github.com/jalusw/swantara/apps/service/internal/httpx"
+	"github.com/jalusw/swantara/apps/service/internal/organization"
 	"github.com/jalusw/swantara/apps/service/internal/reference"
 )
 
@@ -80,8 +81,12 @@ func (h OrganizationHandler) Create(c fiber.Ctx) error {
 }
 
 type QuickCreateOrganizationRequest struct {
-	Name        string `json:"name" validate:"required"`
-	CountryCode string `json:"country_code" validate:"required,len=2"`
+	Name         string  `json:"name" validate:"required"`
+	CountryCode  string  `json:"country_code" validate:"required,len=2"`
+	BaseCurrency string  `json:"base_currency" validate:"omitempty,len=3"`
+	Address      *string `json:"address"`
+	City         *string `json:"city"`
+	PostalCode   *string `json:"postal_code"`
 }
 
 type QuickCreateOrganizationResponseEnvelope struct {
@@ -93,11 +98,11 @@ type QuickCreateOrganizationResponse struct {
 }
 
 // @Summary Quick create organization
-// @Description Creates an organization with just a name and country code. Currency, timezone, and tax year are auto-provisioned based on the country. Base data is provisioned asynchronously in the background. The creator is assigned as the organization owner.
+// @Description Creates an organization with just a name and country code. Currency, timezone, and tax year are auto-provisioned based on the country, while an optional base currency and address can be supplied. Base data is provisioned asynchronously in the background. The creator is assigned as the organization owner.
 // @Tags Organizations
 // @Accept json
 // @Produce json
-// @Param body body QuickCreateOrganizationRequest true "Name and country code"
+// @Param body body QuickCreateOrganizationRequest true "Name, country code, and optional currency/address"
 // @Success 201 {object} QuickCreateOrganizationResponseEnvelope "Organization created successfully."
 // @Failure 400 {object} httpx.ErrorResponse "Bad request"
 // @Failure 401 {object} httpx.ErrorResponse "Unauthorized"
@@ -117,7 +122,12 @@ func (h OrganizationHandler) QuickCreate(c fiber.Ctx) error {
 		return nil
 	}
 
-	org, err := h.svc.QuickCreate(c, request.Name, request.CountryCode, callerID)
+	org, err := h.svc.QuickCreate(c, request.Name, request.CountryCode, callerID, organization.QuickCreateOptions{
+		BaseCurrency: request.BaseCurrency,
+		Address:      request.Address,
+		City:         request.City,
+		PostalCode:   request.PostalCode,
+	})
 	if err != nil {
 		httpx.RequestLog(c).Error("organization creation failed", "error", err)
 		return writeOrganizationError(c, err)

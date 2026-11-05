@@ -35,7 +35,7 @@ type UpdateContactAvatarResponse struct {
 // @Produce json
 // @Param organization_id path integer true "Organization ID"
 // @Param id path integer true "Contact ID"
-// @Param file formData binary true "Avatar image file"
+// @Param file formData file true "Avatar image file"
 // @Success 200 {object} UpdateContactAvatarResponseEnvelope "Avatar updated successfully."
 // @Failure 401 {object} httpx.ErrorResponse "Unauthorized"
 // @Failure 404 {object} httpx.ErrorResponse "Contact not found"

@@ -27,6 +27,8 @@ type AttachmentResponse struct {
 	MimeType       string `json:"mime_type"`
 	ByteSize       int64  `json:"byte_size"`
 	Checksum       string `json:"checksum"`
+	SortOrder      int    `json:"sort_order"`
+	IsPrimary      bool   `json:"is_primary"`
 	UploadedBy     uint64 `json:"uploaded_by"`
 }
 
@@ -40,6 +42,8 @@ func newAttachmentResponse(attachment *crosscutting.Attachment) AttachmentRespon
 		MimeType:       attachment.MimeType,
 		ByteSize:       attachment.ByteSize,
 		Checksum:       attachment.Checksum,
+		SortOrder:      attachment.SortOrder,
+		IsPrimary:      attachment.IsPrimary,
 		UploadedBy:     attachment.UploadedBy,
 	}
 }
@@ -49,6 +53,8 @@ var attachmentQueryAllowlist = map[string]struct{}{
 	"owner_id":   {},
 	"filename":   {},
 	"mime_type":  {},
+	"sort_order": {},
+	"is_primary": {},
 	"created_at": {},
 }
 
@@ -61,7 +67,7 @@ type ListAttachmentsResponse struct {
 }
 
 // @Summary List attachments
-// @Description Lists attachment metadata with pagination, sorting, and filtering. Filters by owner type, owner id, filename, and mime type are supported so files attached to a resource can be browsed.
+// @Description Lists attachment metadata with pagination, sorting, and filtering. Filters by owner type, owner id, filename, mime type, sort order, and primary flag are supported so files attached to a resource can be browsed; sort by sort_order to honor gallery order.
 // @Tags Attachments
 // @Accept json
 // @Produce json
@@ -192,12 +198,14 @@ type UploadAttachmentResponse struct {
 }
 
 // @Summary Upload attachment
-// @Description Uploads a file and associates it with the given owner type and owner id, recording the filename, mime type, byte size, and checksum. The authenticated user is recorded as the uploader, and empty files or missing owners are rejected.
+// @Description Uploads a file and associates it with the given owner type and owner id, recording the filename, mime type, byte size, and checksum. The authenticated user is recorded as the uploader, and empty files or missing owners are rejected. Optional sort_order places the file within the owner's gallery (defaults to appending after the highest existing value); optional is_primary marks it as the owner's primary file and clears the flag on siblings.
 // @Tags Attachments
 // @Accept multipart/form-data
 // @Produce json
 // @Param owner_type formData string true "Owner type"
 // @Param owner_id formData integer true "Owner ID"
+// @Param sort_order formData integer false "Sort order within the owner's attachments"
+// @Param is_primary formData boolean false "Mark as the owner's primary attachment"
 // @Param file formData file true "File to upload"
 // @Success 201 {object} UploadAttachmentResponseEnvelope "Attachment uploaded successfully."
 // @Failure 401 {object} httpx.ErrorResponse "Unauthorized"
@@ -215,6 +223,20 @@ func (h AttachmentHandler) Upload(c fiber.Ctx) error {
 	if err != nil || ownerID == 0 {
 		return httpx.CreateUnprocessableEntityErrorResponse(c, "A valid owner_id is required.", nil)
 	}
+	sortOrder := 0
+	if raw := c.FormValue("sort_order"); raw != "" {
+		sortOrder, err = strconv.Atoi(raw)
+		if err != nil {
+			return httpx.CreateUnprocessableEntityErrorResponse(c, "Invalid sort_order provided.", nil)
+		}
+	}
+	isPrimary := false
+	if raw := c.FormValue("is_primary"); raw != "" {
+		isPrimary, err = strconv.ParseBool(raw)
+		if err != nil {
+			return httpx.CreateUnprocessableEntityErrorResponse(c, "Invalid is_primary provided.", nil)
+		}
+	}
 	uploadedBy, ok := httpx.CallerID(c)
 	if !ok {
 		uploadedBy = 0
@@ -229,11 +251,63 @@ func (h AttachmentHandler) Upload(c fiber.Ctx) error {
 	}
 	defer func() { _ = src.Close() }()
 
-	attachment, err := h.svc.Upload(c, *organizationID, ownerType, ownerID, uploadedBy, file.Filename, file.Header.Get("Content-Type"), src)
+	attachment, err := h.svc.Upload(c, *organizationID, ownerType, ownerID, uploadedBy, file.Filename, file.Header.Get("Content-Type"), sortOrder, isPrimary, src)
 	if err != nil {
 		return writeAttachmentError(c, err)
 	}
 	return httpx.CreateCreatedResponse(c, "Attachment uploaded successfully.", UploadAttachmentResponse{
+		Attachment: newAttachmentResponse(attachment),
+	})
+}
+
+type UpdateAttachmentRequest struct {
+	SortOrder *int  `json:"sort_order"`
+	IsPrimary *bool `json:"is_primary"`
+}
+
+type UpdateAttachmentResponseEnvelope struct {
+	httpx.EnvelopeBase
+	Data UpdateAttachmentResponse `json:"data"`
+}
+type UpdateAttachmentResponse struct {
+	Attachment AttachmentResponse `json:"attachment"`
+}
+
+// @Summary Update attachment placement
+// @Description Updates an attachment's gallery metadata. sort_order repositions the file within its owner's list; is_primary marks it as the owner's primary file and clears the flag on the previous primary. At least one field is required.
+// @Tags Attachments
+// @Accept json
+// @Produce json
+// @Param id path integer true "Attachment ID"
+// @Param body body UpdateAttachmentRequest true "Fields to update"
+// @Success 200 {object} UpdateAttachmentResponseEnvelope "Attachment updated successfully."
+// @Failure 401 {object} httpx.ErrorResponse "Unauthorized"
+// @Failure 404 {object} httpx.ErrorResponse "Attachment not found"
+// @Failure 422 {object} httpx.ErrorResponse "Validation error"
+// @Failure 500 {object} httpx.ErrorResponse "Internal server error"
+// @Security BearerAuth
+// @Router /organizations/{organization_id}/attachments/{id} [patch]
+func (h AttachmentHandler) Update(c fiber.Ctx) error {
+	attachmentID, err := strconv.ParseUint(c.Params("id"), 10, 64)
+	if err != nil {
+		return httpx.CreateUnprocessableEntityErrorResponse(c, "Invalid attachment id provided.", nil)
+	}
+	var request UpdateAttachmentRequest
+	if !httpx.BindAndValidate(c, &request) {
+		return nil
+	}
+	if request.SortOrder == nil && request.IsPrimary == nil {
+		return httpx.CreateUnprocessableEntityErrorResponse(c, "Provide sort_order or is_primary.", nil)
+	}
+	organizationID := httpx.TenantOrganizationID(c, nil)
+	if organizationID == nil {
+		return httpx.CreateUnauthorizedErrorResponse(c, "Unauthorized.", httpx.ErrMissingOrganizationInContext)
+	}
+	attachment, err := h.svc.Update(c, *organizationID, attachmentID, request.SortOrder, request.IsPrimary)
+	if err != nil {
+		return writeAttachmentError(c, err)
+	}
+	return httpx.CreateSuccessResponse(c, "Attachment updated successfully.", UpdateAttachmentResponse{
 		Attachment: newAttachmentResponse(attachment),
 	})
 }

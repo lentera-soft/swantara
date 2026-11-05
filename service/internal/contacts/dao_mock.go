@@ -13,6 +13,14 @@ type ContactDAOMock struct {
 	dao.CRUDMock[Contact]
 	CreateWithDetailsFunc   func(ctx context.Context, contact *Contact, addresses []*ContactAddress, banks []*ContactBankAccount, customer *CustomerProfile, supplier *SupplierProfile) (*Contact, error)
 	CreateWithDetailsTxFunc func(ctx context.Context, tx *gorm.DB, contact *Contact, addresses []*ContactAddress, banks []*ContactBankAccount, customer *CustomerProfile, supplier *SupplierProfile) (*Contact, error)
+	UpdateWithDetailsFunc   func(ctx context.Context, contact *Contact, addresses []*ContactAddress, banks []*ContactBankAccount, customer *CustomerProfile, supplier *SupplierProfile) (*Contact, error)
+}
+
+func (m ContactDAOMock) UpdateWithDetails(ctx context.Context, contact *Contact, addresses []*ContactAddress, banks []*ContactBankAccount, customer *CustomerProfile, supplier *SupplierProfile) (*Contact, error) {
+	if m.UpdateWithDetailsFunc != nil {
+		return m.UpdateWithDetailsFunc(ctx, contact, addresses, banks, customer, supplier)
+	}
+	return contact, nil
 }
 
 func (m ContactDAOMock) CreateWithDetails(ctx context.Context, contact *Contact, addresses []*ContactAddress, banks []*ContactBankAccount, customer *CustomerProfile, supplier *SupplierProfile) (*Contact, error) {

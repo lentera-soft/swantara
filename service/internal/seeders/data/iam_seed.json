@@ -67,7 +67,7 @@
     {"resource": "quality_check", "actions": ["view", "create", "update"]},
     {"resource": "quality_alert", "actions": ["view", "update"]},
     {"resource": "approval_request", "actions": ["view", "create", "update"]},
-    {"resource": "attachment", "actions": ["view", "create", "delete"]},
+    {"resource": "attachment", "actions": ["view", "create", "update", "delete"]},
     {"resource": "message", "actions": ["view", "create"]},
     {"resource": "unit", "actions": ["view", "create", "update", "delete"]},
     {"resource": "tax", "actions": ["view", "create", "update", "delete"]},

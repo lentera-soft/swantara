@@ -22,8 +22,8 @@ func quickCreateSvc() organization.Service {
 	}
 	currencies := handlerCurrencySearchMock{
 		search: func(_ context.Context, _ string, value any) (*reference.Currency, error) {
-			if value == "IDR" {
-				return &reference.Currency{Code: "IDR"}, nil
+			if value == "IDR" || value == "USD" {
+				return &reference.Currency{Code: value.(string)}, nil
 			}
 			return nil, nil
 		},
@@ -36,6 +36,16 @@ func TestOrganizationHandler_QuickCreate(t *testing.T) {
 		orgs := dao.CRUDMock[reference.Organization]{}
 		app := organizationHandlerTest(t, orgs, quickCreateSvc())
 		resp, err := doRequest(app, http.MethodPost, "/organizations/quick", `{"name":"Toko","country_code":"ID"}`)
+		if err != nil {
+			t.Fatal(err)
+		}
+		helper.AssertStatus(t, resp.StatusCode, http.StatusCreated)
+	})
+
+	t.Run("accepts a selected currency and address", func(t *testing.T) {
+		orgs := dao.CRUDMock[reference.Organization]{}
+		app := organizationHandlerTest(t, orgs, quickCreateSvc())
+		resp, err := doRequest(app, http.MethodPost, "/organizations/quick", `{"name":"Toko","country_code":"ID","base_currency":"USD","address":"Jl. Sudirman 1","city":"Jakarta","postal_code":"10220"}`)
 		if err != nil {
 			t.Fatal(err)
 		}

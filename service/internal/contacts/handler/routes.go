@@ -38,6 +38,7 @@ func (h ContactRelationHandler) Register(api fiber.Router, guards httpx.RouteGua
 	banks.Put("/:account_id", guards.Guard("contact", "update"), h.UpdateBankAccount)
 	banks.Delete("/:account_id", guards.Guard("contact", "update"), h.DeleteBankAccount)
 
+	contacts.Get("/:id/customer", guards.Guard("contact", "view"), h.GetCustomer)
 	contacts.Put("/:id/customer", guards.Guard("contact", "update"), h.EnableCustomer)
 	contacts.Delete("/:id/customer", guards.Guard("contact", "update"), h.DisableCustomer)
 	contacts.Put("/:id/supplier", guards.Guard("contact", "update"), h.EnableSupplier)

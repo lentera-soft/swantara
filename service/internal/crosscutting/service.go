@@ -224,7 +224,7 @@ func (s AttachmentService) Find(ctx context.Context, id uint64) (*Attachment, er
 	return s.attachments.Find(ctx, id)
 }
 
-func (s AttachmentService) Upload(ctx context.Context, organizationID uint64, ownerType string, ownerID, uploadedBy uint64, filename, mimeType string, reader io.Reader) (*Attachment, error) {
+func (s AttachmentService) Upload(ctx context.Context, organizationID uint64, ownerType string, ownerID, uploadedBy uint64, filename, mimeType string, sortOrder int, isPrimary bool, reader io.Reader) (*Attachment, error) {
 	if organizationID == 0 {
 		return nil, ErrAttachmentOrganization
 	}
@@ -241,10 +241,29 @@ func (s AttachmentService) Upload(ctx context.Context, organizationID uint64, ow
 	if len(content) == 0 {
 		return nil, ErrAttachmentEmpty
 	}
+	if sortOrder == 0 {
+		existing, err := s.attachments.ListByOwner(ctx, ownerType, ownerID)
+		if err != nil {
+			return nil, err
+		}
+		for _, attachment := range existing {
+			if attachment.SortOrder >= sortOrder {
+				sortOrder = attachment.SortOrder + 10
+			}
+		}
+	}
 	checksum := sha256.Sum256(content)
 	objectID := fmt.Sprintf("attachments/%d/%s", ownerID, hex.EncodeToString(checksum[:]))
 	if err := s.store.Save(ctx, objectID, bytes.NewReader(content)); err != nil {
 		return nil, err
+	}
+	if isPrimary {
+		if err := s.clearOtherPrimaries(ctx, ownerType, ownerID, 0); err != nil {
+			if delErr := s.store.Delete(ctx, objectID); delErr != nil {
+				slog.Error("failed to cleanup orphaned attachment", "object_id", objectID, "error", delErr)
+			}
+			return nil, err
+		}
 	}
 	now := s.now().UTC()
 	attachment := &Attachment{
@@ -256,6 +275,8 @@ func (s AttachmentService) Upload(ctx context.Context, organizationID uint64, ow
 		ByteSize:       int64(len(content)),
 		StorageURL:     objectID,
 		Checksum:       hex.EncodeToString(checksum[:]),
+		SortOrder:      sortOrder,
+		IsPrimary:      isPrimary,
 		UploadedBy:     uploadedBy,
 		UploadedAt:     &now,
 	}
@@ -267,6 +288,46 @@ func (s AttachmentService) Upload(ctx context.Context, organizationID uint64, ow
 		return nil, err
 	}
 	return created, nil
+}
+
+func (s AttachmentService) Update(ctx context.Context, organizationID, id uint64, sortOrder *int, isPrimary *bool) (*Attachment, error) {
+	attachment, err := s.ownedAttachment(ctx, organizationID, id)
+	if err != nil {
+		return nil, err
+	}
+	if sortOrder != nil {
+		attachment.SortOrder = *sortOrder
+	}
+	if isPrimary != nil {
+		attachment.IsPrimary = *isPrimary
+	}
+	updated, err := s.attachments.Update(ctx, attachment)
+	if err != nil {
+		return nil, err
+	}
+	if isPrimary != nil && *isPrimary {
+		if err := s.clearOtherPrimaries(ctx, attachment.OwnerType, attachment.OwnerID, id); err != nil {
+			return nil, err
+		}
+	}
+	return updated, nil
+}
+
+func (s AttachmentService) clearOtherPrimaries(ctx context.Context, ownerType string, ownerID, keepID uint64) error {
+	siblings, err := s.attachments.ListByOwner(ctx, ownerType, ownerID)
+	if err != nil {
+		return err
+	}
+	for _, sibling := range siblings {
+		if sibling.ID == keepID || !sibling.IsPrimary {
+			continue
+		}
+		sibling.IsPrimary = false
+		if _, err := s.attachments.Update(ctx, sibling); err != nil {
+			return err
+		}
+	}
+	return nil
 }
 
 func (s AttachmentService) Download(ctx context.Context, organizationID, id uint64) (*Attachment, io.ReadCloser, error) {

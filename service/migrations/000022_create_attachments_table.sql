@@ -9,6 +9,8 @@ CREATE TABLE attachments (
   byte_size BIGINT,
   storage_url TEXT,
   checksum TEXT,
+  sort_order INTEGER NOT NULL DEFAULT 0,
+  is_primary BOOLEAN NOT NULL DEFAULT false,
   uploaded_by BIGINT,
   uploaded_at TIMESTAMP,
   organization_id BIGINT NOT NULL,
@@ -23,6 +25,7 @@ CREATE TABLE attachments (
 );
 
 CREATE INDEX idx_attachments_organization_id ON attachments(organization_id);
+CREATE INDEX idx_attachments_owner_sort ON attachments(owner_type, owner_id, sort_order);
 
 -- +goose Down
 SELECT 'down SQL query';
