@@ -30,3 +30,13 @@ export function useContactBankAccountsQuery(orgId: string, contactId: string) {
     select: (data) => data.bankAccounts,
   });
 }
+
+export function useCustomerProfileQuery(orgId: string, contactId: string) {
+  return useQuery({
+    queryKey: ["customerProfile", orgId, contactId],
+    queryFn: () => getSwantaraService().contacts.getCustomer(Number(orgId), Number(contactId)),
+    enabled: Boolean(orgId && contactId),
+    select: (data) => data.customer,
+    retry: false,
+  });
+}

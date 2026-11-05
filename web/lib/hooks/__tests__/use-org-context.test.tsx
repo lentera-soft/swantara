@@ -1,9 +1,20 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { renderHook } from "@testing-library/react";
 import type { ReactNode } from "react";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { OrgActiveProvider } from "@/providers/org-active-provider";
-import { useActiveOrg, useOrganizationId } from "../use-org-context";
+import { useActiveOrg, useActiveOrgCurrency, useOrganizationId } from "../use-org-context";
+
+vi.mock("@/lib/hooks/use-me-query", () => ({
+  useMeOrganizationsQuery: vi.fn(() => ({
+    data: {
+      organizations: [
+        { id: 11, name: "Acme", baseCurrency: "USD" },
+        { id: 12, name: "Nusantara" },
+      ],
+    },
+  })),
+}));
 
 function renderOrgHook<Result>(hook: () => Result, orgId: number | null) {
   const queryClient = new QueryClient({
@@ -45,5 +56,15 @@ describe("org context hooks", () => {
     );
 
     expect(result.current).toEqual({ activeOrg: null, organizationId: null });
+  });
+
+  it("returns the active organization base currency", () => {
+    const { result } = renderOrgHook(() => useActiveOrgCurrency(), 11);
+    expect(result.current).toBe("USD");
+  });
+
+  it("falls back to the default currency when the organization has none", () => {
+    const { result } = renderOrgHook(() => useActiveOrgCurrency(), 12);
+    expect(result.current).toBe("IDR");
   });
 });

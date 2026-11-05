@@ -19,8 +19,17 @@ describe("isProtectedPage", () => {
 
   it("leaves marketing pages alone", () => {
     expect(isProtectedPage("/product")).toBe(false);
+    expect(isProtectedPage("/features")).toBe(false);
     expect(isProtectedPage("/pricing")).toBe(false);
+    expect(isProtectedPage("/security")).toBe(false);
     expect(isProtectedPage("/about")).toBe(false);
+    expect(isProtectedPage("/careers")).toBe(false);
     expect(isProtectedPage("/contact")).toBe(false);
+    expect(isProtectedPage("/guides")).toBe(false);
+    expect(isProtectedPage("/changelog")).toBe(false);
+    expect(isProtectedPage("/support")).toBe(false);
+    expect(isProtectedPage("/privacy")).toBe(false);
+    expect(isProtectedPage("/terms")).toBe(false);
+    expect(isProtectedPage("/dpa")).toBe(false);
   });
 });

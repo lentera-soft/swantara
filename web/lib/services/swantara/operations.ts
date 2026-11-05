@@ -103,6 +103,7 @@ import type {
   Unit,
   UnitCategory,
   UpdateAccountRequest,
+  UpdateAttachmentRequest,
   UpdateCampaignRequest,
   UpdateCarrierRequest,
   UpdateContractRequest,
@@ -1620,10 +1621,28 @@ export class Attachments {
     const form = new FormData();
     form.append("owner_type", request.ownerType);
     form.append("owner_id", String(request.ownerId));
+    if (request.sortOrder !== undefined) {
+      form.append("sort_order", String(request.sortOrder));
+    }
+    if (request.isPrimary !== undefined) {
+      form.append("is_primary", String(request.isPrimary));
+    }
     form.append("file", request.file);
     const response = await this.axios.post<SuccessEnvelope<{ attachment: Attachment }>>(
       endpoints.attachments.upload(String(organizationId)),
       form,
+    );
+    return withListMeta(response.data);
+  }
+
+  async update(
+    organizationId: number,
+    id: number,
+    request: UpdateAttachmentRequest,
+  ): Promise<{ attachment: Attachment }> {
+    const response = await this.axios.patch<SuccessEnvelope<{ attachment: Attachment }>>(
+      endpoints.attachments.update(String(organizationId), String(id)),
+      request,
     );
     return withListMeta(response.data);
   }

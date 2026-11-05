@@ -88,12 +88,22 @@ function SidebarProvider({
   defaultCollapsed?: boolean;
   defaultWidth?: number;
 }) {
-  const isMobile = useMediaQuery("(max-width: 1023px)");
-  const [width, setWidthState] = useState(() => {
-    if (defaultWidth != null) return clampWidth(defaultWidth);
-    const fallback = defaultCollapsed ? SIDEBAR_WIDTH_COLLAPSED : SIDEBAR_WIDTH_EXPANDED;
-    return readStoredWidth(fallback);
-  });
+  const isMobile = useMediaQuery("(max-width: 1023px)", { initializeWithValue: false });
+  const fallbackWidth =
+    defaultWidth != null
+      ? clampWidth(defaultWidth)
+      : defaultCollapsed
+        ? SIDEBAR_WIDTH_COLLAPSED
+        : SIDEBAR_WIDTH_EXPANDED;
+  const [width, setWidthState] = useState(fallbackWidth);
+
+  useEffect(() => {
+    if (defaultWidth != null) return;
+    const stored = readStoredWidth(fallbackWidth);
+    if (stored !== fallbackWidth) {
+      setWidthState(stored);
+    }
+  }, [defaultWidth, fallbackWidth]);
   const [openMobile, setOpenMobile] = useState(false);
   const [isResizing, setIsResizing] = useState(false);
 

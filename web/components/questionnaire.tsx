@@ -167,6 +167,18 @@ function QuestionnairePrevious({ className, ...props }: QuestionnairePreviousPro
   );
 }
 
+type QuestionnaireSkipProps = React.ComponentProps<typeof QuestionnairePrimitive.Skip>;
+
+function QuestionnaireSkip({ className, ...props }: QuestionnaireSkipProps) {
+  return (
+    <QuestionnairePrimitive.Skip
+      data-slot="questionnaire-skip"
+      className={cn(buttonVariants({ variant: "ghost", size: "lg" }), className)}
+      {...props}
+    />
+  );
+}
+
 type QuestionnaireNextProps = React.ComponentProps<typeof QuestionnairePrimitive.Next>;
 
 function QuestionnaireNext({ className, ...props }: QuestionnaireNextProps) {
@@ -204,6 +216,7 @@ export {
   QuestionnaireNext,
   QuestionnairePrevious,
   QuestionnaireProgress,
+  QuestionnaireSkip,
   QuestionnaireSubmit,
   QuestionnaireTitle,
 };

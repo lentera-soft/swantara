@@ -38,11 +38,8 @@ export function StateBadge({ value, statuses, tone, label, className }: StateBad
       <Badge
         data-slot="state-badge"
         variant={toneToVariant[tone]}
-        className={cn("gap-1.5 normal-case", className)}
+        className={cn("normal-case", className)}
       >
-        <span aria-hidden className="relative flex size-1.5">
-          <span className={cn("relative inline-flex size-1.5 rounded-full", dotToneClass[tone])} />
-        </span>
         {label}
       </Badge>
     );
@@ -57,19 +54,7 @@ export function StateBadge({ value, statuses, tone, label, className }: StateBad
     return null;
   }
   return (
-    <Badge
-      data-slot="state-badge"
-      variant="outline"
-      className={cn("gap-1.5 normal-case", className)}
-    >
-      <span aria-hidden className="relative flex size-1.5">
-        <span
-          className={cn(
-            "relative inline-flex size-1.5 rounded-full",
-            dotToneClass[status.tone ?? "neutral"],
-          )}
-        />
-      </span>
+    <Badge data-slot="state-badge" variant="outline" className={cn("normal-case", className)}>
       {status.label}
     </Badge>
   );

@@ -871,6 +871,7 @@ export type Contact = {
   phone: string | null;
   mobile: string | null;
   website: string | null;
+  avatar: string | null;
   taxId: string | null;
   industry: string | null;
   currencyCode: string | null;
@@ -987,6 +988,10 @@ export type UpdateContactRequest = {
   currencyCode: string | null;
   lang: string;
   active: boolean;
+  addresses?: ContactAddressRequest[];
+  bankAccounts?: ContactBankAccountRequest[];
+  customer?: CustomerProfileRequest | null;
+  supplier?: SupplierProfileRequest | null;
 };
 
 export type ContactAddress = {
@@ -3094,6 +3099,8 @@ export type Attachment = {
   byteSize: number;
   storageUrl: string;
   checksum: string;
+  sortOrder: number;
+  isPrimary: boolean;
   uploadedBy: number;
   uploadedAt: Date | null;
   createdAt: Date;
@@ -3103,7 +3110,14 @@ export type Attachment = {
 export type UploadAttachmentRequest = {
   ownerType: string;
   ownerId: number;
+  sortOrder?: number;
+  isPrimary?: boolean;
   file: File;
+};
+
+export type UpdateAttachmentRequest = {
+  sortOrder?: number;
+  isPrimary?: boolean;
 };
 
 export type Message = {

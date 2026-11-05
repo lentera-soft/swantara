@@ -253,6 +253,8 @@ const endpoints = {
     },
     customer: (organizationId: string, contactId: string) =>
       `/api/v1/organizations/${organizationId}/contacts/${contactId}/customer`,
+    avatar: (organizationId: string, contactId: string) =>
+      `/api/v1/organizations/${organizationId}/contacts/${contactId}/avatar`,
     supplier: (organizationId: string, contactId: string) =>
       `/api/v1/organizations/${organizationId}/contacts/${contactId}/supplier`,
   },
@@ -836,6 +838,8 @@ const endpoints = {
     list: (organizationId: string) => `/api/v1/organizations/${organizationId}/attachments`,
     upload: (organizationId: string) => `/api/v1/organizations/${organizationId}/attachments`,
     get: (organizationId: string, id: string) =>
+      `/api/v1/organizations/${organizationId}/attachments/${id}`,
+    update: (organizationId: string, id: string) =>
       `/api/v1/organizations/${organizationId}/attachments/${id}`,
     download: (organizationId: string, id: string) =>
       `/api/v1/organizations/${organizationId}/attachments/${id}/download`,
