@@ -45,10 +45,13 @@ export function HomeErpShowcase() {
   return (
     <div
       data-slot="home-erp-showcase"
-      data-gsap="hero-frame"
-      className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-raised "
+      data-gsap="frame"
+      className="overflow-hidden rounded-2xl border border-border-subtle bg-surface-raised"
     >
-      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/40 px-5 py-3 sm:px-6">
+      <div
+        data-gsap-part
+        className="flex flex-wrap items-center justify-between gap-3 border-b border-border-subtle px-5 py-3 sm:px-6"
+      >
         <div className="flex items-center gap-3">
           <div className="flex items-center gap-1.5" aria-hidden="true">
             <span className="size-2.5 rounded-full bg-foreground/15" />
@@ -63,7 +66,10 @@ export function HomeErpShowcase() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 divide-y divide-border/40 sm:grid-cols-3 sm:divide-x sm:divide-y-0">
+      <div
+        data-gsap-part
+        className="grid grid-cols-1 divide-y divide-border-subtle sm:grid-cols-3 sm:divide-x sm:divide-y-0"
+      >
         {metrics.map((metric) => {
           const isSelected = activeMetric === metric.id;
           return (
@@ -79,7 +85,10 @@ export function HomeErpShowcase() {
             >
               <span className="text-xs text-muted-foreground">{metric.label}</span>
               <div className="mt-3 flex items-baseline justify-between gap-3">
-                <span className="text-2xl font-medium tracking-tight tabular-nums sm:text-3xl">
+                <span
+                  data-gsap="counter"
+                  className="text-2xl font-medium tracking-tight tabular-nums sm:text-3xl"
+                >
                   {metric.value}
                 </span>
                 <span className="rounded-full bg-primary/10 px-2 py-0.5 text-xs font-medium text-primary tabular-nums">
@@ -91,9 +100,9 @@ export function HomeErpShowcase() {
         })}
       </div>
 
-      <div className="grid grid-cols-1 divide-y divide-border/40 lg:grid-cols-12 lg:divide-x lg:divide-y-0">
-        <div className="flex flex-col justify-between p-5 sm:p-6 lg:col-span-5">
-          <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-3">
+      <div className="grid grid-cols-1 divide-y divide-border-subtle lg:grid-cols-12 lg:divide-x lg:divide-y-0">
+        <div data-gsap-part className="flex flex-col justify-between p-5 sm:p-6 lg:col-span-5">
+          <div className="flex items-center justify-between gap-2 border-b border-border-subtle pb-3">
             <h3 className="text-sm font-medium">{t("chartTitle")}</h3>
             <div className="flex items-center gap-3 text-xs text-muted-foreground">
               <span className="inline-flex items-center gap-1.5">
@@ -110,7 +119,7 @@ export function HomeErpShowcase() {
           <div className="mt-6 grid grid-cols-6 items-end gap-3 pt-4">
             {HERO_REVENUE_SERIES.map((bar) => (
               <div key={bar.id} className="flex flex-col items-center gap-2">
-                <div className="flex h-32 w-full items-end justify-center gap-1 border-b border-border/30 pb-1">
+                <div className="flex h-32 w-full items-end justify-center gap-1 border-b border-border-subtle pb-1">
                   <div
                     data-gsap="bar-grow"
                     className={cn("w-2 rounded-sm bg-foreground/15", bar.planHeightClass)}
@@ -126,13 +135,13 @@ export function HomeErpShowcase() {
           </div>
         </div>
 
-        <div className="flex flex-col justify-between p-5 sm:p-6 lg:col-span-4">
-          <div className="flex items-baseline justify-between gap-2 border-b border-border/40 pb-3">
+        <div data-gsap-part className="flex flex-col justify-between p-5 sm:p-6 lg:col-span-4">
+          <div className="flex items-baseline justify-between gap-2 border-b border-border-subtle pb-3">
             <h3 className="text-sm font-medium">{t("pipelineTitle")}</h3>
             <span className="text-xs text-muted-foreground">{t("pipelineSubtitle")}</span>
           </div>
 
-          <ul className="mt-4 divide-y divide-border/30">
+          <ul className="mt-4 divide-y divide-border-subtle">
             {PIPELINE_ROWS.map((deal) => (
               <li key={deal.id} className="py-3 first:pt-1 last:pb-0">
                 <div className="flex items-center justify-between text-sm">
@@ -147,13 +156,13 @@ export function HomeErpShowcase() {
           </ul>
         </div>
 
-        <div className="flex flex-col justify-between p-5 sm:p-6 lg:col-span-3">
-          <div className="flex items-baseline justify-between gap-2 border-b border-border/40 pb-3">
+        <div data-gsap-part className="flex flex-col justify-between p-5 sm:p-6 lg:col-span-3">
+          <div className="flex items-baseline justify-between gap-2 border-b border-border-subtle pb-3">
             <h3 className="text-sm font-medium">{t("inventoryTitle")}</h3>
             <span className="text-xs text-muted-foreground">{t("inventorySubtitle")}</span>
           </div>
 
-          <ul className="mt-4 divide-y divide-border/30">
+          <ul className="mt-4 divide-y divide-border-subtle">
             {INVENTORY_ROWS.map((item) => (
               <li key={item.id} className="flex items-center justify-between gap-2 py-3.5">
                 <div className="min-w-0">

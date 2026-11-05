@@ -208,8 +208,23 @@ describe("DataTable branches", () => {
     expect(screen.queryByText("Age")).not.toBeInTheDocument();
   });
 
-  it("uses column id when header is not a string", () => {
+  it("uses a context-free header renderer's text as the label", () => {
     const columns: ColumnDef<Row>[] = [{ accessorKey: "name", header: () => "Fancy" }];
+    renderWithProviders(
+      <DataTable
+        columns={columns}
+        data={ROWS.slice(0, 1)}
+        getRowId={(row) => row.id}
+        enableSorting
+      />,
+    );
+    expect(screen.getByRole("button", { name: "Urutkan berdasarkan Fancy" })).toBeInTheDocument();
+  });
+
+  it("falls back to the column id when the header renderer needs context", () => {
+    const columns: ColumnDef<Row>[] = [
+      { accessorKey: "name", header: ({ column }) => `Fancy ${column.id}` },
+    ];
     renderWithProviders(
       <DataTable
         columns={columns}

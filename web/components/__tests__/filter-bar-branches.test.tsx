@@ -98,11 +98,13 @@ describe("FilterBar branches", () => {
       />,
     );
     await user.click(screen.getByRole("button", { name: /^Filter/ }));
-    const select = screen.getByLabelText("Status");
-    expect(select).toHaveValue("active");
-    await user.selectOptions(select, "");
+    const select = screen.getByRole("combobox", { name: "Status" });
+    expect(select).toHaveTextContent("Active");
+    await user.click(select);
+    await user.click(await screen.findByRole("option", { name: "Semua status" }));
     expect(onChange).toHaveBeenCalledWith("status", null);
-    await user.selectOptions(select, "archived");
+    await user.click(select);
+    await user.click(await screen.findByRole("option", { name: "Archived" }));
     expect(onChange).toHaveBeenCalledWith("status", "archived");
   });
 

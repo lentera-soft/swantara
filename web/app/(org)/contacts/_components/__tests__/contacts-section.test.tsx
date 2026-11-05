@@ -25,7 +25,8 @@ describe("ContactsSection", () => {
 
     await screen.findByText("Bluebird Trading");
     await user.click(screen.getByRole("button", { name: "Filter" }));
-    await user.selectOptions(screen.getByLabelText("Saring berdasar status"), "false");
+    await user.click(screen.getByRole("combobox", { name: "Saring berdasar status" }));
+    await user.click(await screen.findByRole("option", { name: "Nonaktif" }));
 
     expect(await screen.findByText("Klima Foods")).toBeInTheDocument();
     await waitFor(() => expect(screen.queryByText("Bluebird Trading")).not.toBeInTheDocument());

@@ -70,7 +70,8 @@ describe("TableFilterBar", () => {
       />,
     );
     await user.click(screen.getByRole("button", { name: /filter/i }));
-    await user.selectOptions(screen.getByLabelText("Status"), "active");
+    await user.click(screen.getByRole("combobox", { name: "Status" }));
+    await user.click(await screen.findByRole("option", { name: "Active" }));
     expect(onColumnFiltersChange).toHaveBeenCalled();
   });
 

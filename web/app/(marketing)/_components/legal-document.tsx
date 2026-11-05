@@ -3,9 +3,7 @@
 import { ArrowRight, ArrowUpRight } from "lucide-react";
 import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { Button } from "@/components/button";
-import { splitTitle } from "./marketing-utils";
-import { SwissIndexBadge } from "./swiss-grid-mark";
+import { PageHero, Section, SectionHeader } from "./swiss-layout";
 
 type LegalSectionNumber = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9;
 
@@ -38,51 +36,49 @@ export function LegalDocument({ namespace, email, sections, relatedLinks }: Lega
 
   return (
     <div data-slot={`legal-${namespace}`}>
-      <section className="overflow-hidden">
-        <div className="mx-auto max-w-7xl px-6 pt-16 pb-12 lg:px-8 lg:pt-24 lg:pb-16">
-          <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
-            <div className="lg:col-span-8">
-              <p data-gsap="hero-meta" className="text-label text-muted-foreground uppercase">
-                {t("badge")}
-              </p>
-              <h1
-                data-gsap="hero-title"
-                className="mt-5 text-display max-w-4xl font-medium text-foreground"
-              >
-                {splitTitle(t("title")).map((line) => (
-                  <span key={line} className="block">
-                    {line}
-                  </span>
-                ))}
-              </h1>
-            </div>
+      <PageHero
+        eyebrow={t("badge")}
+        title={t("title")}
+        lead={t("intro")}
+        actions={
+          <p className="text-label text-muted-foreground uppercase tabular-nums lg:text-right">
+            {t("updated")}
+          </p>
+        }
+      />
 
-            <div data-gsap="hero-meta" className="flex flex-col justify-end gap-6 lg:col-span-4">
-              <p className="text-lg leading-relaxed text-muted-foreground">{t("intro")}</p>
-              <p className="font-mono text-xs text-muted-foreground tabular-nums">{t("updated")}</p>
-            </div>
-          </div>
-        </div>
-      </section>
+      {/* Contents (sticky, cols 1–3) beside the document (cols 5–11) */}
+      <Section className="lg:py-20">
+        <div className="grid grid-cols-1 gap-12 lg:grid-cols-12 lg:gap-8">
+          <nav aria-label={t("badge")} className="hidden lg:col-span-3 lg:block">
+            <ol className="sticky top-28 divide-y divide-border-subtle border-y border-border-subtle">
+              {sections.map((section) => (
+                <li key={section.id}>
+                  <a
+                    href={`#${section.id}`}
+                    className="flex items-baseline gap-3 py-3 text-sm text-muted-foreground transition-colors hover:text-foreground"
+                  >
+                    <span className="text-label text-primary tabular-nums">{section.index}</span>
+                    <span>{t(section.titleKey)}</span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </nav>
 
-      <section className="border-t border-border-subtle">
-        <div className="mx-auto max-w-7xl px-6 py-8 lg:px-8 lg:py-12">
-          <div className="divide-y divide-border-subtle">
+          <div className="lg:col-span-7 lg:col-start-5">
             {sections.map((section) => (
-              <div
+              <article
                 key={section.id}
                 id={section.id}
-                data-gsap="section-header"
-                className="grid grid-cols-1 gap-8 py-12 lg:grid-cols-12 lg:gap-16"
+                data-gsap="fade-up"
+                className="scroll-mt-28 border-t border-border-subtle pt-6 pb-14 first:border-t-0 first:pt-0 lg:first:border-t lg:first:pt-6"
               >
-                <div className="lg:col-span-4">
-                  <SwissIndexBadge index={section.index} label={t(section.titleKey)} />
-                  <h2 className="mt-4 text-2xl font-medium tracking-tight text-foreground sm:text-3xl">
-                    {t(section.titleKey)}
-                  </h2>
-                </div>
-
-                <div className="space-y-6 lg:col-span-7 lg:col-start-6">
+                <span className="text-label text-primary tabular-nums">{section.index}</span>
+                <h2 className="mt-3 text-2xl font-medium tracking-tight text-foreground sm:text-3xl">
+                  {t(section.titleKey)}
+                </h2>
+                <div className="mt-6 max-w-2xl space-y-5">
                   {section.paragraphKeys.map((paragraphKey) => (
                     <p
                       key={paragraphKey}
@@ -92,66 +88,54 @@ export function LegalDocument({ namespace, email, sections, relatedLinks }: Lega
                     </p>
                   ))}
                 </div>
-              </div>
+              </article>
             ))}
           </div>
         </div>
-      </section>
+      </Section>
 
-      <section className="border-t border-border-subtle bg-surface-warm">
-        <div className="mx-auto max-w-7xl px-6 py-20 lg:px-8 lg:py-28">
-          <div
-            data-gsap="section-header"
-            className="grid grid-cols-1 items-center gap-10 lg:grid-cols-12"
-          >
-            <div className="lg:col-span-7">
-              <SwissIndexBadge label={t("relatedTitle")} />
-              <h2 className="mt-4 text-3xl font-medium tracking-tight text-foreground sm:text-4xl">
-                {t("relatedTitle")}
-              </h2>
-              <p className="mt-5 text-base leading-relaxed text-muted-foreground sm:text-lg">
-                {t("relatedNote")}{" "}
-                <a
-                  href={`mailto:${email}`}
-                  className="font-medium text-primary underline underline-offset-4 hover:text-primary/80"
-                >
-                  {email}
-                </a>
-              </p>
-            </div>
+      <Section tone="warm">
+        <SectionHeader eyebrow={t("badge")} title={t("relatedTitle")}>
+          <p className="text-base leading-relaxed text-muted-foreground sm:text-lg">
+            {t("relatedNote")}{" "}
+            <a
+              href={`mailto:${email}`}
+              className="font-medium text-primary underline underline-offset-4 hover:text-primary/80"
+            >
+              {email}
+            </a>
+          </p>
+        </SectionHeader>
 
-            <div className="flex flex-col gap-3 lg:col-span-4 lg:col-start-9">
-              {relatedLinks.map((link) => (
-                <Button
-                  key={link.href}
-                  size="lg"
-                  variant="outline"
-                  shape="pill"
-                  className="w-full justify-between px-5"
-                  asChild
-                >
-                  <Link href={link.href}>
-                    <span>{tFooter(link.labelKey)}</span>
-                    <ArrowUpRight aria-hidden="true" className="size-4" />
-                  </Link>
-                </Button>
-              ))}
-              <Button
-                size="lg"
-                variant="ghost"
-                shape="pill"
-                className="w-full justify-between px-5"
-                asChild
+        <ul className="mt-16 grid grid-cols-1 border-t border-l border-border-subtle sm:grid-cols-3">
+          {relatedLinks.map((link) => (
+            <li key={link.href} className="border-r border-b border-border-subtle">
+              <Link
+                href={link.href}
+                className="group flex items-center justify-between p-6 text-lg font-medium tracking-tight text-foreground transition-colors hover:bg-background lg:p-8"
               >
-                <Link href="/contact">
-                  <span>{tFooter("contact")}</span>
-                  <ArrowRight aria-hidden="true" className="size-4" />
-                </Link>
-              </Button>
-            </div>
-          </div>
-        </div>
-      </section>
+                <span>{tFooter(link.labelKey)}</span>
+                <ArrowUpRight
+                  aria-hidden="true"
+                  className="size-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5"
+                />
+              </Link>
+            </li>
+          ))}
+          <li className="border-r border-b border-border-subtle">
+            <Link
+              href="/contact"
+              className="group flex items-center justify-between p-6 text-lg font-medium tracking-tight text-foreground transition-colors hover:bg-background lg:p-8"
+            >
+              <span>{tFooter("contact")}</span>
+              <ArrowRight
+                aria-hidden="true"
+                className="size-4 transition-transform group-hover:translate-x-0.5"
+              />
+            </Link>
+          </li>
+        </ul>
+      </Section>
     </div>
   );
 }

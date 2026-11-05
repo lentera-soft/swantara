@@ -10,13 +10,16 @@ export type MarketingShellProps = {
 };
 
 export function MarketingShell({ children }: MarketingShellProps) {
-  const scopeRef = useRef<HTMLElement>(null);
+  const scopeRef = useRef<HTMLDivElement>(null);
   useSwissAnimations(scopeRef);
 
   return (
-    <div className="flex min-h-screen flex-col bg-background text-foreground selection:bg-primary selection:text-primary-foreground">
+    <div
+      ref={scopeRef}
+      className="flex min-h-screen flex-col bg-background text-foreground selection:bg-primary selection:text-primary-foreground"
+    >
       <MarketingHeader />
-      <main id="main" ref={scopeRef} className="flex-1 pt-24 sm:pt-28">
+      <main id="main" className="flex-1 pt-24 sm:pt-28">
         {children}
       </main>
       <MarketingFooter />

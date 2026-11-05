@@ -3,11 +3,11 @@
 import { GlobeIcon } from "lucide-react";
 import { useLocale } from "next-intl";
 import type * as React from "react";
-import { useState } from "react";
+import { memo, useMemo, useState } from "react";
 import PhoneInputLibrary, {
   type Country,
-  getCountries,
   getCountryCallingCode,
+  parsePhoneNumber,
 } from "react-phone-number-input";
 
 import { CountryFlag } from "@/components/country-flag";
@@ -19,6 +19,7 @@ const INTERNATIONAL_COUNTRY = "XX" as unknown as Country;
 // Registering the country trigger as a group control reuses the InputGroup focus,
 // disabled, and invalid recipes instead of a second border/focus recipe here.
 const COUNTRY_SELECT_SLOT = "input-group-control";
+const CONTAINER_PROPS = { "data-slot": "phone-input" };
 
 type CountryOption = { value?: Country; label?: string; divider?: boolean };
 
@@ -42,13 +43,13 @@ function callingCode(country?: Country): string {
   }
 }
 
-const ALL_COUNTRIES: Country[] = getCountries();
-
 function countryFromValue(value?: string): Country | undefined {
   if (!value?.startsWith("+")) return undefined;
-  const prefix = /^\+\d+/.exec(value)?.[0];
-  if (!prefix) return undefined;
-  return ALL_COUNTRIES.find((country) => callingCode(country) === prefix);
+  try {
+    return parsePhoneNumber(value)?.country;
+  } catch {
+    return undefined;
+  }
 }
 
 // The placeholder keeps mirroring the selected country so its dial prefix
@@ -65,12 +66,28 @@ function phonePlaceholder(country: Country | undefined, placeholder?: string): s
   return code ? `${code} ${placeholder}` : placeholder;
 }
 
-function regionName(option: CountryOption, locale: string): string {
+// Constructing Intl.DisplayNames is expensive; build one per locale, not one per option.
+const displayNamesCache = new Map<string, Intl.DisplayNames | null>();
+
+function regionDisplayNames(locale: string): Intl.DisplayNames | null {
+  let names = displayNamesCache.get(locale);
+  if (names === undefined) {
+    try {
+      names = new Intl.DisplayNames([locale], { type: "region" });
+    } catch {
+      names = null;
+    }
+    displayNamesCache.set(locale, names);
+  }
+  return names;
+}
+
+function regionName(option: CountryOption, names: Intl.DisplayNames | null): string {
   const code = String(option.value ?? "");
   const fallback = option.label ?? code;
-  if (option.value === INTERNATIONAL_COUNTRY || !/^[A-Z]{2}$/.test(code)) return fallback;
+  if (!names || option.value === INTERNATIONAL_COUNTRY || !/^[A-Z]{2}$/.test(code)) return fallback;
   try {
-    return new Intl.DisplayNames([locale], { type: "region" }).of(code) ?? fallback;
+    return names.of(code) ?? fallback;
   } catch {
     return fallback;
   }
@@ -83,7 +100,7 @@ function CountryIcon({ country }: { country: Country }) {
   return <CountryFlag code={country} />;
 }
 
-function PhoneInputCountrySelect({
+const PhoneInputCountrySelect = memo(function PhoneInputCountrySelect({
   value,
   options = [],
   onChange,
@@ -95,9 +112,36 @@ function PhoneInputCountrySelect({
 }: CountrySelectComponentProps) {
   const locale = useLocale();
 
+  // The option list (~250 flags + localized names) only depends on the options and
+  // locale, so build it once instead of on every keystroke. Passing `items` also lets
+  // Select skip walking the children tree to derive them.
+  const { items, content } = useMemo(() => {
+    const names = regionDisplayNames(locale);
+    const entries = options
+      .filter((option) => !option.divider)
+      .map((option) => ({
+        value: option.value ?? INTERNATIONAL_COUNTRY,
+        name: regionName(option, names),
+        code: callingCode(option.value),
+      }));
+    return {
+      items: entries.map(({ value, name }) => ({ value, label: name })),
+      content: entries.map(({ value, name, code }) => (
+        <SelectItem key={value} value={value}>
+          <span className="flex items-center gap-2">
+            <CountryIcon country={value} />
+            <span>{name}</span>
+            <span className="text-xs text-muted-foreground">{code}</span>
+          </span>
+        </SelectItem>
+      )),
+    };
+  }, [options, locale]);
+
   return (
     <InputGroupAddon align="inline-start" className="pr-0">
       <Select
+        items={items}
         value={value ?? INTERNATIONAL_COUNTRY}
         onValueChange={(next) =>
           onChange?.(
@@ -117,25 +161,11 @@ function PhoneInputCountrySelect({
           {value ? <CountryIcon country={value} /> : null}
           <span className="text-xs">{callingCode(value)}</span>
         </SelectTrigger>
-        <SelectContent>
-          {options.map((option) => {
-            if (option.divider) return null;
-            const value = option.value ?? INTERNATIONAL_COUNTRY;
-            return (
-              <SelectItem key={value} value={value}>
-                <span className="flex items-center gap-2">
-                  <CountryIcon country={value} />
-                  <span>{regionName(option, locale)}</span>
-                  <span className="text-xs text-muted-foreground">{callingCode(option.value)}</span>
-                </span>
-              </SelectItem>
-            );
-          })}
-        </SelectContent>
+        <SelectContent>{content}</SelectContent>
       </Select>
     </InputGroupAddon>
   );
-}
+});
 
 export type PhoneInputProps = Omit<
   React.ComponentProps<"input">,
@@ -163,7 +193,12 @@ export function PhoneInput({
   const [country, setCountry] = useState<Country | undefined>(
     () => countryFromValue(value) ?? defaultCountry,
   );
-  const currentCountry = countryFromValue(value) ?? country;
+  const valueCountry = useMemo(() => countryFromValue(value), [value]);
+  const currentCountry = valueCountry ?? country;
+  const countrySelectProps = useMemo(
+    () => ({ "aria-label": countryAriaLabel, "data-slot": COUNTRY_SELECT_SLOT }),
+    [countryAriaLabel],
+  );
 
   function handleCountryChange(next?: Country) {
     setCountry(next);
@@ -179,9 +214,9 @@ export function PhoneInput({
       countries={countries}
       placeholder={phonePlaceholder(currentCountry, placeholder)}
       containerComponent={InputGroup}
-      containerComponentProps={{ "data-slot": "phone-input" }}
+      containerComponentProps={CONTAINER_PROPS}
       countrySelectComponent={PhoneInputCountrySelect}
-      countrySelectProps={{ "aria-label": countryAriaLabel, "data-slot": COUNTRY_SELECT_SLOT }}
+      countrySelectProps={countrySelectProps}
       inputComponent={InputGroupInput}
       className={className}
       {...props}

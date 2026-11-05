@@ -55,7 +55,41 @@ function toGlobalFilter(config: readonly TableFilterConfig[], filters: FiltersMa
   return "";
 }
 
-export function useTableFilters(config: readonly TableFilterConfig[]): {
+export type TableFiltersInitialState = {
+  globalFilter?: string;
+  columnFilters?: ColumnFiltersState;
+};
+
+function toFiltersMap(
+  config: readonly TableFilterConfig[],
+  empty: FiltersMap,
+  initial: TableFiltersInitialState | undefined,
+): FiltersMap {
+  const map: FiltersMap = { ...empty };
+  if (!initial) {
+    return map;
+  }
+  const global = config.find((f) => f.type === "text" && f.id === "search");
+  if (global && initial.globalFilter) {
+    map[global.id] = initial.globalFilter;
+  }
+  for (const filter of config) {
+    if (filter === global) {
+      continue;
+    }
+    const columnId = filter.columnId ?? filter.id;
+    const value = initial.columnFilters?.find((f) => f.id === columnId)?.value;
+    if (value !== undefined) {
+      map[filter.id] = value as FilterValue;
+    }
+  }
+  return map;
+}
+
+export function useTableFilters(
+  config: readonly TableFilterConfig[],
+  initial?: TableFiltersInitialState,
+): {
   columnFilters: ColumnFiltersState;
   onColumnFiltersChange: OnChangeFn<ColumnFiltersState>;
   globalFilter: string;
@@ -71,7 +105,8 @@ export function useTableFilters(config: readonly TableFilterConfig[]): {
     return base;
   }, [config]);
 
-  const [filters, setFilters] = useState<FiltersMap>({ ...empty });
+  // `initial` is read once, on mount.
+  const [filters, setFilters] = useState<FiltersMap>(() => toFiltersMap(config, empty, initial));
 
   const columnFilters = useMemo(() => toColumnFilters(config, filters), [config, filters]);
   const globalFilter = useMemo(() => toGlobalFilter(config, filters), [config, filters]);

@@ -92,7 +92,8 @@ describe("JournalEntriesSection extra2", () => {
 
     await screen.findByText("JE-001");
     await user.click(screen.getByRole("button", { name: "Filter" }));
-    await user.selectOptions(screen.getByRole("combobox", { name: "Status" }), "posted");
+    await user.click(screen.getByRole("combobox", { name: "Status" }));
+    await user.click(await screen.findByRole("option", { name: "Diposting" }));
 
     expect(await screen.findByText("JE-002")).toBeInTheDocument();
     await waitFor(() => expect(screen.queryByText("JE-001")).not.toBeInTheDocument());

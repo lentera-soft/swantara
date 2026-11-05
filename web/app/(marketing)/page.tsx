@@ -3,7 +3,7 @@ import { getTranslations } from "next-intl/server";
 import { HomeFeaturesSection } from "./_components/home-features-section";
 import { HomeHeroSection } from "./_components/home-hero-section";
 import { HomePricingFaqSection } from "./_components/home-pricing-faq-section";
-import { HomeWorkflowSection } from "./_components/home-workflow-section";
+import { HomeTestimonialSection } from "./_components/home-testimonial-section";
 
 export async function generateMetadata(): Promise<Metadata> {
   const t = await getTranslations("Marketing.meta");
@@ -36,7 +36,7 @@ export default function MarketingHomePage() {
     <div data-slot="marketing-home-page">
       <HomeHeroSection />
       <HomeFeaturesSection />
-      <HomeWorkflowSection />
+      <HomeTestimonialSection />
       <HomePricingFaqSection />
     </div>
   );

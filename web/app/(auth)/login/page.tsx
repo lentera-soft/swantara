@@ -19,7 +19,7 @@ export default async function LoginPage() {
       <p className="text-sm text-muted-foreground">
         {t("newHere")}{" "}
         <Link
-          className="inline-flex min-h-11 items-center rounded-md px-1 font-medium text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+          className="inline-flex min-h-11 items-center rounded-full px-1 font-medium text-primary underline underline-offset-4 hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
           href="/register"
         >
           {t("registerNew")}

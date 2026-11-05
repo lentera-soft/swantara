@@ -113,13 +113,19 @@ export default function LoginForm() {
             </Label>
           </div>
           <Link
-            className="inline-flex min-h-11 items-center rounded-md px-1 text-sm text-primary underline-offset-4 hover:underline focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+            className="inline-flex min-h-11 items-center rounded-full px-1 text-sm text-primary underline underline-offset-4 hover:text-primary/80 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
             href="/forgot-password"
           >
             {t("forgotPassword")}
           </Link>
         </div>
-        <SubmitButton className="w-full" loading={isPending} variant="default" size="lg">
+        <SubmitButton
+          className="w-full"
+          loading={isPending}
+          variant="default"
+          size="lg"
+          shape="pill"
+        >
           {t("loginButton")}
         </SubmitButton>
         <div className="flex items-center gap-3">
@@ -128,7 +134,7 @@ export default function LoginForm() {
           <Separator className="flex-1" />
         </div>
         <div className="grid grid-cols-2 gap-3">
-          <Button type="button" variant="outline" className="w-full min-w-0">
+          <Button type="button" variant="outline" shape="pill" className="w-full min-w-0">
             <svg viewBox="0 0 24 24" aria-hidden="true" className="size-4">
               <path
                 fill="#4285F4"
@@ -149,7 +155,7 @@ export default function LoginForm() {
             </svg>
             <span>Google</span>
           </Button>
-          <Button type="button" variant="outline" className="w-full min-w-0">
+          <Button type="button" variant="outline" shape="pill" className="w-full min-w-0">
             <svg viewBox="0 0 24 24" aria-hidden="true" className="size-4">
               <path
                 fill="#1877F2"

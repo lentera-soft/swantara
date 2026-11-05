@@ -35,17 +35,13 @@ export function SwissIndexBadge({ index, label, className }: SwissIndexBadgeProp
   return (
     <div
       data-slot="swiss-index-badge"
-      className={cn("inline-flex items-center gap-2 text-sm text-muted-foreground", className)}
+      className={cn(
+        "inline-flex items-baseline gap-3 text-label text-muted-foreground uppercase",
+        className,
+      )}
     >
-      {index ? (
-        <>
-          <span className="font-mono text-xs text-primary tabular-nums">{index}</span>
-          <span className="text-border" aria-hidden="true">
-            /
-          </span>
-        </>
-      ) : null}
-      <span className="text-foreground/85">{label}</span>
+      {index ? <span className="text-primary tabular-nums">{index}</span> : null}
+      <span>{label}</span>
     </div>
   );
 }

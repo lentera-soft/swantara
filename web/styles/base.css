@@ -90,6 +90,29 @@
     will-change: transform, opacity;
   }
 
+  /*
+   * Intro elements stay hidden until useSwissAnimations takes over, so the static server render
+   * doesn't flash before the reveal. `.motion-ok` is set by the theme script only when the user
+   * allows motion. The delayed animation is a safety net that reveals them if JS never runs.
+   */
+  .motion-ok
+  :is(
+    [data-gsap="hero-nav"],
+    [data-gsap="hero-title"],
+    [data-gsap="word-cycle"],
+    [data-gsap="hero-meta"],
+    [data-gsap="hero-frame"]
+  ) {
+    visibility: hidden;
+    animation: swiss-intro-fallback 0s 2.5s forwards;
+  }
+
+  @keyframes swiss-intro-fallback {
+    to {
+      visibility: visible;
+    }
+  }
+
   ::selection {
     background-color: var(--color-accent-subtle);
     color: var(--color-foreground);

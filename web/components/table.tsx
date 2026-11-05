@@ -4,9 +4,20 @@ import type * as React from "react";
 
 import { cn } from "@/lib/utils/style";
 
-function Table({ className, ...props }: React.ComponentProps<"table">) {
+type TableProps = React.ComponentProps<"table"> & {
+  /** Classes for the scroll container around the table. */
+  containerClassName?: string;
+  /** Inline styles for the scroll container, e.g. a `maxHeight` for a scrolling body. */
+  containerStyle?: React.CSSProperties;
+};
+
+function Table({ className, containerClassName, containerStyle, ...props }: TableProps) {
   return (
-    <div data-slot="table-container" className="relative w-full overflow-x-auto">
+    <div
+      data-slot="table-container"
+      className={cn("relative w-full overflow-x-auto", containerClassName)}
+      style={containerStyle}
+    >
       <table
         data-slot="table"
         className={cn("w-full caption-bottom text-sm", className)}

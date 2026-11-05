@@ -28,7 +28,7 @@ export default function ForgotPasswordForm() {
     return (
       <div className="animate-fade-up flex flex-col items-center gap-4 text-center">
         <MailCheck className="size-10 text-primary" aria-hidden="true" />
-        <h2 className="font-heading text-2xl">{tx("resetLinkSent")}</h2>
+        <h2 className="text-2xl font-medium tracking-tight">{tx("resetLinkSent")}</h2>
         <p className="text-muted-foreground">
           {tx("resetLinkSentDescription", { method: methodLabel })}
         </p>
@@ -37,12 +37,13 @@ export default function ForgotPasswordForm() {
             type="button"
             variant="outline"
             size="lg"
+            shape="pill"
             className="w-full"
             onClick={() => form.reset({ identifier: "" })}
           >
             {tx("sendToAnother")}
           </Button>
-          <Button variant="default" size="lg" asChild className="w-full">
+          <Button variant="default" size="lg" shape="pill" asChild className="w-full">
             <Link href="/login">{t("backToLogin")}</Link>
           </Button>
         </div>
@@ -87,10 +88,16 @@ export default function ForgotPasswordForm() {
         />
       </div>
       <div className="mt-6 flex flex-col gap-3 sm:mt-8">
-        <SubmitButton variant="default" size="lg" className="w-full" loading={isPending}>
+        <SubmitButton
+          variant="default"
+          size="lg"
+          shape="pill"
+          className="w-full"
+          loading={isPending}
+        >
           {t("sendResetLink")}
         </SubmitButton>
-        <Button variant="outline" size="lg" asChild className="w-full">
+        <Button variant="outline" size="lg" shape="pill" asChild className="w-full">
           <Link href="/login">{t("backToLogin")}</Link>
         </Button>
       </div>

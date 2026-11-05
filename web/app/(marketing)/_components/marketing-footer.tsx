@@ -59,7 +59,7 @@ export function MarketingFooter() {
       data-slot="marketing-footer"
       className="border-t border-border-subtle bg-surface-sunken"
     >
-      <div className="mx-auto max-w-7xl px-6 py-16 lg:px-8">
+      <div className="px-4 sm:px-6 py-16 lg:px-8">
         <div className="grid grid-cols-1 gap-12 lg:grid-cols-12">
           <div className="space-y-5 lg:col-span-5">
             <div className="flex items-center gap-2.5">
@@ -99,8 +99,8 @@ export function MarketingFooter() {
                 <Image
                   src="/store-badges/google-play.png"
                   alt={tFooter("downloadGooglePlay")}
-                  width={646}
-                  height={250}
+                  width={564}
+                  height={168}
                   className="h-10 w-auto"
                 />
               </a>
@@ -110,7 +110,7 @@ export function MarketingFooter() {
           <div className="grid grid-cols-2 gap-8 sm:grid-cols-4 lg:col-span-7">
             {FOOTER_GROUPS.map((group) => (
               <div key={group.id} className="space-y-4">
-                <h2 className="text-xs font-medium tracking-wide text-foreground/80">
+                <h2 className="text-label text-muted-foreground uppercase">
                   {tFooter(group.titleKey)}
                 </h2>
                 <ul className="flex flex-col gap-2.5">

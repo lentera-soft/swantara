@@ -33,12 +33,12 @@ export default function ResetPasswordForm({ token }: { token?: string }) {
     return (
       <div className="animate-fade-up flex flex-col items-center gap-4 py-4 text-center">
         <AlertCircle className="size-10 text-destructive" aria-hidden="true" />
-        <h2 className="text-xl">{tx("resetLinkInvalidTitle")}</h2>
+        <h2 className="text-xl font-medium tracking-tight">{tx("resetLinkInvalidTitle")}</h2>
         <p className="max-w-sm text-muted-foreground">{tx("resetLinkInvalidDescription")}</p>
-        <Button asChild variant="default" size="lg" className="w-full">
+        <Button asChild variant="default" size="lg" shape="pill" className="w-full">
           <Link href="/forgot-password">{tx("requestNewLink")}</Link>
         </Button>
-        <Button asChild variant="outline" size="lg" className="w-full">
+        <Button asChild variant="outline" size="lg" shape="pill" className="w-full">
           <Link href="/login">{t("backToLogin")}</Link>
         </Button>
       </div>
@@ -49,9 +49,9 @@ export default function ResetPasswordForm({ token }: { token?: string }) {
     return (
       <div className="animate-fade-up flex flex-col items-center gap-4 py-4 text-center">
         <CheckCircle2 className="size-10 text-primary" aria-hidden="true" />
-        <h2 className="text-xl">{tx("passwordUpdatedTitle")}</h2>
+        <h2 className="text-xl font-medium tracking-tight">{tx("passwordUpdatedTitle")}</h2>
         <p className="max-w-sm text-muted-foreground">{tx("passwordUpdatedDescription")}</p>
-        <Button asChild variant="default" size="lg" className="w-full">
+        <Button asChild variant="default" size="lg" shape="pill" className="w-full">
           <Link href="/login">{tx("goToLogin")}</Link>
         </Button>
       </div>
@@ -119,10 +119,10 @@ export default function ResetPasswordForm({ token }: { token?: string }) {
         />
       </div>
       <div className="mt-6 flex flex-col gap-3 sm:mt-8">
-        <SubmitButton className="w-full" loading={isPending} size="lg">
+        <SubmitButton className="w-full" loading={isPending} size="lg" shape="pill">
           {t("resetButton")}
         </SubmitButton>
-        <Button variant="outline" size="lg" asChild className="w-full">
+        <Button variant="outline" size="lg" shape="pill" asChild className="w-full">
           <Link href="/login">{t("backToLogin")}</Link>
         </Button>
       </div>

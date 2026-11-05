@@ -4,7 +4,9 @@ import type { RowData } from "@tanstack/react-table";
 import { type DataTableProps, DataTable as UiDataTable } from "@/components/data-table";
 
 export type {
+  DataTableColumnFilterMeta,
   DataTableColumnMeta,
+  DataTableDensity,
   DataTableProps,
   DataTableStatus,
 } from "@/components/data-table";

@@ -35,7 +35,10 @@ export function MarketingHeader() {
       data-slot="marketing-header"
       className="fixed inset-x-0 top-4 z-header px-4 sm:top-5 sm:px-6 lg:px-8"
     >
-      <div className="mx-auto flex h-14 max-w-7xl items-center justify-between rounded-full border border-border/40 bg-background/75 px-2 backdrop-blur-xl">
+      <div
+        data-gsap="hero-nav"
+        className="flex h-14 items-center justify-between rounded-full border border-border/40 bg-background/75 px-2 backdrop-blur-xl"
+      >
         <Link
           href="/"
           className="group inline-flex items-center gap-2.5 pl-4 text-foreground transition-opacity hover:opacity-70"
@@ -107,7 +110,7 @@ export function MarketingHeader() {
       {mobileMenuOpen ? (
         <div
           data-slot="marketing-mobile-nav"
-          className="mx-auto mt-2 max-w-7xl rounded-2xl border border-border/40 bg-background/95 p-3 backdrop-blur-xl md:hidden"
+          className="mt-2 rounded-2xl border border-border/40 bg-background/95 p-3 backdrop-blur-xl md:hidden"
         >
           <nav aria-label={tBrand("name")} className="flex flex-col">
             {MARKETING_NAV_ITEMS.map((item) => {
@@ -119,7 +122,7 @@ export function MarketingHeader() {
                   onClick={() => setMobileMenuOpen(false)}
                   aria-current={active ? "page" : undefined}
                   className={cn(
-                    "rounded-lg px-3 py-2.5 text-base transition-colors",
+                    "rounded-full px-4 py-2.5 text-base transition-colors",
                     active ? "bg-muted font-medium text-foreground" : "text-muted-foreground",
                   )}
                 >
@@ -128,12 +131,12 @@ export function MarketingHeader() {
               );
             })}
             <div className="mt-2 flex flex-col gap-2 border-t border-border-subtle pt-2">
-              <Button variant="outline" className="w-full rounded-xl" asChild>
+              <Button variant="outline" shape="pill" className="w-full" asChild>
                 <Link href="/login" onClick={() => setMobileMenuOpen(false)}>
                   {tActions("signIn")}
                 </Link>
               </Button>
-              <Button variant="default" className="w-full rounded-xl" asChild>
+              <Button variant="default" shape="pill" className="w-full" asChild>
                 <Link href="/register" onClick={() => setMobileMenuOpen(false)}>
                   {tActions("startFree")}
                 </Link>

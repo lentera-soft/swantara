@@ -20,6 +20,7 @@ import {
   getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
+  type LegacyReactTable,
   useLegacyTable as useReactTable,
 } from "@tanstack/react-table/legacy";
 import {
@@ -31,17 +32,21 @@ import {
   InboxIcon,
   TriangleAlertIcon,
 } from "lucide-react";
-import { useMessages, useTranslations } from "next-intl";
-import type {
-  MouseEvent as ReactMouseEvent,
-  ReactNode,
-  TouchEvent as ReactTouchEvent,
-} from "react";
-import { useCallback, useEffect, useRef, useState, useSyncExternalStore } from "react";
+import { useTranslations } from "next-intl";
+import type { ReactNode } from "react";
+import { useState, useSyncExternalStore } from "react";
 import { cn } from "@/lib/utils";
 import { getColumnLabel } from "@/lib/utils/table";
 import { Button } from "./button";
 import { Checkbox } from "./checkbox";
+import {
+  MAX_COLUMN_SIZE,
+  MIN_COLUMN_SIZE,
+  RESIZE_KEYBOARD_STEP,
+  RESIZE_KEYBOARD_STEP_LARGE,
+  SELECTION_COLUMN_WIDTH,
+  useDataTableResizing,
+} from "./data-table-resizing";
 import { EmptyState } from "./empty-state";
 import { RouteLoading } from "./route-loading";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
@@ -53,35 +58,30 @@ export type DataTableStatus =
   | { type: "empty"; title?: string; description?: string }
   | { type: "none" };
 
-type PointerPositionEvent = {
-  clientX?: number;
-  clientY?: number;
-  touches?: ArrayLike<{ clientX: number; clientY: number }>;
-};
-
-function eventClientX(event: PointerPositionEvent): number {
-  if (event.touches && event.touches.length > 0) {
-    return event.touches[0]?.clientX ?? 0;
-  }
-  return event.clientX ?? 0;
-}
-
-function eventClientY(event: PointerPositionEvent): number {
-  if (event.touches && event.touches.length > 0) {
-    return event.touches[0]?.clientY ?? 0;
-  }
-  return event.clientY ?? 0;
-}
-
-const MIN_COLUMN_SIZE = 40;
-const MAX_COLUMN_SIZE = 1200;
-const MIN_ROW_SIZE = 24;
-const MAX_ROW_SIZE = 480;
+export type DataTableColumnFilterMeta =
+  | { type: "text"; placeholder?: string }
+  | { type: "select"; options?: { value: string; label: string }[]; placeholder?: string }
+  | { type: "date-range"; placeholder?: string };
 
 export type DataTableColumnMeta = {
   align?: "left" | "right" | "center";
   className?: string;
+  /** Plain-text column name for filters, the column menu and CSV headers. */
+  label?: string;
+  /**
+   * How the column is filtered in tables that build filters from columns.
+   * `false` removes the column from the filter panel. A `select` without
+   * `options` derives them from the column's distinct values.
+   */
+  filter?: DataTableColumnFilterMeta | false;
 };
+
+declare module "@tanstack/react-table" {
+  // Lets callers write `meta: { align, filter, label }` with type checking.
+  interface ColumnMeta<TFeatures, TData, TValue> extends DataTableColumnMeta {}
+}
+
+export type DataTableDensity = "compact" | "normal" | "comfortable";
 
 export type DataTableLabels = {
   selectAll?: string;
@@ -98,6 +98,7 @@ export type DataTableLabels = {
   pagePrevious?: string;
   pageNext?: string;
   range?: string;
+  resizeColumn?: string;
 };
 
 export type DataTableProps<TData extends RowData> = {
@@ -113,6 +114,8 @@ export type DataTableProps<TData extends RowData> = {
   enableColumnResizing?: boolean;
   enableRowResizing?: boolean;
   manualPagination?: boolean;
+  /** Return to the first page when `data` changes. Defaults to TanStack's behaviour. */
+  autoResetPageIndex?: boolean;
   manualSorting?: boolean;
   manualFiltering?: boolean;
   rowCount?: number;
@@ -140,33 +143,37 @@ export type DataTableProps<TData extends RowData> = {
   onColumnSizingChange?: OnChangeFn<ColumnSizingState>;
   onColumnOrderChange?: OnChangeFn<ColumnOrderState>;
   onSelectionChange?: (selectedKeys: string[]) => void;
+  rowSelection?: RowSelectionState;
+  onRowSelectionChange?: OnChangeFn<RowSelectionState>;
   status?: DataTableStatus;
   toolbar?: ReactNode;
   ariaLabel?: string;
   className?: string;
   labels?: DataTableLabels;
+  /** Receives the table instance, e.g. to read the sorted rows on export. */
+  tableRef?: { current: LegacyReactTable<TData> | null };
+  /** Called when the viewer finishes resizing a column; `null` means it was reset. */
+  onColumnResizeEnd?: (columnId: string, size: number | null) => void;
+  /** Keep the header visible while the body scrolls. Needs `maxHeight`. */
+  stickyHeader?: boolean;
+  /** Maximum height of the scrolling table area, e.g. `480` or `"60vh"`. */
+  maxHeight?: number | string;
+  /** Keep the selection column and the first data column visible when scrolling sideways. */
+  stickyFirstColumn?: boolean;
+  density?: DataTableDensity;
 };
 
-function useDefaultLabels(): Required<DataTableLabels> {
-  const raw = useMessages() as unknown as { Tables?: Record<string, string> };
-  const messages = raw.Tables ?? {};
-  return {
-    selectAll: messages.selectAll ?? "",
-    selectRow: messages.selectRow ?? "",
-    sortBy: messages.sortBy ?? "",
-    errorMessage: messages.errorMessage ?? "",
-    retry: messages.retry ?? "",
-    emptyTitle: messages.emptyTitle ?? "",
-    emptyDescription: messages.emptyDescription ?? "",
-    rowsSelected: messages.rowsSelected ?? "",
-    rowsPerPage: messages.rowsPerPage ?? "",
-    page: messages.page ?? "",
-    of: messages.of ?? "",
-    pagePrevious: messages.pagePrevious ?? "",
-    pageNext: messages.pageNext ?? "",
-    range: messages.range ?? "",
-  };
-}
+type Translate = (key: string, values?: Record<string, string | number>) => string;
+
+const densityCellClass: Record<DataTableDensity, string | undefined> = {
+  compact: "py-1",
+  normal: undefined,
+  comfortable: "py-3.5",
+};
+
+/** Opaque backgrounds for sticky cells, matching the row's hover and selected states. */
+const stickyCellClass =
+  "sticky z-[2] bg-background shadow-[1px_0_0_var(--color-border)] group-hover/row:bg-[color-mix(in_oklab,var(--color-muted)_50%,var(--color-background))] group-data-[state=selected]/row:bg-muted";
 
 const alignClass: Record<NonNullable<DataTableColumnMeta["align"]>, string> = {
   left: "text-left",
@@ -199,6 +206,7 @@ export function DataTable<TData extends RowData>({
   enableColumnResizing = false,
   enableRowResizing = false,
   manualPagination = false,
+  autoResetPageIndex,
   manualSorting = false,
   manualFiltering = false,
   rowCount,
@@ -226,17 +234,30 @@ export function DataTable<TData extends RowData>({
   onColumnSizingChange,
   onColumnOrderChange,
   onSelectionChange,
+  rowSelection: controlledRowSelection,
+  onRowSelectionChange,
   status = { type: "none" },
   toolbar,
   ariaLabel,
   className,
   labels,
+  tableRef,
+  onColumnResizeEnd,
+  stickyHeader = false,
+  maxHeight,
+  stickyFirstColumn = false,
+  density = "normal",
 }: DataTableProps<TData>) {
-  const tAria = useTranslations("Tables" as unknown as "Common");
-  const txAria = tAria as unknown as (key: string) => string;
-  const resolvedAriaLabel = ariaLabel ?? txAria("ariaLabel");
-  const translatedDefaults = useDefaultLabels();
-  const t = { ...translatedDefaults, ...labels };
+  const tTables = useTranslations("Tables") as unknown as Translate;
+  // `labels` overrides keep their simple `{name}` placeholders; defaults go through next-intl.
+  const msg = (key: keyof DataTableLabels, vars?: Record<string, string | number>): string => {
+    const override = labels?.[key];
+    if (override != null) {
+      return vars ? format(override, vars) : override;
+    }
+    return tTables(key, vars);
+  };
+  const resolvedAriaLabel = ariaLabel ?? tTables("ariaLabel");
   const isClient = useSyncExternalStore(emptySubscribe, getClientSnapshot, getServerSnapshot);
   const [internalSorting, setInternalSorting] = useState<SortingState>(initialSorting ?? []);
   const [internalPagination, setInternalPagination] = useState<PaginationState>({
@@ -256,7 +277,7 @@ export function DataTable<TData extends RowData>({
   const [internalColumnOrder, setInternalColumnOrder] = useState<ColumnOrderState>(
     initialColumnOrder ?? [],
   );
-  const [rowSelection, setRowSelection] = useState<RowSelectionState>({});
+  const [internalRowSelection, setInternalRowSelection] = useState<RowSelectionState>({});
 
   const sorting = controlledSorting ?? internalSorting;
   const pagination = controlledPagination ?? internalPagination;
@@ -265,12 +286,7 @@ export function DataTable<TData extends RowData>({
   const columnVisibility = controlledVisibility ?? internalVisibility;
   const columnSizing = controlledColumnSizing ?? internalColumnSizing;
   const columnOrder = controlledColumnOrder ?? internalColumnOrder;
-
-  const [resizingColumnId, setResizingColumnId] = useState<string | null>(null);
-  const [resizingRowId, setResizingRowId] = useState<string | null>(null);
-  const [rowSizing, setRowSizing] = useState<Record<string, number>>({});
-  const headerElements = useRef(new Map<string, HTMLTableCellElement>());
-  const rowElements = useRef(new Map<string, HTMLTableRowElement>());
+  const rowSelection = controlledRowSelection ?? internalRowSelection;
 
   const handleSortingChange: OnChangeFn<SortingState> = (updater) => {
     const next =
@@ -369,8 +385,11 @@ export function DataTable<TData extends RowData>({
     onPaginationChange: handlePaginationChange,
     onRowSelectionChange: (updater) => {
       const next = typeof updater === "function" ? updater(rowSelection) : updater;
-      setRowSelection(next);
-      onSelectionChange?.(Object.keys(next));
+      if (controlledRowSelection === undefined) {
+        setInternalRowSelection(next);
+      }
+      onRowSelectionChange?.(next);
+      onSelectionChange?.(Object.keys(next).filter((key) => next[key]));
     },
     onColumnFiltersChange: handleColumnFiltersChange,
     onGlobalFilterChange: handleGlobalFilterChange,
@@ -384,6 +403,7 @@ export function DataTable<TData extends RowData>({
     getFacetedRowModel: enableClientFiltering ? getFacetedRowModel() : undefined,
     getFacetedUniqueValues: enableClientFiltering ? getFacetedUniqueValues() : undefined,
     manualPagination,
+    autoResetPageIndex,
     manualSorting,
     manualFiltering,
     enableRowSelection,
@@ -397,161 +417,41 @@ export function DataTable<TData extends RowData>({
     globalFilterFn: "includesString",
   });
 
-  const firstHeaderGroup = table.getHeaderGroups()[0];
-  const sizedHeaders = firstHeaderGroup
-    ? firstHeaderGroup.headers.filter((header) => !header.isPlaceholder)
-    : [];
-  const naturalSizes = useRef<ColumnSizingState>({});
-  const useFixedLayout = enableColumnResizing && Object.keys(columnSizing).length > 0;
-  const tableMinWidth = useFixedLayout
-    ? sizedHeaders.reduce((size, header) => size + header.getSize(), 0) +
-      (enableRowSelection ? 40 : 0)
-    : undefined;
+  if (tableRef) {
+    tableRef.current = table;
+  }
 
-  useEffect(() => {
-    if (!enableColumnResizing || controlledColumnSizing !== undefined) {
-      return;
-    }
-    const measured: ColumnSizingState = {};
-    for (const header of sizedHeaders) {
-      const el = headerElements.current.get(header.column.id);
-      const width = el ? Math.ceil(el.getBoundingClientRect().width) : 0;
-      if (width > 0) {
-        measured[header.column.id] = width;
-      }
-    }
-    if (Object.keys(naturalSizes.current).length === 0) {
-      naturalSizes.current = { ...measured };
-    }
-    setInternalColumnSizing((prev) => {
-      const next = { ...measured, ...prev };
-      const keys = Object.keys(next);
-      if (
-        keys.length === Object.keys(prev).length &&
-        keys.every((key) => prev[key] === next[key])
-      ) {
-        return prev;
-      }
-      return next;
-    });
+  const {
+    sizedHeaders,
+    useFixedLayout,
+    tableMinWidth,
+    naturalSizes,
+    headerElements,
+    rowElements,
+    colElements,
+    tableElement,
+    resizingColumnId,
+    resizingRowId,
+    rowSizing,
+    setRowSizing,
+    applyColumnSizing,
+    beginColumnResize,
+    resizeColumnTo,
+    beginRowResize,
+  } = useDataTableResizing({
+    table,
+    isClient,
+    columnSizing,
+    controlledColumnSizing,
+    setInternalColumnSizing,
+    onColumnSizingChange,
+    onColumnResizeEnd,
+    enableColumnResizing,
+    enableRowSelection,
   });
 
-  const sizedHeadersRef = useRef(sizedHeaders);
-  sizedHeadersRef.current = sizedHeaders;
-
-  const applyColumnSizing = useCallback(
-    (fn: (prev: ColumnSizingState) => ColumnSizingState) => {
-      if (controlledColumnSizing === undefined) {
-        setInternalColumnSizing(fn);
-      } else {
-        onColumnSizingChange?.(fn(controlledColumnSizing));
-      }
-    },
-    [controlledColumnSizing, onColumnSizingChange],
-  );
-
-  const beginColumnResize = useCallback(
-    (
-      columnId: string,
-      fallbackSize: number,
-      minSize: number,
-      maxSize: number,
-      event: ReactMouseEvent<HTMLSpanElement> | ReactTouchEvent<HTMLSpanElement>,
-    ) => {
-      event.preventDefault();
-      const startX = eventClientX(event);
-      const measured = headerElements.current.get(columnId)?.getBoundingClientRect().width ?? 0;
-      const startSize = Math.max(
-        minSize,
-        columnSizing[columnId] ?? (measured > 0 ? Math.ceil(measured) : fallbackSize),
-      );
-      setResizingColumnId(columnId);
-
-      const onMove = (moveEvent: MouseEvent | TouchEvent) => {
-        if ("touches" in moveEvent && moveEvent.cancelable) {
-          moveEvent.preventDefault();
-        }
-        const next = Math.round(
-          Math.min(maxSize, Math.max(minSize, startSize + (eventClientX(moveEvent) - startX))),
-        );
-        applyColumnSizing((prev) => {
-          // Seed unmeasured columns with their real on-screen widths so only
-          // the dragged column changes size while the others keep theirs.
-          let base = prev;
-          for (const header of sizedHeadersRef.current) {
-            const id = header.column.id;
-            if (base[id] == null) {
-              const rect = headerElements.current.get(id)?.getBoundingClientRect().width ?? 0;
-              if (rect > 0) {
-                base = { ...base, [id]: Math.ceil(rect) };
-              }
-            }
-          }
-          if (base[columnId] === next) {
-            return base === prev ? prev : base;
-          }
-          return { ...base, [columnId]: next };
-        });
-      };
-      const stop = () => {
-        document.removeEventListener("mousemove", onMove);
-        document.removeEventListener("mouseup", stop);
-        document.removeEventListener("touchmove", onMove);
-        document.removeEventListener("touchend", stop);
-        document.removeEventListener("touchcancel", stop);
-        setResizingColumnId(null);
-      };
-      document.addEventListener("mousemove", onMove);
-      document.addEventListener("mouseup", stop);
-      document.addEventListener("touchmove", onMove, { passive: false });
-      document.addEventListener("touchend", stop);
-      document.addEventListener("touchcancel", stop);
-    },
-    [applyColumnSizing, columnSizing],
-  );
-
-  const beginRowResize = useCallback(
-    (rowId: string, event: ReactMouseEvent<HTMLSpanElement> | ReactTouchEvent<HTMLSpanElement>) => {
-      event.preventDefault();
-      const startY = eventClientY(event);
-      const measured = rowElements.current.get(rowId)?.getBoundingClientRect().height ?? 0;
-      const startSize = Math.max(
-        MIN_ROW_SIZE,
-        rowSizing[rowId] ?? (measured > 0 ? Math.ceil(measured) : MIN_ROW_SIZE),
-      );
-      setResizingRowId(rowId);
-
-      const onMove = (moveEvent: MouseEvent | TouchEvent) => {
-        if ("touches" in moveEvent && moveEvent.cancelable) {
-          moveEvent.preventDefault();
-        }
-        const next = Math.round(
-          Math.min(
-            MAX_ROW_SIZE,
-            Math.max(MIN_ROW_SIZE, startSize + (eventClientY(moveEvent) - startY)),
-          ),
-        );
-        setRowSizing((prev) => (prev[rowId] === next ? prev : { ...prev, [rowId]: next }));
-      };
-      const stop = () => {
-        document.removeEventListener("mousemove", onMove);
-        document.removeEventListener("mouseup", stop);
-        document.removeEventListener("touchmove", onMove);
-        document.removeEventListener("touchend", stop);
-        document.removeEventListener("touchcancel", stop);
-        setResizingRowId(null);
-      };
-      document.addEventListener("mousemove", onMove);
-      document.addEventListener("mouseup", stop);
-      document.addEventListener("touchmove", onMove, { passive: false });
-      document.addEventListener("touchend", stop);
-      document.addEventListener("touchcancel", stop);
-    },
-    [rowSizing],
-  );
-
   const columnSpan = table.getVisibleLeafColumns().length + (enableRowSelection ? 1 : 0);
-  const selectedCount = table.getIsSomeRowsSelected() ? Object.keys(rowSelection).length : 0;
+  const selectedCount = Object.values(rowSelection).filter(Boolean).length;
 
   const totalRows = manualPagination
     ? (rowCount ?? data.length)
@@ -564,7 +464,7 @@ export function DataTable<TData extends RowData>({
     const { pageIndex, pageSize } = table.getState().pagination;
     const from = pageIndex * pageSize + 1;
     const to = Math.min(from + pageSize - 1, totalRows);
-    rangeLabel = format(t.range, {
+    rangeLabel = msg("range", {
       from,
       to,
       total: totalRows,
@@ -577,8 +477,19 @@ export function DataTable<TData extends RowData>({
     (filteredRowCount === 0 && hasActiveFilter && status.type === "none");
 
   if (!isClient) {
-    return <div data-slot="data-table" className={cn("space-y-2", className)} />;
+    // Same footprint as the real table, so nothing jumps when it takes over.
+    return (
+      <div data-slot="data-table" aria-busy className={cn("space-y-2", className)}>
+        {toolbar ? <div className="h-11 animate-pulse rounded-md bg-muted" /> : null}
+        <div className="overflow-hidden rounded-xl border border-border">
+          <RouteLoading variant="table" rows={Math.min(pagination.pageSize, 8)} />
+        </div>
+      </div>
+    );
   }
+
+  const firstDataColumnId = table.getVisibleLeafColumns()[0]?.id;
+  const stickyDataLeft = enableRowSelection ? SELECTION_COLUMN_WIDTH : 0;
 
   return (
     <div data-slot="data-table" className={cn("space-y-2", className)}>
@@ -586,27 +497,47 @@ export function DataTable<TData extends RowData>({
 
       <div className="overflow-hidden rounded-xl border border-border">
         <Table
+          ref={tableElement}
           aria-label={resolvedAriaLabel}
           className={cn(useFixedLayout && "table-fixed")}
+          containerClassName={cn(maxHeight != null && "overflow-y-auto")}
+          containerStyle={maxHeight != null ? { maxHeight } : undefined}
           style={
             tableMinWidth != null ? { width: tableMinWidth, minWidth: tableMinWidth } : undefined
           }
         >
           {useFixedLayout ? (
             <colgroup>
-              {enableRowSelection ? <col style={{ width: 40 }} /> : null}
+              {enableRowSelection ? <col style={{ width: SELECTION_COLUMN_WIDTH }} /> : null}
               {sizedHeaders.map((header) => (
-                <col key={header.id} style={{ width: header.getSize() }} />
+                <col
+                  key={header.id}
+                  ref={(el) => {
+                    if (el) {
+                      colElements.current.set(header.column.id, el);
+                    } else {
+                      colElements.current.delete(header.column.id);
+                    }
+                  }}
+                  style={{ width: header.getSize() }}
+                />
               ))}
             </colgroup>
           ) : null}
-          <TableHeader>
+          <TableHeader
+            className={cn(
+              stickyHeader &&
+                "sticky top-0 z-[3] bg-background shadow-[0_1px_0_var(--color-border)]",
+            )}
+          >
             {table.getHeaderGroups().map((headerGroup) => (
               <TableRow key={headerGroup.id}>
                 {enableRowSelection ? (
-                  <TableHead className="w-10">
+                  <TableHead
+                    className={cn("w-12 pl-4", stickyFirstColumn && cn(stickyCellClass, "left-0"))}
+                  >
                     <Checkbox
-                      aria-label={t.selectAll}
+                      aria-label={msg("selectAll")}
                       checked={table.getIsAllPageRowsSelected()}
                       indeterminate={table.getIsSomePageRowsSelected()}
                       onCheckedChange={(checked) => table.toggleAllPageRowsSelected(checked)}
@@ -617,7 +548,7 @@ export function DataTable<TData extends RowData>({
                   if (header.isPlaceholder) {
                     return null;
                   }
-                  const meta = header.column.columnDef.meta as DataTableColumnMeta | undefined;
+                  const meta = header.column.columnDef.meta;
                   const sort = header.column.getIsSorted();
                   const sortIconMap: Record<string, typeof ArrowUpIcon> = {
                     asc: ArrowUpIcon,
@@ -642,7 +573,15 @@ export function DataTable<TData extends RowData>({
                         alignClass[meta?.align ?? "left"],
                         meta?.className,
                         canResize && "relative",
+                        stickyFirstColumn &&
+                          header.column.id === firstDataColumnId &&
+                          stickyCellClass,
                       )}
+                      style={
+                        stickyFirstColumn && header.column.id === firstDataColumnId
+                          ? { left: stickyDataLeft }
+                          : undefined
+                      }
                       aria-sort={
                         sort === "asc" ? "ascending" : sort === "desc" ? "descending" : undefined
                       }
@@ -652,7 +591,7 @@ export function DataTable<TData extends RowData>({
                           variant="ghost"
                           size="xs"
                           className="-ml-1 px-1.5 "
-                          aria-label={format(t.sortBy, {
+                          aria-label={msg("sortBy", {
                             label: getColumnLabel(header.column.columnDef),
                           })}
                           onClick={header.column.getToggleSortingHandler()}
@@ -664,9 +603,36 @@ export function DataTable<TData extends RowData>({
                         flexRender(header.column.columnDef.header, header.getContext())
                       )}
                       {canResize ? (
+                        // biome-ignore lint/a11y/useSemanticElements: a focusable "window splitter" separator; <hr> cannot hold focus or a value
                         <span
-                          aria-hidden
+                          role="separator"
+                          tabIndex={0}
+                          aria-orientation="vertical"
+                          aria-label={msg("resizeColumn", {
+                            label: getColumnLabel(header.column.columnDef),
+                          })}
+                          aria-valuenow={header.getSize()}
+                          aria-valuemin={header.column.columnDef.minSize ?? MIN_COLUMN_SIZE}
+                          aria-valuemax={header.column.columnDef.maxSize ?? MAX_COLUMN_SIZE}
                           data-resizing={resizingColumnId === header.column.id || undefined}
+                          onKeyDown={(event) => {
+                            const min = header.column.columnDef.minSize ?? MIN_COLUMN_SIZE;
+                            const max = header.column.columnDef.maxSize ?? MAX_COLUMN_SIZE;
+                            const step = event.shiftKey
+                              ? RESIZE_KEYBOARD_STEP_LARGE
+                              : RESIZE_KEYBOARD_STEP;
+                            const current = header.getSize();
+                            let next: number | null = null;
+                            if (event.key === "ArrowLeft") next = current - step;
+                            else if (event.key === "ArrowRight") next = current + step;
+                            else if (event.key === "Home") next = min;
+                            else if (event.key === "End") next = max;
+                            if (next == null) {
+                              return;
+                            }
+                            event.preventDefault();
+                            resizeColumnTo(header.column.id, Math.min(max, Math.max(min, next)));
+                          }}
                           onMouseDown={(event) =>
                             beginColumnResize(
                               header.column.id,
@@ -695,8 +661,9 @@ export function DataTable<TData extends RowData>({
                             } else {
                               header.column.resetSize();
                             }
+                            onColumnResizeEnd?.(header.column.id, null);
                           }}
-                          className="absolute inset-y-1 -right-1 z-10 w-2.5 cursor-col-resize touch-none select-none border-r-2 border-r-transparent bg-transparent transition-colors hover:border-r-primary/60 data-[resizing]:border-r-primary"
+                          className="absolute inset-y-0 -right-1 z-10 w-2.5 cursor-col-resize touch-none select-none outline-none after:absolute after:inset-y-2 after:right-1 after:w-px after:bg-border after:transition-all hover:after:w-0.5 hover:after:bg-primary/60 focus-visible:after:w-0.5 focus-visible:after:bg-primary data-[resizing]:after:w-0.5 data-[resizing]:after:bg-primary"
                         />
                       ) : null}
                     </TableHead>
@@ -723,11 +690,11 @@ export function DataTable<TData extends RowData>({
                   <div className="flex flex-col items-center gap-2 text-sm">
                     <TriangleAlertIcon className="size-5 text-destructive" aria-hidden />
                     <span className="text-muted-foreground">
-                      {status.message ?? t.errorMessage}
+                      {status.message ?? msg("errorMessage")}
                     </span>
                     {status.onRetry ? (
                       <Button variant="outline" size="sm" onClick={status.onRetry}>
-                        {t.retry}
+                        {msg("retry")}
                       </Button>
                     ) : null}
                   </div>
@@ -742,8 +709,14 @@ export function DataTable<TData extends RowData>({
                 <TableCell colSpan={columnSpan} className="p-0">
                   <EmptyState
                     icon={InboxIcon}
-                    title={status.type === "empty" ? (status.title ?? t.emptyTitle) : t.emptyTitle}
-                    description={status.type === "empty" ? status.description : t.emptyDescription}
+                    title={
+                      status.type === "empty"
+                        ? (status.title ?? msg("emptyTitle"))
+                        : msg("emptyTitle")
+                    }
+                    description={
+                      status.type === "empty" ? status.description : msg("emptyDescription")
+                    }
                   />
                 </TableCell>
               </TableRow>
@@ -769,30 +742,47 @@ export function DataTable<TData extends RowData>({
                     style={rowHeight != null ? { height: rowHeight } : undefined}
                   >
                     {enableRowSelection ? (
-                      <TableCell>
+                      <TableCell
+                        className={cn(
+                          "w-12 pl-4",
+                          densityCellClass[density],
+                          stickyFirstColumn && cn(stickyCellClass, "left-0"),
+                        )}
+                      >
                         <Checkbox
-                          aria-label={format(t.selectRow, { id: row.id })}
+                          aria-label={msg("selectRow", { id: row.id })}
                           checked={row.getIsSelected()}
                           onCheckedChange={() => row.toggleSelected()}
                         />
                       </TableCell>
                     ) : null}
                     {row.getVisibleCells().map((cell) => {
-                      const cellMeta = cell.column.columnDef.meta as
-                        | DataTableColumnMeta
-                        | undefined;
+                      const cellMeta = cell.column.columnDef.meta;
                       const content = flexRender(cell.column.columnDef.cell, cell.getContext());
                       return (
                         <TableCell
                           key={cell.id}
                           className={cn(
                             alignClass[cellMeta?.align ?? "left"],
+                            densityCellClass[density],
                             cellMeta?.className,
                             enableRowResizing && "relative",
+                            stickyFirstColumn &&
+                              cell.column.id === firstDataColumnId &&
+                              stickyCellClass,
                           )}
+                          style={
+                            stickyFirstColumn && cell.column.id === firstDataColumnId
+                              ? { left: stickyDataLeft }
+                              : undefined
+                          }
                         >
                           {rowHeight != null ? (
-                            <div className="overflow-hidden" style={{ height: rowHeight }}>
+                            <div
+                              data-row-clip
+                              className="overflow-hidden"
+                              style={{ height: rowHeight }}
+                            >
                               {content}
                             </div>
                           ) : (
@@ -834,24 +824,24 @@ export function DataTable<TData extends RowData>({
             className="text-sm text-muted-foreground"
             aria-live={selectedCount > 0 ? "polite" : undefined}
           >
-            {selectedCount > 0 ? format(t.rowsSelected, { count: selectedCount }) : rangeLabel}
+            {selectedCount > 0 ? msg("rowsSelected", { count: selectedCount }) : rangeLabel}
           </p>
           <div className="flex items-center gap-3">
             <div className="flex items-center gap-2">
-              <span className="sr-only">{t.rowsPerPage}</span>
+              <span className="sr-only">{msg("rowsPerPage")}</span>
               <Select
                 value={String(table.getState().pagination.pageSize)}
                 onValueChange={(value) => {
                   table.setPageSize(Number(value));
                 }}
               >
-                <SelectTrigger size="sm" aria-label={t.rowsPerPage}>
+                <SelectTrigger size="sm" aria-label={msg("rowsPerPage")}>
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
                   {pageSizeOptions.map((size) => (
                     <SelectItem key={size} value={String(size)}>
-                      {size} / {t.page}
+                      {size} / {msg("page")}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -861,14 +851,14 @@ export function DataTable<TData extends RowData>({
               <Button
                 variant="outline"
                 size="icon-sm"
-                aria-label={t.pagePrevious}
+                aria-label={msg("pagePrevious")}
                 disabled={!table.getCanPreviousPage()}
                 onClick={() => table.previousPage()}
               >
                 <ChevronLeftIcon aria-hidden />
               </Button>
               <span className="min-w-16 px-1 text-center text-sm text-muted-foreground">
-                {t.page} {table.getState().pagination.pageIndex + 1} {t.of}{" "}
+                {msg("page")} {table.getState().pagination.pageIndex + 1} {msg("of")}{" "}
                 {manualPagination && pageCount != null
                   ? pageCount
                   : Math.max(table.getPageCount(), 1)}
@@ -876,7 +866,7 @@ export function DataTable<TData extends RowData>({
               <Button
                 variant="outline"
                 size="icon-sm"
-                aria-label={t.pageNext}
+                aria-label={msg("pageNext")}
                 disabled={!table.getCanNextPage()}
                 onClick={() => table.nextPage()}
               >

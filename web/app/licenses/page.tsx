@@ -39,7 +39,7 @@ export default async function LicensesPage() {
       data-slot="licenses-page"
       className="min-h-screen bg-background text-foreground"
     >
-      <div className="mx-auto max-w-7xl border-x border-border/70">
+      <div>
         <div className="flex flex-wrap items-center justify-between gap-3 border-b border-border/70 bg-muted/20 px-6 py-4 sm:px-10">
           <SwissIndexBadge index="01" label="OPEN SOURCE // SPECIFICATION" />
           <span className="font-mono text-xs text-muted-foreground tabular-nums">

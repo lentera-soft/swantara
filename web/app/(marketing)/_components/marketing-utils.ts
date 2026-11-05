@@ -153,30 +153,6 @@ export const HOME_FEATURE_CONFIGS: readonly HomeFeatureConfig[] = [
   },
 ] as const;
 
-export const HOME_WORKFLOW_STEPS = [
-  {
-    id: "connect",
-    index: "01",
-    code: "INIT // MASTER DATA",
-    titleKey: "step1Title",
-    descriptionKey: "step1Description",
-  },
-  {
-    id: "automate",
-    index: "02",
-    code: "EXEC // WORKFLOWS",
-    titleKey: "step2Title",
-    descriptionKey: "step2Description",
-  },
-  {
-    id: "grow",
-    index: "03",
-    code: "SCALE // MULTI-ENTITY",
-    titleKey: "step3Title",
-    descriptionKey: "step3Description",
-  },
-] as const;
-
 export const HOME_FAQ_ITEMS = [
   { id: "faq-1", index: "01", questionKey: "faq1Question", answerKey: "faq1Answer" },
   { id: "faq-2", index: "02", questionKey: "faq2Question", answerKey: "faq2Answer" },

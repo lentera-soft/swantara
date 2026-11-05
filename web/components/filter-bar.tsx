@@ -9,6 +9,7 @@ import { formatDate } from "@/lib/utils/formatters";
 import { Badge } from "./badge";
 import { Button } from "./button";
 import { Input } from "./input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "./select";
 
 const DateRangePicker = dynamic(
   () => import("./date-picker").then((module) => module.DateRangePicker),
@@ -189,7 +190,7 @@ export function FilterBar({
               </Button>
             ) : null}
           </div>
-          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+          <div className="mt-3 grid gap-x-4 gap-y-3 sm:grid-cols-2">
             {otherFilters.map((filter) => {
               const value = filters[filter.id] as FilterValue;
               if (filter.type === "text") {
@@ -218,22 +219,28 @@ export function FilterBar({
                     <label htmlFor={fieldId(filter.id)} className="text-xs text-muted-foreground">
                       {filter.label}
                     </label>
-                    <select
-                      id={fieldId(filter.id)}
-                      aria-label={filter.label}
-                      value={typeof value === "string" ? value : ""}
-                      onChange={(event) => onFilterChange(filter.id, event.target.value || null)}
-                      className="min-h-11 rounded-md border border-input bg-transparent px-2.5 text-sm outline-none transition-colors focus-visible:border-ring focus-visible:ring-3 ring-offset-2 ring-offset-background focus-visible:ring-ring"
+                    <Select<string | null>
+                      value={typeof value === "string" && value !== "" ? value : null}
+                      onValueChange={(next) => onFilterChange(filter.id, next || null)}
                     >
-                      <option value="">
-                        {filter.placeholder ?? tx("all", { label: filter.label.toLowerCase() })}
-                      </option>
-                      {filter.options.map((option) => (
-                        <option key={option.value} value={option.value}>
-                          {option.label}
-                        </option>
-                      ))}
-                    </select>
+                      <SelectTrigger
+                        id={fieldId(filter.id)}
+                        aria-label={filter.label}
+                        className="gap-3 pr-3 pl-3.5"
+                      >
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value={null}>
+                          {filter.placeholder ?? tx("all", { label: filter.label.toLowerCase() })}
+                        </SelectItem>
+                        {filter.options.map((option) => (
+                          <SelectItem key={option.value} value={option.value}>
+                            {option.label}
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
                   </div>
                 );
               }

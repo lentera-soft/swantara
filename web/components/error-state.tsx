@@ -50,7 +50,7 @@ export function ErrorState({
     >
       <div className="mt-10 flex flex-col items-center gap-4 sm:mt-12">
         <LifeBuoy className="size-12 text-primary" aria-hidden />
-        <h1 className="max-w-2xl font-heading text-4xl leading-tight tracking-tight text-balance sm:text-5xl">
+        <h1 className="max-w-2xl text-4xl leading-[1.05] font-medium tracking-tight text-balance text-foreground sm:text-5xl">
           {allLabels.title}
         </h1>
         <p className="max-w-xl text-base leading-relaxed text-muted-foreground text-pretty sm:text-lg">
@@ -59,11 +59,11 @@ export function ErrorState({
       </div>
 
       <div className="mt-8 flex flex-col items-center gap-3 sm:flex-row">
-        <Button size="lg" onClick={onReset}>
+        <Button size="lg" shape="pill" className="px-6" onClick={onReset}>
           <RefreshCcw aria-hidden />
           {allLabels.retry}
         </Button>
-        <Button size="lg" variant="outline" asChild>
+        <Button size="lg" variant="outline" shape="pill" className="px-6" asChild>
           <a href={supportHref}>
             <Headset aria-hidden />
             {allLabels.contactSupport}
@@ -80,12 +80,8 @@ export function ErrorState({
       </a>
 
       {message || digest ? (
-        <div className="mt-10 w-full max-w-md">
-          {message ? (
-            <code className="block w-full truncate rounded-md bg-muted px-3 py-2 text-left text-xs text-muted-foreground">
-              {message}
-            </code>
-          ) : null}
+        <div className="mt-10 w-full max-w-md border-t border-border-subtle pt-4">
+          {message ? <p className="truncate text-sm text-muted-foreground">{message}</p> : null}
           {digest && allLabels.errorReference ? (
             <p className="mt-3 text-xs text-muted-foreground">
               {allLabels.errorReference.replace("{digest}", digest)}

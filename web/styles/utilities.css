@@ -44,6 +44,16 @@
   font-weight: 500;
 }
 
+/* Full-bleed intro type: sized to the viewport width so a short line spans the page */
+/* Full-bleed intro type, two lines. Sized so "prefix + longest word" spans the page width,
+ * and bounded by height so the whole intro (rules, type, CTAs) fits one screen. */
+@utility text-mega {
+  font-size: clamp(2.5rem, min(14vw, 24svh), 17rem);
+  line-height: 0.88;
+  letter-spacing: -0.05em;
+  font-weight: 500;
+}
+
 @utility text-body-lg {
   font-size: 1.1875rem;
   line-height: 1.65;

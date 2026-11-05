@@ -61,7 +61,7 @@ describe("Marketing Swiss Design Pages", () => {
     expect(screen.getByRole("main")).toBeInTheDocument();
     expect(
       screen.getByRole("heading", {
-        name: /jalankan seluruh bisnis anda[\s\S]*dari satu tempat yang tenang/i,
+        name: /bisnis anda,[\s\S]*lebih tertata\./i,
       }),
     ).toBeInTheDocument();
 

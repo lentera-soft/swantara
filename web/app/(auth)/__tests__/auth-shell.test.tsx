@@ -42,7 +42,7 @@ describe("AuthShell", () => {
 
     const wrapper = container.querySelector('[data-slot="auth-shell"]') as HTMLElement;
     expect(wrapper.className).toContain("min-h-screen");
-    expect(wrapper.className).toContain("bg-muted/20");
+    expect(wrapper.className).toContain("bg-background");
     expect(container.querySelector('[data-slot="card"]')).toBeInTheDocument();
   });
 });
