@@ -9,6 +9,7 @@ import type { Recipe } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
 
 import { ProductBoms } from "./product-boms";
+import { ProductImages } from "./product-images";
 import { ProductOverview } from "./product-overview";
 import { ItemVariants } from "./product-variants";
 
@@ -45,6 +46,11 @@ export function ProductDetail({ orgId, itemId }: { orgId: string; itemId: string
       id: "overview",
       label: t("overviewTab"),
       content: <ProductOverview item={item} />,
+    },
+    {
+      id: "images",
+      label: t("imagesTab"),
+      content: <ProductImages orgId={orgId} itemId={itemId} />,
     },
     {
       id: "variants",

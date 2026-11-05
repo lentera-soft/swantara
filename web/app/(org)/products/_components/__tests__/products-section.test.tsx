@@ -112,14 +112,13 @@ describe("ProductsSection", () => {
     await waitFor(() => expect(screen.queryByText("Canvas Tote")).not.toBeInTheDocument());
   });
 
-  it("opens the item dialog from the add button", async () => {
-    const user = userEvent.setup();
+  it("links to the create product page from the add button", async () => {
     renderWithProviders(<ProductsSection orgId="1" />);
 
     await screen.findByText("Canvas Tote");
-    await user.click(screen.getByRole("button", { name: "Tambah produk" }));
-
-    expect(await screen.findByRole("dialog")).toBeInTheDocument();
-    expect(screen.getByText("Produk baru")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Tambah produk" })).toHaveAttribute(
+      "href",
+      "/products/new",
+    );
   });
 });

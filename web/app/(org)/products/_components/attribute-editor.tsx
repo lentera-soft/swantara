@@ -3,6 +3,7 @@
 import { Plus, X } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Button } from "@/components/button";
+import { ChipsInput } from "@/components/chips-input";
 import { Input } from "@/components/input";
 
 export type AttributeOption = {
@@ -33,6 +34,7 @@ export function AttributeEditor({
     ) => (key: string, values?: Record<string, string | number>) => string
   )("Products");
   const tCommon = useTranslations("Common");
+
   function update(id: string, patch: Partial<AttributeOption>) {
     onChange(
       value.map((attribute) => (attribute.id === id ? { ...attribute, ...patch } : attribute)),
@@ -42,36 +44,33 @@ export function AttributeEditor({
   return (
     <div className="flex flex-col gap-2">
       {value.map((attribute) => (
-        <div key={attribute.id} className="flex items-center gap-2">
-          <Input
-            value={attribute.name}
-            onChange={(event) => update(attribute.id, { name: event.target.value })}
-            placeholder={t("attribute")}
-            aria-label={`${t("attribute")} ${attribute.name || ""}`}
-            className="w-40"
+        <div key={attribute.id} className="flex flex-col gap-2 rounded-lg border bg-card p-3">
+          <div className="flex items-center gap-2">
+            <Input
+              value={attribute.name}
+              onChange={(event) => update(attribute.id, { name: event.target.value })}
+              placeholder={t("attribute")}
+              aria-label={`${t("attribute")} ${attribute.name || ""}`}
+              className="w-44"
+            />
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => onChange(value.filter((entry) => entry.id !== attribute.id))}
+              aria-label={tCommon("delete")}
+            >
+              <X />
+            </Button>
+          </div>
+          <ChipsInput
+            values={attribute.values}
+            onValuesChange={(values) => update(attribute.id, { values })}
+            inputId={`attribute-values-${attribute.id}`}
+            inputAriaLabel={`${t("attributeValuePlaceholder")} ${attribute.name || ""}`}
+            placeholder={t("attributeValuePlaceholder")}
+            removeLabel={tCommon("delete")}
           />
-          <Input
-            value={attribute.values.join(", ")}
-            onChange={(event) =>
-              update(attribute.id, {
-                values: event.target.value
-                  .split(",")
-                  .map((entry) => entry.trim())
-                  .filter(Boolean),
-              })
-            }
-            placeholder={t("attributeValuesPlaceholder")}
-            aria-label={`${t("attributeValuesPlaceholder")} ${attribute.name || ""}`}
-          />
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => onChange(value.filter((entry) => entry.id !== attribute.id))}
-            aria-label={tCommon("delete")}
-          >
-            <X />
-          </Button>
         </div>
       ))}
       <div>

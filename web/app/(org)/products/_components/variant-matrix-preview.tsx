@@ -61,7 +61,7 @@ export function VariantMatrixPreview({
   return (
     <div className="flex flex-col gap-2">
       <p className="text-sm">{t("variantsCreated", { count: matrix.length })}</p>
-      <div className="rounded-md border">
+      <div className="max-h-80 overflow-auto rounded-md border">
         <Table>
           <TableHeader>
             <TableRow>

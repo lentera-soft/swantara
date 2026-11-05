@@ -14,11 +14,12 @@ function renderEditor(initial: AttributeRow[]) {
 }
 
 describe("AttributeEditor", () => {
-  it("renders existing attributes with values", () => {
+  it("renders existing attributes with value chips", () => {
     renderEditor([{ id: "a1", name: "Color", values: ["Red", "Blue"] }]);
 
     expect(screen.getByDisplayValue("Color")).toBeInTheDocument();
-    expect(screen.getByDisplayValue("Red, Blue")).toBeInTheDocument();
+    expect(screen.getByText("Red")).toBeInTheDocument();
+    expect(screen.getByText("Blue")).toBeInTheDocument();
   });
 
   it("adds a new attribute row", async () => {
@@ -30,13 +31,47 @@ describe("AttributeEditor", () => {
     expect(screen.getByPlaceholderText("Atribut")).toBeInTheDocument();
   });
 
-  it("edits attribute values through the inputs", async () => {
+  it("commits a typed value as a chip on Enter", async () => {
     const user = userEvent.setup();
     renderEditor([{ id: "a1", name: "Size", values: [] }]);
 
-    await user.type(screen.getByDisplayValue(""), "Blue");
+    const valueInput = screen.getByPlaceholderText("Ketik nilai, tekan Enter");
+    await user.type(valueInput, "Blue{Enter}");
 
-    expect(screen.getByDisplayValue("Blue")).toBeInTheDocument();
+    expect(screen.getByText("Blue")).toBeInTheDocument();
+    expect(valueInput).toHaveValue("");
+  });
+
+  it("commits comma-separated values and ignores duplicates", async () => {
+    const user = userEvent.setup();
+    renderEditor([{ id: "a1", name: "Size", values: ["Red"] }]);
+
+    const valueInput = screen.getByRole("textbox", { name: /Ketik nilai/ });
+    await user.type(valueInput, "Blue, red,{Enter}");
+
+    expect(screen.getByText("Red")).toBeInTheDocument();
+    expect(screen.getByText("Blue")).toBeInTheDocument();
+    expect(screen.queryAllByText("Red")).toHaveLength(1);
+  });
+
+  it("removes a single value chip", async () => {
+    const user = userEvent.setup();
+    renderEditor([{ id: "a1", name: "Color", values: ["Red", "Blue"] }]);
+
+    await user.click(screen.getByRole("button", { name: "Hapus Red" }));
+
+    expect(screen.queryByText("Red")).not.toBeInTheDocument();
+    expect(screen.getByText("Blue")).toBeInTheDocument();
+  });
+
+  it("removes the last chip on Backspace in an empty draft", async () => {
+    const user = userEvent.setup();
+    renderEditor([{ id: "a1", name: "Color", values: ["Red"] }]);
+
+    const valueInput = screen.getByRole("textbox", { name: /Ketik nilai/ });
+    await user.type(valueInput, "{Backspace}");
+
+    expect(screen.queryByText("Red")).not.toBeInTheDocument();
   });
 
   it("removes an attribute row", async () => {

@@ -1,5 +1,4 @@
 import { screen } from "@testing-library/react";
-import userEvent from "@testing-library/user-event";
 import { HttpResponse, http } from "msw";
 import { beforeEach, describe, expect, it } from "vitest";
 import { renderWithProviders, server } from "@/lib/tests";
@@ -54,7 +53,7 @@ describe("ProductsSection branches", () => {
     renderWithProviders(<ProductsSection orgId="1" />);
 
     expect(await screen.findByText("Widget")).toBeInTheDocument();
-    expect(screen.getByText("—")).toBeInTheDocument();
+    expect(screen.getAllByText("—").length).toBeGreaterThan(0);
   });
 
   it("renders category names when categories exist", async () => {
@@ -84,14 +83,14 @@ describe("ProductsSection branches", () => {
     expect(await screen.findByRole("button", { name: "Coba lagi" })).toBeInTheDocument();
   });
 
-  it("opens the create dialog", async () => {
-    const user = userEvent.setup();
+  it("links to the create page", async () => {
     renderWithProviders(<ProductsSection orgId="1" />);
 
     await screen.findByText("Widget");
-    await user.click(screen.getByRole("button", { name: "Tambah produk" }));
-
-    expect(await screen.findByRole("dialog")).toBeInTheDocument();
+    expect(screen.getByRole("link", { name: "Tambah produk" })).toHaveAttribute(
+      "href",
+      "/products/new",
+    );
   });
 
   it("renders inactive status for inactive products", async () => {

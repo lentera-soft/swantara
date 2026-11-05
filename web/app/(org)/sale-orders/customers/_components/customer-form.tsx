@@ -7,55 +7,134 @@ import { useRouter } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
-import { z } from "zod";
 import { Button } from "@/components/button";
+import { DetailPageSkeleton } from "@/components/detail-page-skeleton";
+import { EmailInput } from "@/components/email-input";
 import { Form, FormField, SubmitButton } from "@/components/form";
 import { FormSection } from "@/components/form-section";
 import { Input } from "@/components/input";
 import { PageHeader } from "@/components/page-header";
+import { PhoneInput } from "@/components/phone-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/select";
 import { Switch } from "@/components/switch";
+import { WebsiteInput } from "@/components/website-input";
+import {
+  useContactAddressesQuery,
+  useContactBankAccountsQuery,
+  useContactQuery,
+  useCustomerProfileQuery,
+} from "@/lib/hooks/use-contact-query";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { Account, PaymentTerm } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
+import { CustomerAddressLines } from "./customer-address-lines";
+import { CustomerBankLines } from "./customer-bank-lines";
+import {
+  buildCustomerFormDefaults,
+  type CustomerFormSeed,
+  type CustomerFormValues,
+  ensureHttpsUrl,
+  stripUrlScheme,
+  useCustomerFormSchema,
+} from "./customer-form-utils";
 
 const CUSTOMERS_HREF = "/sale-orders/customers";
 
-function useCustomerFormSchema() {
+export function CustomerForm({ orgId, customerId }: { orgId: string; customerId?: string }) {
   const t = useTranslations("Sales");
-  return z.object({
-    name: z.string().trim().min(1, t("validationNameRequired")),
-    displayName: z.string().trim(),
-    isOrganization: z.boolean(),
-    email: z
-      .string()
-      .trim()
-      .refine(
-        (value) => value === "" || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value),
-        t("validationEmailInvalid"),
-      ),
-    phone: z.string().trim(),
-    mobile: z.string().trim(),
-    website: z.string().trim(),
-    taxId: z.string().trim(),
-    industry: z.string().trim(),
-    currencyCode: z.string().trim(),
-    lang: z.string().trim(),
-    active: z.boolean(),
-    customerPaymentTermId: z.string(),
-    creditLimit: z.string(),
-    receivableAccountId: z.string(),
-  });
+  const numericCustomerId = Number(customerId);
+  const isEdit = Boolean(customerId);
+  const validId = Number.isFinite(numericCustomerId) && numericCustomerId > 0;
+  const targetCustomerId = validId ? String(numericCustomerId) : "";
+
+  const contactQuery = useContactQuery(orgId, targetCustomerId);
+  const addressesQuery = useContactAddressesQuery(orgId, targetCustomerId);
+  const bankAccountsQuery = useContactBankAccountsQuery(orgId, targetCustomerId);
+  const profileQuery = useCustomerProfileQuery(orgId, targetCustomerId);
+
+  if (isEdit && !validId) {
+    return <p className="text-sm text-muted-foreground">{t("customerNotFound")}</p>;
+  }
+
+  if (isEdit && contactQuery.isPending) {
+    return <DetailPageSkeleton />;
+  }
+
+  if (isEdit && !contactQuery.data) {
+    return <p className="text-sm text-muted-foreground">{t("customerNotFound")}</p>;
+  }
+
+  const seed: CustomerFormSeed | null =
+    isEdit && contactQuery.data
+      ? {
+          contact: contactQuery.data,
+          addresses: addressesQuery.data ?? [],
+          bankAccounts: bankAccountsQuery.data ?? [],
+          profile: profileQuery.data ?? null,
+        }
+      : null;
+
+  return (
+    <CustomerFormFields
+      key={`${orgId}:${targetCustomerId || "new"}`}
+      orgId={orgId}
+      customerId={targetCustomerId}
+      seed={seed}
+    />
+  );
 }
 
-export function CustomerForm({ orgId }: { orgId: string }) {
+function toAddressRequests(values: CustomerFormValues) {
+  return values.addresses.map((address) => ({
+    type: address.type as "billing" | "shipping" | "other",
+    line1: address.line1 || null,
+    line2: address.line2 || null,
+    city: address.city || null,
+    state: address.state || null,
+    postalCode: address.postalCode || null,
+    countryCode: address.countryCode || null,
+    isDefault: address.isDefault,
+  }));
+}
+
+function toBankRequests(values: CustomerFormValues) {
+  return values.bankAccounts.map((bank) => ({
+    accountHolder: bank.accountHolder || null,
+    bankName: bank.bankName || null,
+    iban: bank.iban || null,
+    swiftBic: bank.swiftBic || null,
+    accountNumber: bank.accountNumber || null,
+    routingNumber: bank.routingNumber || null,
+    currencyCode: bank.currencyCode || null,
+  }));
+}
+
+function toCustomerProfile(values: CustomerFormValues) {
+  return {
+    customerPaymentTermId: values.customerPaymentTermId
+      ? Number(values.customerPaymentTermId)
+      : null,
+    creditLimit: values.creditLimit ? Number(values.creditLimit) : null,
+    receivableAccountId: values.receivableAccountId ? Number(values.receivableAccountId) : null,
+    active: values.active,
+  };
+}
+
+function CustomerFormFields({
+  orgId,
+  customerId,
+  seed,
+}: {
+  orgId: string;
+  customerId: string;
+  seed: CustomerFormSeed | null;
+}) {
   const t = useTranslations("Sales");
   const tc = useTranslations("Contacts");
   const tCommon = useTranslations("Common");
   const router = useRouter();
 
   const schema = useCustomerFormSchema();
-  type Values = z.infer<typeof schema>;
 
   const currenciesQuery = useQuery({
     queryKey: ["currencies"],
@@ -65,7 +144,7 @@ export function CustomerForm({ orgId }: { orgId: string }) {
 
   const paymentTermsQuery = useOrgListQuery<{ paymentTerms: PaymentTerm[] }, Record<string, never>>(
     "paymentTerms",
-    (orgId) => getSwantaraService().paymentTerms.list(orgId, { size: 100 }),
+    (organizationId) => getSwantaraService().paymentTerms.list(organizationId, { size: 100 }),
   );
   const paymentTerms = paymentTermsQuery.data?.paymentTerms ?? [];
 
@@ -77,31 +156,40 @@ export function CustomerForm({ orgId }: { orgId: string }) {
     (account) => account.type === "receivable",
   );
 
-  const form = useForm<Values>({
+  const form = useForm<CustomerFormValues>({
     resolver: zodResolver(schema),
-    defaultValues: {
-      name: "",
-      displayName: "",
-      isOrganization: true,
-      email: "",
-      phone: "",
-      mobile: "",
-      website: "",
-      taxId: "",
-      industry: "",
-      currencyCode: "USD",
-      lang: "en",
-      active: true,
-      customerPaymentTermId: "",
-      creditLimit: "",
-      receivableAccountId: "",
-    },
+    defaultValues: buildCustomerFormDefaults(seed),
   });
 
-  const createMutation = useMutation({
-    mutationFn: (values: Values) =>
-      getSwantaraService().contacts.create(Number(orgId), {
-        organizationId: Number(orgId),
+  const isEdit = Boolean(customerId);
+  const detailHref = `/sale-orders/customers/${customerId}`;
+
+  const saveMutation = useMutation({
+    mutationFn: (values: CustomerFormValues) => {
+      const numericOrgId = Number(orgId);
+      if (isEdit) {
+        return getSwantaraService().contacts.update(numericOrgId, Number(customerId), {
+          organizationId: numericOrgId,
+          name: values.name,
+          displayName: values.displayName || null,
+          isOrganization: values.isOrganization,
+          parentId: seed?.contact.parentId ?? null,
+          email: values.email || null,
+          phone: values.phone || null,
+          mobile: values.mobile || null,
+          website: ensureHttpsUrl(values.website),
+          taxId: values.taxId || null,
+          industry: values.industry || null,
+          currencyCode: values.currencyCode || null,
+          lang: values.lang || "en",
+          active: values.active,
+          addresses: toAddressRequests(values),
+          bankAccounts: toBankRequests(values),
+          customer: toCustomerProfile(values),
+        });
+      }
+      return getSwantaraService().contacts.create(numericOrgId, {
+        organizationId: numericOrgId,
         name: values.name,
         displayName: values.displayName || null,
         isOrganization: values.isOrganization,
@@ -109,29 +197,21 @@ export function CustomerForm({ orgId }: { orgId: string }) {
         email: values.email || null,
         phone: values.phone || null,
         mobile: values.mobile || null,
-        website: values.website || null,
+        website: ensureHttpsUrl(values.website),
         taxId: values.taxId || null,
         industry: values.industry || null,
         currencyCode: values.currencyCode || null,
         lang: values.lang || "en",
         active: values.active,
-        addresses: [],
-        bankAccounts: [],
-        customer: {
-          customerPaymentTermId: values.customerPaymentTermId
-            ? Number(values.customerPaymentTermId)
-            : null,
-          creditLimit: values.creditLimit ? Number(values.creditLimit) : null,
-          receivableAccountId: values.receivableAccountId
-            ? Number(values.receivableAccountId)
-            : null,
-          active: values.active,
-        },
+        addresses: toAddressRequests(values),
+        bankAccounts: toBankRequests(values),
+        customer: toCustomerProfile(values),
         supplier: null,
-      }),
+      });
+    },
     onSuccess: () => {
       toast.success(t("customerSaved"));
-      router.push(CUSTOMERS_HREF);
+      router.push(isEdit ? detailHref : CUSTOMERS_HREF);
     },
     onError: () => {
       toast.error(t("saveFailed"));
@@ -140,10 +220,14 @@ export function CustomerForm({ orgId }: { orgId: string }) {
 
   return (
     <div className="flex flex-col gap-4 sm:gap-6">
-      <PageHeader force title={t("newCustomer")} description={t("newCustomerDescription")} />
+      <PageHeader
+        force
+        title={isEdit ? t("editCustomerTitle") : t("newCustomer")}
+        description={t("newCustomerDescription")}
+      />
       <Form
         form={form}
-        onSubmit={(values) => createMutation.mutate(values)}
+        onSubmit={(values) => saveMutation.mutate(values)}
         className="flex flex-col gap-4"
       >
         <FormSection title={t("sectionIdentity")}>
@@ -182,44 +266,66 @@ export function CustomerForm({ orgId }: { orgId: string }) {
 
         <FormSection title={t("sectionContact")}>
           <FormField name="email" label={t("fieldEmail")}>
-            {({ field, id }) => (
-              <Input
+            {({ field, id, fieldState }) => (
+              <EmailInput
                 {...field}
                 id={id}
-                type="email"
-                inputMode="email"
-                autoComplete="email"
                 placeholder={t("fieldEmail")}
+                aria-invalid={Boolean(fieldState.error)}
               />
             )}
           </FormField>
           <FormField name="phone" label={t("fieldPhone")}>
-            {({ field, id }) => (
-              <Input {...field} id={id} type="tel" inputMode="tel" placeholder={t("fieldPhone")} />
+            {({ field, id, fieldState }) => (
+              <PhoneInput
+                id={id}
+                defaultCountry="ID"
+                autoComplete="tel"
+                placeholder={t("fieldPhone")}
+                countryAriaLabel={t("fieldPhone")}
+                aria-invalid={Boolean(fieldState.error)}
+                value={field.value ?? ""}
+                onChange={field.onChange}
+              />
             )}
           </FormField>
           <FormField name="mobile" label={tc("fieldMobile")}>
-            {({ field, id }) => (
-              <Input
-                {...field}
+            {({ field, id, fieldState }) => (
+              <PhoneInput
                 id={id}
-                type="tel"
-                inputMode="tel"
+                defaultCountry="ID"
+                autoComplete="tel"
                 placeholder={tc("fieldMobile")}
+                countryAriaLabel={tc("fieldMobile")}
+                aria-invalid={Boolean(fieldState.error)}
+                value={field.value ?? ""}
+                onChange={field.onChange}
               />
             )}
           </FormField>
           <FormField name="website" label={tc("fieldWebsite")}>
-            {({ field, id }) => (
-              <Input
+            {({ field, id, fieldState }) => (
+              <WebsiteInput
                 {...field}
                 id={id}
-                type="url"
-                inputMode="url"
                 placeholder={tc("fieldWebsite")}
+                aria-invalid={Boolean(fieldState.error)}
+                onChange={(event) => field.onChange(stripUrlScheme(event.target.value))}
               />
             )}
           </FormField>
+        </FormSection>
+
+        <FormSection title={tc("addressesTitle")}>
+          <div className="sm:col-span-2">
+            <CustomerAddressLines form={form} />
+          </div>
+        </FormSection>
+
+        <FormSection title={tc("bankAccountsTitle")}>
+          <div className="sm:col-span-2">
+            <CustomerBankLines form={form} />
+          </div>
         </FormSection>
 
         <FormSection title={t("sectionCustomerDefaults")}>
@@ -319,11 +425,11 @@ export function CustomerForm({ orgId }: { orgId: string }) {
         </FormSection>
 
         <div className="flex items-center justify-end gap-2">
-          <Button type="button" variant="outline" disabled={createMutation.isPending} asChild>
-            <Link href={CUSTOMERS_HREF}>{tCommon("cancel")}</Link>
+          <Button type="button" variant="outline" disabled={saveMutation.isPending} asChild>
+            <Link href={isEdit ? detailHref : CUSTOMERS_HREF}>{tCommon("cancel")}</Link>
           </Button>
-          <SubmitButton loading={createMutation.isPending} disabled={createMutation.isPending}>
-            {t("addCustomer")}
+          <SubmitButton loading={saveMutation.isPending} disabled={saveMutation.isPending}>
+            {isEdit ? tCommon("save") : t("addCustomer")}
           </SubmitButton>
         </div>
       </Form>

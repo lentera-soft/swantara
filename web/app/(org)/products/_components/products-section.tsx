@@ -2,18 +2,16 @@
 
 import type { LegacyColumnDef as ColumnDef } from "@tanstack/react-table/legacy";
 import { Plus } from "lucide-react";
-import { useRouter } from "next/navigation";
+import Link from "next/link";
 import { useTranslations } from "next-intl";
-import { useState } from "react";
 import { InteractiveEntityTable } from "@/app/(org)/_components/interactive-entity-table";
 import { Badge } from "@/components/badge";
 import { Button } from "@/components/button";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
-import type { Item, ItemCategory } from "@/lib/services/swantara";
+import type { Item, ItemCategory, Unit } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
 import { formatNumber } from "@/lib/utils";
 import { activeColumn, nameColumn } from "@/lib/utils/table-columns";
-import { ProductFormDialog } from "./product-form-dialog";
 import type { StubItemCategory } from "./products-data";
 
 type TFn = (key: string, values?: Record<string, string | number>) => string;
@@ -73,10 +71,12 @@ function categoryName(categories: StubItemCategory[], id: string | null): string
   return categories.find((category) => category.id === id)?.name;
 }
 
-export function ProductsSection({ orgId }: { orgId: string }) {
+function unitName(units: { id: string; name: string }[], id: string | null): string | undefined {
+  return units.find((unit) => unit.id === id)?.name;
+}
+
+export function ProductsSection(_props: { orgId: string }) {
   const t = (useTranslations as unknown as (ns: string) => TFn)("Products");
-  const router = useRouter();
-  const [dialogOpen, setDialogOpen] = useState(false);
 
   const productsQuery = useOrgListQuery<{ products: Item[] }, Record<string, never>>(
     "products",
@@ -88,14 +88,18 @@ export function ProductsSection({ orgId }: { orgId: string }) {
     (organizationId) => getSwantaraService().productCategories.list(organizationId),
   );
 
-  const templates = (productsQuery.data?.products ?? []).map(toProductRow);
-  const categories = (categoriesQuery.data?.categories ?? []).map(toCategoryRow);
+  const unitsQuery = useOrgListQuery<{ units: Unit[] }, Record<string, never>>(
+    "units",
+    (organizationId) => getSwantaraService().units.list(organizationId),
+  );
 
-  function handleSave(itemId: string) {
-    setDialogOpen(false);
-    void productsQuery.refetch();
-    router.push(`/products/${itemId}`);
-  }
+  const products = productsQuery.data?.products ?? [];
+  const templates = products.map(toProductRow);
+  const categories = (categoriesQuery.data?.categories ?? []).map(toCategoryRow);
+  const units = (unitsQuery.data?.units ?? []).map((unit) => ({
+    id: String(unit.id),
+    name: unit.name,
+  }));
 
   const columns: ColumnDef<ReturnType<typeof toProductRow>>[] = [
     nameColumn<ReturnType<typeof toProductRow>>({
@@ -121,6 +125,22 @@ export function ProductsSection({ orgId }: { orgId: string }) {
       ),
     },
     {
+      accessorKey: "unitId",
+      header: () => t("fieldUnit"),
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">{unitName(units, row.original.unitId) ?? "—"}</span>
+      ),
+    },
+    {
+      accessorKey: "tracking",
+      header: () => t("fieldTracking"),
+      cell: ({ row }) => (
+        <span className="text-muted-foreground">
+          {(t as unknown as (k: string) => string)(`trackingMode_${row.original.tracking}`)}
+        </span>
+      ),
+    },
+    {
       accessorKey: "listPrice",
       header: () => t("colListPrice"),
       meta: { align: "right" },
@@ -130,6 +150,49 @@ export function ProductsSection({ orgId }: { orgId: string }) {
         </span>
       ),
     },
+    {
+      accessorKey: "standardCost",
+      header: () => t("colStandardCost"),
+      meta: { align: "right" },
+      cell: ({ row }) => (
+        <span className="tabular-nums text-muted-foreground">
+          {formatNumber(row.original.standardCost)}
+        </span>
+      ),
+    },
+    {
+      id: "salesPurchase",
+      accessorFn: (row) =>
+        [
+          row.isSellable ? t("canBeSold") : null,
+          row.isPurchasable ? t("canBePurchased") : null,
+          row.isManufactured ? t("isManufactured") : null,
+        ]
+          .filter(Boolean)
+          .join(" "),
+      header: () => t("salesPurchase"),
+      cell: ({ row }) => {
+        const flags = [
+          row.original.isSellable ? t("canBeSold") : null,
+          row.original.isPurchasable ? t("canBePurchased") : null,
+          row.original.isManufactured ? t("isManufactured") : null,
+        ].filter((flag): flag is string => Boolean(flag));
+
+        if (flags.length === 0) {
+          return <span className="text-muted-foreground">—</span>;
+        }
+
+        return (
+          <div className="flex flex-wrap gap-1">
+            {flags.map((flag) => (
+              <Badge key={flag} variant="outline">
+                {flag}
+              </Badge>
+            ))}
+          </div>
+        );
+      },
+    },
     activeColumn<ReturnType<typeof toProductRow>>({
       header: t("colStatus"),
       activeLabel: t("active"),
@@ -137,12 +200,14 @@ export function ProductsSection({ orgId }: { orgId: string }) {
     }),
   ];
 
-  const isLoading = productsQuery.isLoading || categoriesQuery.isLoading;
+  const isLoading = productsQuery.isLoading || categoriesQuery.isLoading || unitsQuery.isLoading;
   const error = productsQuery.isError
     ? productsQuery.error
     : categoriesQuery.isError
       ? categoriesQuery.error
-      : null;
+      : unitsQuery.isError
+        ? unitsQuery.error
+        : null;
 
   return (
     <div className="flex flex-col gap-4">
@@ -171,26 +236,20 @@ export function ProductsSection({ orgId }: { orgId: string }) {
                   onRetry: () => {
                     void productsQuery.refetch();
                     void categoriesQuery.refetch();
+                    void unitsQuery.refetch();
                   },
                 }
               : undefined
         }
         actions={
-          <Button size="sm" onClick={() => setDialogOpen(true)}>
-            <Plus />
-            <span>{t("addItem")}</span>
+          <Button size="sm" asChild>
+            <Link href="/products/new">
+              <Plus />
+              <span>{t("addItem")}</span>
+            </Link>
           </Button>
         }
       />
-      {dialogOpen ? (
-        <ProductFormDialog
-          open={dialogOpen}
-          onOpenChange={setDialogOpen}
-          orgId={orgId}
-          categories={categories.map(({ id, name }) => ({ id, name }))}
-          onSave={handleSave}
-        />
-      ) : null}
     </div>
   );
 }

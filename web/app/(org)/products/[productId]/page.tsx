@@ -6,18 +6,18 @@ import { ProductDetail } from "../_components/product-detail-section";
 export default async function OrgProductDetailPage({
   params,
 }: {
-  params: Promise<{ itemId: string }>;
+  params: Promise<{ productId: string }>;
 }) {
   const t = await (getTranslations as unknown as (ns: string) => Promise<(key: string) => string>)(
     "Products",
   );
-  const { itemId } = await params;
+  const { productId } = await params;
   const id = String(await requireActiveOrgId());
 
   return (
     <div className="flex flex-col gap-4 sm:gap-6">
       <BackLink href={"/products"}>{t("backToProducts")}</BackLink>
-      <ProductDetail orgId={id} itemId={itemId} />
+      <ProductDetail orgId={id} itemId={productId} />
     </div>
   );
 }
