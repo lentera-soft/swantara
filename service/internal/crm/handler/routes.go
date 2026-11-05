@@ -14,7 +14,7 @@ func (h ProspectHandler) Register(api fiber.Router, guards httpx.RouteGuards) {
 	leads.Get("/:id", guards.Guard("prospect", "view"), h.Get)
 	leads.Put("/:id", guards.Guard("prospect", "update"), httpx.IdempotencyGuard(guards.Idempotency, "crm-prospect-update"), h.Update)
 	leads.Delete("/:id", guards.Guard("prospect", "delete"), httpx.IdempotencyGuard(guards.Idempotency, "crm-prospect-delete"), h.Delete)
-	leads.Post("/:id/promote", guards.Guard("prospect", "update"), httpx.IdempotencyGuard(guards.Idempotency, "crm-prospect-promote"), h.Promote)
+	leads.Post("/:id/promote", guards.Guard("prospect", "promote"), httpx.IdempotencyGuard(guards.Idempotency, "crm-prospect-promote"), h.Promote)
 	leads.Post("/:id/status", guards.Guard("prospect", "update"), httpx.IdempotencyGuard(guards.Idempotency, "crm-prospect-status"), h.TransitionStatus)
 	leads.Post("/:id/owner", guards.Guard("prospect", "update"), httpx.IdempotencyGuard(guards.Idempotency, "crm-prospect-owner"), h.ReassignOwner)
 	leads.Get("/:id/duplicates", guards.Guard("prospect", "view"), h.Duplicates)
@@ -70,4 +70,8 @@ func (h SalesGroupHandler) Register(api fiber.Router, guards httpx.RouteGuards) 
 	teams := api.Group("/crm", guards.AuthN)
 
 	teams.Get("/teams", guards.Guard("sales_group", "view"), h.List)
+	teams.Post("/teams", guards.Guard("sales_group", "create"), httpx.IdempotencyGuard(guards.Idempotency, "crm-sales-group-create"), h.Create)
+	teams.Get("/teams/:id", guards.Guard("sales_group", "view"), h.Get)
+	teams.Put("/teams/:id", guards.Guard("sales_group", "update"), httpx.IdempotencyGuard(guards.Idempotency, "crm-sales-group-update"), h.Update)
+	teams.Delete("/teams/:id", guards.Guard("sales_group", "delete"), httpx.IdempotencyGuard(guards.Idempotency, "crm-sales-group-delete"), h.Delete)
 }

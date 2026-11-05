@@ -81,16 +81,20 @@ describe("winRate", () => {
 });
 
 describe("canPromote", () => {
-  it("allows promotion for lead type when not closed", () => {
-    expect(canPromote({ type: "prospect", closedAt: null })).toBe(true);
+  it("allows promotion for a qualified lead when not closed", () => {
+    expect(canPromote({ type: "prospect", closedAt: null, status: "qualified" })).toBe(true);
+  });
+
+  it("disallows promotion for an unqualified lead", () => {
+    expect(canPromote({ type: "prospect", closedAt: null, status: "new" })).toBe(false);
   });
 
   it("disallows promotion for opportunity type", () => {
-    expect(canPromote({ type: "opportunity", closedAt: null })).toBe(false);
+    expect(canPromote({ type: "opportunity", closedAt: null, status: "qualified" })).toBe(false);
   });
 
   it("disallows promotion when closed", () => {
-    expect(canPromote({ type: "prospect", closedAt: new Date() })).toBe(false);
+    expect(canPromote({ type: "prospect", closedAt: new Date(), status: "qualified" })).toBe(false);
   });
 });
 

@@ -121,9 +121,13 @@ export function PromoteDialog({
     resolver: zodResolver(schema),
     defaultValues: {
       stageId: "",
-      expectedRevenue: "0",
+      expectedRevenue: String(
+        initial?.expectedRevenue && initial.expectedRevenue > 0
+          ? initial.expectedRevenue
+          : (initial?.budgetAmount ?? 0),
+      ),
       probability: "",
-      priority: "0",
+      priority: String(initial?.priority ?? 0),
       expectedClose: initial?.expectedClose ? String(initial.expectedClose).slice(0, 10) : "",
       salespersonId: initial?.salespersonId ? String(initial.salespersonId) : "",
       salesGroupId: initial?.salesGroupId ? String(initial.salesGroupId) : "",

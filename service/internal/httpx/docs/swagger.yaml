@@ -4913,6 +4913,37 @@ definitions:
       success:
         type: boolean
     type: object
+  handler.CreateSalesGroupRequest:
+    properties:
+      leader_id:
+        type: integer
+      name:
+        type: string
+      organization_id:
+        type: integer
+    required:
+    - name
+    type: object
+  handler.CreateSalesGroupResponse:
+    properties:
+      team:
+        $ref: '#/definitions/handler.SalesGroupResponse'
+    type: object
+  handler.CreateSalesGroupResponseEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/handler.CreateSalesGroupResponse'
+      links:
+        items:
+          $ref: '#/definitions/httpx.Link'
+        type: array
+      message:
+        type: string
+      meta:
+        $ref: '#/definitions/httpx.Meta'
+      success:
+        type: boolean
+    type: object
   handler.CreateServiceContractRequest:
     properties:
       contact_id:
@@ -7328,6 +7359,21 @@ definitions:
       success:
         type: boolean
     type: object
+  handler.GetCustomerResponseEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/handler.EnableCustomerResponse'
+      links:
+        items:
+          $ref: '#/definitions/httpx.Link'
+        type: array
+      message:
+        type: string
+      meta:
+        $ref: '#/definitions/httpx.Meta'
+      success:
+        type: boolean
+    type: object
   handler.GetDebitMemoResponse:
     properties:
       memo:
@@ -8195,6 +8241,26 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/handler.GetSaleQuoteResponse'
+      links:
+        items:
+          $ref: '#/definitions/httpx.Link'
+        type: array
+      message:
+        type: string
+      meta:
+        $ref: '#/definitions/httpx.Meta'
+      success:
+        type: boolean
+    type: object
+  handler.GetSalesGroupResponse:
+    properties:
+      team:
+        $ref: '#/definitions/handler.SalesGroupResponse'
+    type: object
+  handler.GetSalesGroupResponseEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/handler.GetSalesGroupResponse'
       links:
         items:
           $ref: '#/definitions/httpx.Link'
@@ -13602,6 +13668,8 @@ definitions:
         type: string
       expected_revenue:
         type: number
+      opportunity_id:
+        type: integer
       priority:
         type: integer
       probability:
@@ -15518,6 +15586,8 @@ definitions:
     type: object
   handler.SalesGroupResponse:
     properties:
+      created_at:
+        type: string
       id:
         type: integer
       leader_id:
@@ -15526,6 +15596,8 @@ definitions:
         type: string
       organization_id:
         type: integer
+      updated_at:
+        type: string
     type: object
   handler.ScheduleResponse:
     properties:
@@ -17137,8 +17209,18 @@ definitions:
     properties:
       active:
         type: boolean
+      addresses:
+        items:
+          $ref: '#/definitions/handler.ContactAddressRequest'
+        type: array
+      bank_accounts:
+        items:
+          $ref: '#/definitions/handler.ContactBankAccountRequest'
+        type: array
       currency_code:
         type: string
+      customer:
+        $ref: '#/definitions/handler.CustomerProfileRequest'
       display_name:
         type: string
       email:
@@ -17159,6 +17241,8 @@ definitions:
         type: integer
       phone:
         type: string
+      supplier:
+        $ref: '#/definitions/handler.SupplierProfileRequest'
       tax_id:
         type: string
       website:
@@ -18170,6 +18254,35 @@ definitions:
     properties:
       data:
         $ref: '#/definitions/handler.UpdateSaleQuoteResponse'
+      links:
+        items:
+          $ref: '#/definitions/httpx.Link'
+        type: array
+      message:
+        type: string
+      meta:
+        $ref: '#/definitions/httpx.Meta'
+      success:
+        type: boolean
+    type: object
+  handler.UpdateSalesGroupRequest:
+    properties:
+      leader_id:
+        type: integer
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  handler.UpdateSalesGroupResponse:
+    properties:
+      team:
+        $ref: '#/definitions/handler.SalesGroupResponse'
+    type: object
+  handler.UpdateSalesGroupResponseEnvelope:
+    properties:
+      data:
+        $ref: '#/definitions/handler.UpdateSalesGroupResponse'
       links:
         items:
           $ref: '#/definitions/httpx.Link'
@@ -24726,8 +24839,10 @@ paths:
       - application/json
       description: Updates a contact's base identity fields after enforcing tenant
         ownership, returning 404 when the contact is missing or not owned by the caller's
-        organization. A non-empty name is required, and the updated contact is returned
-        with HATEOAS links.
+        organization. A non-empty name is required. When addresses, bank_accounts,
+        customer, or supplier are present they are replaced or upserted atomically
+        with the contact; omitted sections are left unchanged. The updated contact
+        is returned with HATEOAS links.
       parameters:
       - description: Contact ID
         in: path
@@ -25293,6 +25408,41 @@ paths:
       security:
       - BearerAuth: []
       summary: Disable customer role
+      tags:
+      - Contacts
+    get:
+      description: Retrieves the customer profile of a tenant-owned contact, returning
+        404 when the contact does not carry the customer role. The response contains
+        payment term, credit limit, receivable account, and active state.
+      parameters:
+      - description: Contact ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Organization ID
+        in: path
+        name: organization_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Customer profile retrieved successfully.
+          schema:
+            $ref: '#/definitions/handler.GetCustomerResponseEnvelope'
+        "404":
+          description: Contact or customer profile not found
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get customer role profile
       tags:
       - Contacts
     put:
@@ -27874,6 +28024,184 @@ paths:
       security:
       - BearerAuth: []
       summary: List sales teams
+      tags:
+      - CRM Teams
+    post:
+      consumes:
+      - application/json
+      description: Creates a new CRM sales team within the caller's organization.
+        The optional leader must be a contact belonging to the same organization.
+      parameters:
+      - description: Sales team payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.CreateSalesGroupRequest'
+      - description: Organization ID
+        in: path
+        name: organization_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Sales team created successfully.
+          schema:
+            $ref: '#/definitions/handler.CreateSalesGroupResponseEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "422":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Create sales team
+      tags:
+      - CRM Teams
+  /organizations/{organization_id}/crm/teams/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: Deletes a CRM sales team. The team must belong to the caller's
+        organization, otherwise a 404 is returned.
+      parameters:
+      - description: Sales Team ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Organization ID
+        in: path
+        name: organization_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No content
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "404":
+          description: Sales team not found
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "422":
+          description: Invalid sales team id provided
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Delete sales team
+      tags:
+      - CRM Teams
+    get:
+      consumes:
+      - application/json
+      description: Gets a single CRM sales team by id. The team must belong to the
+        caller's organization, otherwise a 404 is returned.
+      parameters:
+      - description: Sales Team ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Organization ID
+        in: path
+        name: organization_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sales team retrieved successfully.
+          schema:
+            $ref: '#/definitions/handler.GetSalesGroupResponseEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "404":
+          description: Sales team not found
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "422":
+          description: Invalid sales team id provided
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Get sales team
+      tags:
+      - CRM Teams
+    put:
+      consumes:
+      - application/json
+      description: Updates an existing CRM sales team. The team must belong to the
+        caller's organization, otherwise a 404 is returned.
+      parameters:
+      - description: Sales Team ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: Sales team payload
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/handler.UpdateSalesGroupRequest'
+      - description: Organization ID
+        in: path
+        name: organization_id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Sales team updated successfully.
+          schema:
+            $ref: '#/definitions/handler.UpdateSalesGroupResponseEnvelope'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "404":
+          description: Sales team not found
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "422":
+          description: Validation error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+        "500":
+          description: Internal server error
+          schema:
+            $ref: '#/definitions/httpx.ErrorResponse'
+      security:
+      - BearerAuth: []
+      summary: Update sales team
       tags:
       - CRM Teams
   /organizations/{organization_id}/deferrals:

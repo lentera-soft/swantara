@@ -25,6 +25,7 @@ import { Form, FormField, SubmitButton } from "@/components/form";
 import { FormSection } from "@/components/form-section";
 import { Input } from "@/components/input";
 import { PageHeader } from "@/components/page-header";
+import { PhoneInput } from "@/components/phone-input";
 import { Progress } from "@/components/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/select";
 import { Switch } from "@/components/switch";
@@ -426,17 +427,7 @@ export function LeadForm({
 
   return (
     <div className="flex flex-col gap-4 sm:gap-6">
-      <PageHeader
-        force
-        title={formTitle}
-        description={isOpportunity ? t("opportunityFormDescription") : t("leadFormDescription")}
-        actions={
-          <Badge variant={isOpportunity ? "default" : "secondary"}>
-            {isOpportunity ? t("opportunityBadge") : t("leadBadge")}
-          </Badge>
-        }
-      />
-      <Form form={form} onSubmit={handleSubmit} className="flex flex-col gap-4">
+      <Form form={form} onSubmit={handleSubmit} className="flex flex-col gap-8">
         <FormSection
           title={isOpportunity ? t("sectionDeal") : t("sectionLeadDetails")}
           description={isOpportunity ? t("sectionDealDescription") : t("sectionLeadDescription")}
@@ -562,8 +553,17 @@ export function LeadForm({
             )}
           </FormField>
           <FormField name="phone" label={t("fieldPhone")}>
-            {({ field, id }) => (
-              <Input {...field} id={id} placeholder={t("phonePlaceholder")} autoComplete="tel" />
+            {({ field, id, fieldState }) => (
+              <PhoneInput
+                id={id}
+                defaultCountry="ID"
+                autoComplete="tel"
+                placeholder={t("phonePlaceholder")}
+                countryAriaLabel={t("fieldPhone")}
+                aria-invalid={Boolean(fieldState.error)}
+                value={field.value ?? ""}
+                onChange={field.onChange}
+              />
             )}
           </FormField>
           <FormField name="jobPosition" label={t("fieldJobPosition")} className="sm:col-span-2">

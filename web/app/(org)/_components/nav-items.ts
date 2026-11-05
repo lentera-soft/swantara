@@ -149,6 +149,14 @@ export const orgNavItems: OrgNavItem[] = [
     permission: "prospect.view",
   },
   {
+    key: "teams",
+    group: "modules",
+    module: "crm",
+    href: "/crm/teams",
+    icon: Users,
+    permission: "sales_group.view",
+  },
+  {
     key: "workspace",
     group: "modules",
     module: "sales",
@@ -709,6 +717,7 @@ const NAV_LABEL_OVERRIDES: Record<string, string> = {
   opportunities: "Peluang",
   activities: "Aktivitas",
   campaigns: "Kampanye",
+  teams: "Tim penjualan",
   timesheets: "Lembar Waktu",
   departments: "Departemen",
   jobPositions: "Jabatan",

@@ -116,7 +116,7 @@ func TestProspectService_Promote_RejectsInvalidInput(t *testing.T) {
 
 func TestProspectService_Promote_ConvertsLeadAndAssignsFields(t *testing.T) {
 	ctx := context.Background()
-	leads := foundLead(&Prospect{Base: model.Base{ID: 1}, Name: "Acme", Type: ProspectKindLead, ContactName: helper.Ptr("Jane"), NeedSummary: helper.Ptr("Needs CRM")})
+	leads := foundLead(&Prospect{Base: model.Base{ID: 1}, Name: "Acme", Type: ProspectKindLead, Status: ProspectStatusQualified, ContactName: helper.Ptr("Jane"), NeedSummary: helper.Ptr("Needs CRM")})
 	stages := dao.CRUDMock[reference.PipelineStage]{
 		FindFunc: func(_ context.Context, _ uint64) (*reference.PipelineStage, error) {
 			return &reference.PipelineStage{Base: model.Base{ID: 3}, Probability: 60}, nil
@@ -165,7 +165,7 @@ func TestProspectService_Promote_ConvertsLeadAndAssignsFields(t *testing.T) {
 
 func TestProspectService_Promote_UsesProvidedProbability(t *testing.T) {
 	ctx := context.Background()
-	leads := foundLead(&Prospect{Base: model.Base{ID: 1}, Name: "Acme", Type: ProspectKindLead, ContactName: helper.Ptr("Jane"), NeedSummary: helper.Ptr("Needs CRM")})
+	leads := foundLead(&Prospect{Base: model.Base{ID: 1}, Name: "Acme", Type: ProspectKindLead, Status: ProspectStatusQualified, ContactName: helper.Ptr("Jane"), NeedSummary: helper.Ptr("Needs CRM")})
 	stages := dao.CRUDMock[reference.PipelineStage]{
 		FindFunc: func(_ context.Context, _ uint64) (*reference.PipelineStage, error) {
 			return &reference.PipelineStage{Base: model.Base{ID: 3}, Probability: 60}, nil
@@ -685,6 +685,246 @@ func TestProspectService_Win_PropagatesStageListError(t *testing.T) {
 	helper.AssertError(t, err, true, nil)
 }
 
+type transactionalProspectDAOMock struct {
+	ProspectDAOMock
+	called bool
+	entry  *ProspectStageHistory
+}
+
+func (m *transactionalProspectDAOMock) PromoteWithHistory(_ context.Context, prospect *Prospect, entry *ProspectStageHistory) (*Prospect, error) {
+	m.called = true
+	m.entry = entry
+	return prospect, nil
+}
+
+func TestProspectService_Promote_RejectsUnqualifiedLeadWithoutOverride(t *testing.T) {
+	ctx := context.Background()
+	leads := foundLead(&Prospect{
+		Base:        model.Base{ID: 1},
+		Name:        "Acme",
+		Type:        ProspectKindLead,
+		Status:      ProspectStatusNew,
+		ContactName: helper.Ptr("Jane"),
+		NeedSummary: helper.Ptr("Needs CRM"),
+	})
+	stages := dao.CRUDMock[reference.PipelineStage]{
+		FindFunc: func(_ context.Context, _ uint64) (*reference.PipelineStage, error) {
+			return &reference.PipelineStage{Base: model.Base{ID: 3}}, nil
+		},
+	}
+	svc := NewProspectService(leads, stages, dao.CRUDMock[reference.SalesGroup]{}, contacts.ContactDAOMock{})
+
+	_, err := svc.Promote(ctx, 1, PromotionInput{StageID: 3})
+
+	helper.AssertError(t, err, true, ErrLeadNotQualified)
+}
+
+func TestProspectService_Promote_PreservesFieldsWhenInputOmitted(t *testing.T) {
+	ctx := context.Background()
+	closeDate := time.Date(2026, time.April, 15, 0, 0, 0, 0, time.UTC)
+	leads := foundLead(&Prospect{
+		Base:            model.Base{ID: 1},
+		Name:            "Acme",
+		Type:            ProspectKindLead,
+		Status:          ProspectStatusQualified,
+		ContactID:       helper.Ptr(uint64(9)),
+		ContactName:     helper.Ptr("Jane"),
+		NeedSummary:     helper.Ptr("Needs CRM"),
+		ExpectedRevenue: 5000,
+		Priority:        3,
+		ExpectedClose:   &closeDate,
+	})
+	stages := dao.CRUDMock[reference.PipelineStage]{
+		FindFunc: func(_ context.Context, _ uint64) (*reference.PipelineStage, error) {
+			return &reference.PipelineStage{Base: model.Base{ID: 3}, Probability: 40}, nil
+		},
+	}
+	svc := NewProspectService(leads, stages, dao.CRUDMock[reference.SalesGroup]{}, contacts.ContactDAOMock{})
+
+	promoted, err := svc.Promote(ctx, 1, PromotionInput{StageID: 3})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if promoted.ExpectedRevenue != 5000 {
+		t.Errorf("expected_revenue = %v, want 5000", promoted.ExpectedRevenue)
+	}
+	if promoted.Priority != 3 {
+		t.Errorf("priority = %v, want 3", promoted.Priority)
+	}
+	if promoted.ExpectedClose == nil || !promoted.ExpectedClose.Equal(closeDate) {
+		t.Errorf("expected_close = %v, want %v", promoted.ExpectedClose, closeDate)
+	}
+}
+
+func TestProspectService_Promote_CreatesAndLinksContact(t *testing.T) {
+	ctx := context.Background()
+	orgID := uint64(10)
+	leads := foundLead(&Prospect{
+		Base:           model.Base{ID: 1},
+		OrganizationID: &orgID,
+		Name:           "Acme",
+		Type:           ProspectKindLead,
+		Status:         ProspectStatusQualified,
+		ContactName:    helper.Ptr("Jane Doe"),
+		Email:          helper.Ptr("jane@example.com"),
+		NeedSummary:    helper.Ptr("Needs CRM"),
+	})
+	stages := dao.CRUDMock[reference.PipelineStage]{
+		FindFunc: func(_ context.Context, _ uint64) (*reference.PipelineStage, error) {
+			return &reference.PipelineStage{Base: model.Base{ID: 3}}, nil
+		},
+	}
+	var created *contacts.Contact
+	contactMocks := contacts.ContactDAOMock{
+		CRUDMock: dao.CRUDMock[contacts.Contact]{
+			CreateFunc: func(_ context.Context, contact *contacts.Contact) (*contacts.Contact, error) {
+				contact.ID = 44
+				created = contact
+				return contact, nil
+			},
+		},
+	}
+	svc := NewProspectService(leads, stages, dao.CRUDMock[reference.SalesGroup]{}, contactMocks)
+
+	promoted, err := svc.Promote(ctx, 1, PromotionInput{StageID: 3})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if created == nil {
+		t.Fatal("expected a contact to be created")
+	}
+	if created.Name != "Jane Doe" || created.Email == nil || *created.Email != "jane@example.com" {
+		t.Errorf("created contact = %+v", created)
+	}
+	if created.OrganizationID == nil || *created.OrganizationID != orgID {
+		t.Errorf("contact organization = %v, want %d", created.OrganizationID, orgID)
+	}
+	if promoted.ContactID == nil || *promoted.ContactID != 44 {
+		t.Errorf("contact_id = %v, want 44", promoted.ContactID)
+	}
+}
+
+func TestProspectService_Promote_AttachesToExistingOpportunity(t *testing.T) {
+	ctx := context.Background()
+	orgID := uint64(10)
+	source := &Prospect{
+		Base:           model.Base{ID: 1},
+		OrganizationID: &orgID,
+		Name:           "Acme",
+		Type:           ProspectKindLead,
+		Status:         ProspectStatusQualified,
+		ContactID:      helper.Ptr(uint64(9)),
+		ContactName:    helper.Ptr("Jane"),
+		NeedSummary:    helper.Ptr("Needs CRM"),
+	}
+	target := &Prospect{
+		Base:           model.Base{ID: 2},
+		OrganizationID: &orgID,
+		Name:           "Acme Expansion",
+		Type:           ProspectKindOpportunity,
+		Status:         ProspectStatusQualified,
+		StageID:        helper.Ptr(uint64(3)),
+		ContactID:      helper.Ptr(uint64(9)),
+	}
+	mergeCalled := false
+	leads := ProspectDAOMock{
+		CRUDMock: dao.CRUDMock[Prospect]{
+			FindFunc: func(_ context.Context, id uint64) (*Prospect, error) {
+				if id == 2 {
+					return target, nil
+				}
+				return source, nil
+			},
+			UpdateFunc: func(_ context.Context, prospect *Prospect) (*Prospect, error) {
+				return prospect, nil
+			},
+		},
+		MergeFunc: func(_ context.Context, sourceID, targetID uint64) error {
+			mergeCalled = true
+			if sourceID != 1 || targetID != 2 {
+				t.Errorf("merge = %d -> %d, want 1 -> 2", sourceID, targetID)
+			}
+			return nil
+		},
+	}
+	stages := dao.CRUDMock[reference.PipelineStage]{
+		FindFunc: func(_ context.Context, _ uint64) (*reference.PipelineStage, error) {
+			return &reference.PipelineStage{Base: model.Base{ID: 3}}, nil
+		},
+	}
+	svc := NewProspectService(leads, stages, dao.CRUDMock[reference.SalesGroup]{}, contacts.ContactDAOMock{})
+
+	promoted, err := svc.Promote(ctx, 1, PromotionInput{StageID: 3, OpportunityID: helper.Ptr(uint64(2))})
+	if err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !mergeCalled {
+		t.Fatal("expected lead to be merged into the existing opportunity")
+	}
+	if promoted == nil || promoted.ID != 2 {
+		t.Fatalf("promoted = %+v, want opportunity 2", promoted)
+	}
+}
+
+func TestProspectService_Promote_RejectsWhenContactHasOpenOpportunity(t *testing.T) {
+	ctx := context.Background()
+	leads := foundLead(&Prospect{
+		Base:        model.Base{ID: 1},
+		Name:        "Acme",
+		Type:        ProspectKindLead,
+		Status:      ProspectStatusQualified,
+		ContactID:   helper.Ptr(uint64(9)),
+		ContactName: helper.Ptr("Jane"),
+		NeedSummary: helper.Ptr("Needs CRM"),
+	})
+	leads.ListOpenFunc = func(_ context.Context, _ *uint64) ([]*Prospect, error) {
+		return []*Prospect{{Base: model.Base{ID: 2}, Type: ProspectKindOpportunity, ContactID: helper.Ptr(uint64(9))}}, nil
+	}
+	stages := dao.CRUDMock[reference.PipelineStage]{
+		FindFunc: func(_ context.Context, _ uint64) (*reference.PipelineStage, error) {
+			return &reference.PipelineStage{Base: model.Base{ID: 3}}, nil
+		},
+	}
+	svc := NewProspectService(leads, stages, dao.CRUDMock[reference.SalesGroup]{}, contacts.ContactDAOMock{})
+
+	_, err := svc.Promote(ctx, 1, PromotionInput{StageID: 3})
+
+	helper.AssertError(t, err, true, ErrOpenOpportunityExists)
+}
+
+func TestProspectService_Promote_UsesTransactionalWriter(t *testing.T) {
+	ctx := context.Background()
+	leads := &transactionalProspectDAOMock{
+		ProspectDAOMock: foundLead(&Prospect{
+			Base:        model.Base{ID: 1},
+			Name:        "Acme",
+			Type:        ProspectKindLead,
+			Status:      ProspectStatusQualified,
+			ContactID:   helper.Ptr(uint64(9)),
+			ContactName: helper.Ptr("Jane"),
+			NeedSummary: helper.Ptr("Needs CRM"),
+		}),
+	}
+	stages := dao.CRUDMock[reference.PipelineStage]{
+		FindFunc: func(_ context.Context, _ uint64) (*reference.PipelineStage, error) {
+			return &reference.PipelineStage{Base: model.Base{ID: 3}}, nil
+		},
+	}
+	history := &StageHistoryDAOMock{}
+	svc := NewProspectService(leads, stages, dao.CRUDMock[reference.SalesGroup]{}, contacts.ContactDAOMock{}).
+		WithStageHistory(history)
+
+	if _, err := svc.Promote(ctx, 1, PromotionInput{StageID: 3}); err != nil {
+		t.Fatalf("unexpected error: %v", err)
+	}
+	if !leads.called {
+		t.Fatal("expected transactional promotion writer to be used")
+	}
+	if leads.entry == nil || leads.entry.ProspectID != 1 {
+		t.Fatalf("history entry = %+v, want prospect 1", leads.entry)
+	}
+}
+
 func foundLead(prospect *Prospect) ProspectDAOMock {
 	return ProspectDAOMock{
 		CRUDMock: dao.CRUDMock[Prospect]{
@@ -720,7 +960,7 @@ func TestProspectService_WithClock_ControlsTimestamps(t *testing.T) {
 
 func TestProspectService_Promote_RequiresContactAndNeed(t *testing.T) {
 	ctx := context.Background()
-	leads := foundLead(&Prospect{Base: model.Base{ID: 1}, Name: "Acme", Type: ProspectKindLead})
+	leads := foundLead(&Prospect{Base: model.Base{ID: 1}, Name: "Acme", Type: ProspectKindLead, Status: ProspectStatusQualified})
 	stages := dao.CRUDMock[reference.PipelineStage]{
 		FindFunc: func(_ context.Context, _ uint64) (*reference.PipelineStage, error) {
 			return &reference.PipelineStage{Base: model.Base{ID: 3}}, nil
@@ -761,6 +1001,7 @@ func TestProspectService_Promote_RejectsWonTargetStage(t *testing.T) {
 		Base:        model.Base{ID: 1},
 		Name:        "Acme",
 		Type:        ProspectKindLead,
+		Status:      ProspectStatusQualified,
 		ContactName: helper.Ptr("Jane"),
 		NeedSummary: helper.Ptr("Needs CRM"),
 	})

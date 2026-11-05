@@ -733,6 +733,29 @@ func TestProspectHandler_Promote_PromotesLead(t *testing.T) {
 	}
 }
 
+func TestProspectHandler_Promote_RejectsUnqualifiedLead(t *testing.T) {
+	leads := crm.ProspectDAOMock{
+		CRUDMock: dao.CRUDMock[crm.Prospect]{
+			FindFunc: func(_ context.Context, _ uint64) (*crm.Prospect, error) {
+				return sampleProspect(), nil
+			},
+		},
+	}
+	svc := crmLeadTestSvc(leads, dao.CRUDMock[reference.PipelineStage]{}, dao.CRUDMock[reference.SalesGroup]{}, contacts.ContactDAOMock{})
+	app := crmTestApp(10, func(api fiber.Router, guards httpx.RouteGuards) {
+		NewProspectHandler(newTestPipelineStageService(dao.CRUDMock[reference.PipelineStage]{}), svc).Register(api, guards)
+	})
+
+	body := `{"stage_id":1}`
+	resp, err := doRequest(app, http.MethodPost, "/crm/leads/1/promote", body)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if resp.StatusCode != http.StatusConflict {
+		t.Fatalf("status = %d, want 409", resp.StatusCode)
+	}
+}
+
 func TestProspectHandler_Promote_RejectsInvalidID(t *testing.T) {
 	leads := crm.ProspectDAOMock{}
 	svc := crmLeadTestSvc(leads, dao.CRUDMock[reference.PipelineStage]{}, dao.CRUDMock[reference.SalesGroup]{}, contacts.ContactDAOMock{})
@@ -900,7 +923,7 @@ func TestProspectHandler_Promote_ReturnsUnprocessableOnStageNotFound(t *testing.
 		NewProspectHandler(newTestPipelineStageService(stages), svc).Register(api, guards)
 	})
 
-	body := `{"stage_id":99}`
+	body := `{"stage_id":99,"allow_unqualified":true}`
 	resp, err := doRequest(app, http.MethodPost, "/crm/leads/1/promote", body)
 	if err != nil {
 		t.Fatal(err)
@@ -928,7 +951,7 @@ func TestProspectHandler_Promote_ReturnsUnprocessableOnInvalidRevenue(t *testing
 		NewProspectHandler(newTestPipelineStageService(stages), svc).Register(api, guards)
 	})
 
-	body := `{"stage_id":1,"expected_revenue":-1}`
+	body := `{"stage_id":1,"expected_revenue":-1,"allow_unqualified":true}`
 	resp, err := doRequest(app, http.MethodPost, "/crm/leads/1/promote", body)
 	if err != nil {
 		t.Fatal(err)
@@ -956,7 +979,7 @@ func TestProspectHandler_Promote_ReturnsUnprocessableOnInvalidProbability(t *tes
 		NewProspectHandler(newTestPipelineStageService(stages), svc).Register(api, guards)
 	})
 
-	body := `{"stage_id":1,"probability":150}`
+	body := `{"stage_id":1,"probability":150,"allow_unqualified":true}`
 	resp, err := doRequest(app, http.MethodPost, "/crm/leads/1/promote", body)
 	if err != nil {
 		t.Fatal(err)

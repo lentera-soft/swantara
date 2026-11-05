@@ -929,7 +929,7 @@ func main() {
 	activityHandler := crmHandler.NewProspectActivityHandler(activitySvc)
 	pipelineHandler := crmHandler.NewPipelineHandler(pipelineSvc)
 	stageHandler := crmHandler.NewPipelineStageHandler(crmStageDAO)
-	teamHandler := crmHandler.NewSalesGroupHandler(salesTeamDAO)
+	teamHandler := crmHandler.NewSalesGroupHandler(salesTeamDAO).WithContacts(contactDAO)
 	saleOrderHandler := salesHandler.NewSaleOrderHandler(saleOrderSvc)
 	saleQuoteHandler := salesHandler.NewSaleQuoteHandler(saleQuoteSvc)
 	posConfigHandler := posHandler.NewPOSConfigHandler(posConfigDAO)

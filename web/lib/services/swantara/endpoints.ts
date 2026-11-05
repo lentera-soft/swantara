@@ -739,7 +739,16 @@ const endpoints = {
     },
     pipeline: (organizationId: string) => `/api/v1/organizations/${organizationId}/crm/pipeline`,
     stages: (organizationId: string) => `/api/v1/organizations/${organizationId}/crm/stages`,
-    teams: (organizationId: string) => `/api/v1/organizations/${organizationId}/crm/teams`,
+    teams: {
+      list: (organizationId: string) => `/api/v1/organizations/${organizationId}/crm/teams`,
+      create: (organizationId: string) => `/api/v1/organizations/${organizationId}/crm/teams`,
+      get: (organizationId: string, id: string) =>
+        `/api/v1/organizations/${organizationId}/crm/teams/${id}`,
+      update: (organizationId: string, id: string) =>
+        `/api/v1/organizations/${organizationId}/crm/teams/${id}`,
+      delete: (organizationId: string, id: string) =>
+        `/api/v1/organizations/${organizationId}/crm/teams/${id}`,
+    },
   },
 
   saleOrders: {

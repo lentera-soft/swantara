@@ -246,14 +246,21 @@ func (s ProspectService) UpdateLead(ctx context.Context, prospect *Prospect) (*P
 }
 
 type PromotionInput struct {
-	StageID          uint64     `json:"stage_id"`
-	SalespersonID    *uint64    `json:"salesperson_id"`
-	SalesGroupID     *uint64    `json:"sales_group_id"`
-	ExpectedRevenue  float64    `json:"expected_revenue"`
-	Probability      *float64   `json:"probability"`
-	Priority         int16      `json:"priority"`
-	ExpectedClose    *time.Time `json:"expected_close"`
-	AllowUnqualified bool       `json:"allow_unqualified"`
+	StageID            uint64     `json:"stage_id"`
+	SalespersonID      *uint64    `json:"salesperson_id"`
+	SalesGroupID       *uint64    `json:"sales_group_id"`
+	ExpectedRevenue    float64    `json:"expected_revenue"`
+	ExpectedRevenueSet bool       `json:"-"`
+	Probability        *float64   `json:"probability"`
+	Priority           int16      `json:"priority"`
+	PrioritySet        bool       `json:"-"`
+	ExpectedClose      *time.Time `json:"expected_close"`
+	OpportunityID      *uint64    `json:"opportunity_id"`
+	AllowUnqualified   bool       `json:"allow_unqualified"`
+}
+
+type promotionHistoryWriter interface {
+	PromoteWithHistory(ctx context.Context, prospect *Prospect, entry *ProspectStageHistory) (*Prospect, error)
 }
 
 func (s ProspectService) Promote(ctx context.Context, prospectID uint64, input PromotionInput) (*Prospect, error) {
@@ -270,6 +277,9 @@ func (s ProspectService) Promote(ctx context.Context, prospectID uint64, input P
 	if prospect.ClosedAt != nil || prospect.Status == ProspectStatusDisqualified || prospect.Status == ProspectStatusLost {
 		return nil, ErrLeadClosed
 	}
+	if prospect.Status != ProspectStatusQualified && !input.AllowUnqualified {
+		return nil, ErrLeadNotQualified
+	}
 	organizationID := uint64(0)
 	if prospect.OrganizationID != nil {
 		organizationID = *prospect.OrganizationID
@@ -284,6 +294,18 @@ func (s ProspectService) Promote(ctx context.Context, prospectID uint64, input P
 		}
 	} else if missing := missingPromotionFields(prospect, requiredFields); len(missing) > 0 {
 		return nil, ErrPromotionRequirementsUnmet
+	}
+
+	if input.OpportunityID != nil {
+		return s.attachToOpportunity(ctx, prospect, *input.OpportunityID)
+	}
+
+	existingOpportunity, err := s.openOpportunityForContact(ctx, prospect)
+	if err != nil {
+		return nil, err
+	}
+	if existingOpportunity != nil {
+		return nil, ErrOpenOpportunityExists
 	}
 
 	stage, err := s.resolveStage(ctx, prospect.OrganizationID, &input.StageID)
@@ -305,6 +327,9 @@ func (s ProspectService) Promote(ctx context.Context, prospectID uint64, input P
 	if input.Priority < 0 {
 		return nil, ErrInvalidPriority
 	}
+	if err := s.ensureContact(ctx, prospect); err != nil {
+		return nil, err
+	}
 
 	now := s.now()
 	fromStage := prospect.StageID
@@ -318,9 +343,15 @@ func (s ProspectService) Promote(ctx context.Context, prospectID uint64, input P
 	if input.SalesGroupID != nil {
 		prospect.SalesGroupID = input.SalesGroupID
 	}
-	prospect.ExpectedRevenue = input.ExpectedRevenue
-	prospect.Priority = input.Priority
-	prospect.ExpectedClose = input.ExpectedClose
+	if input.ExpectedRevenueSet || input.ExpectedRevenue != 0 {
+		prospect.ExpectedRevenue = input.ExpectedRevenue
+	}
+	if input.PrioritySet || input.Priority != 0 {
+		prospect.Priority = input.Priority
+	}
+	if input.ExpectedClose != nil {
+		prospect.ExpectedClose = input.ExpectedClose
+	}
 	prospect.ConvertedAt = &now
 	if prospect.QualifiedAt == nil {
 		prospect.QualifiedAt = &now
@@ -336,11 +367,122 @@ func (s ProspectService) Promote(ctx context.Context, prospectID uint64, input P
 	}
 	prospect.LeadScore = calculateLeadScore(prospect)
 
+	entry := s.promotionHistoryEntry(ctx, prospect, fromStage, &stage.ID, &fromStatus, &prospect.Status, promotionEvidenceNote(requiredFields, input.AllowUnqualified))
+	updated, err := s.persistPromotion(ctx, prospect, entry)
+	if err != nil {
+		return nil, err
+	}
+	return updated, nil
+}
+
+func (s ProspectService) attachToOpportunity(ctx context.Context, prospect *Prospect, opportunityID uint64) (*Prospect, error) {
+	if opportunityID == prospect.ID {
+		return nil, ErrSameProspect
+	}
+	target, err := s.leads.Find(ctx, opportunityID)
+	if err != nil {
+		return nil, dao.NotFound(err, ErrOpportunityNotFound)
+	}
+	if target == nil {
+		return nil, ErrOpportunityNotFound
+	}
+	if target.Type != ProspectKindOpportunity {
+		return nil, ErrNotOpportunity
+	}
+	if !sameOrganization(prospect, target) {
+		return nil, ErrMergeOrganization
+	}
+	if target.ClosedAt != nil || target.Status == ProspectStatusWon || target.Status == ProspectStatusLost {
+		return nil, ErrLeadClosed
+	}
+	return s.Merge(ctx, prospect.ID, target.ID)
+}
+
+func (s ProspectService) openOpportunityForContact(ctx context.Context, prospect *Prospect) (*Prospect, error) {
+	if prospect.ContactID == nil || *prospect.ContactID == 0 {
+		return nil, nil
+	}
+	opportunities, err := s.leads.ListOpen(ctx, prospect.OrganizationID)
+	if err != nil {
+		return nil, err
+	}
+	for _, opportunity := range opportunities {
+		if opportunity == nil || opportunity.ID == prospect.ID || opportunity.ContactID == nil {
+			continue
+		}
+		if *opportunity.ContactID == *prospect.ContactID {
+			return opportunity, nil
+		}
+	}
+	return nil, nil
+}
+
+func (s ProspectService) ensureContact(ctx context.Context, prospect *Prospect) error {
+	if prospect.ContactID != nil {
+		return nil
+	}
+	name := valueOrEmpty(prospect.ContactName)
+	if name == "" {
+		name = prospect.Name
+	}
+	contact := &contacts.Contact{
+		OrganizationID: prospect.OrganizationID,
+		Name:           name,
+		Email:          prospect.Email,
+		Phone:          prospect.Phone,
+		Lang:           "en",
+		Active:         true,
+	}
+	if name != prospect.Name {
+		contact.DisplayName = &name
+	}
+	if prospect.CurrencyCode != "" {
+		currency := prospect.CurrencyCode
+		contact.CurrencyCode = &currency
+	}
+	created, err := s.contacts.Create(ctx, contact)
+	if err != nil {
+		return err
+	}
+	if created == nil {
+		return ErrContactNotFound
+	}
+	prospect.ContactID = &created.ID
+	return nil
+}
+
+func (s ProspectService) promotionHistoryEntry(ctx context.Context, prospect *Prospect, fromStage, toStage *uint64, fromStatus, toStatus *string, notes *string) *ProspectStageHistory {
+	if s.history == nil {
+		return nil
+	}
+	entry := &ProspectStageHistory{
+		ProspectID:  prospect.ID,
+		FromStageID: fromStage,
+		ToStageID:   toStage,
+		FromStatus:  fromStatus,
+		ToStatus:    toStatus,
+		Probability: prospect.Probability,
+		Notes:       notes,
+	}
+	if actorID := model.ActorID(ctx); actorID != 0 {
+		entry.ActorID = &actorID
+	}
+	return entry
+}
+
+func (s ProspectService) persistPromotion(ctx context.Context, prospect *Prospect, entry *ProspectStageHistory) (*Prospect, error) {
+	if writer, ok := s.leads.(promotionHistoryWriter); ok {
+		return writer.PromoteWithHistory(ctx, prospect, entry)
+	}
 	updated, err := s.leads.Update(ctx, prospect)
 	if err != nil {
 		return nil, err
 	}
-	s.recordStageWithNotes(ctx, updated, fromStage, &stage.ID, &fromStatus, &updated.Status, promotionEvidenceNote(requiredFields, input.AllowUnqualified))
+	if s.history != nil && entry != nil {
+		if _, err := s.history.Create(ctx, entry); err != nil {
+			return nil, err
+		}
+	}
 	return updated, nil
 }
 

@@ -6595,7 +6595,7 @@
                         "BearerAuth": []
                     }
                 ],
-                "description": "Updates a contact's base identity fields after enforcing tenant ownership, returning 404 when the contact is missing or not owned by the caller's organization. A non-empty name is required, and the updated contact is returned with HATEOAS links.",
+                "description": "Updates a contact's base identity fields after enforcing tenant ownership, returning 404 when the contact is missing or not owned by the caller's organization. A non-empty name is required. When addresses, bank_accounts, customer, or supplier are present they are replaced or upserted atomically with the contact; omitted sections are left unchanged. The updated contact is returned with HATEOAS links.",
                 "consumes": [
                     "application/json"
                 ],
@@ -7446,6 +7446,57 @@
             }
         },
         "/organizations/{organization_id}/contacts/{id}/customer": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Retrieves the customer profile of a tenant-owned contact, returning 404 when the contact does not carry the customer role. The response contains payment term, credit limit, receivable account, and active state.",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Contacts"
+                ],
+                "summary": "Get customer role profile",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Contact ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "organization_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Customer profile retrieved successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GetCustomerResponseEnvelope"
+                        }
+                    },
+                    "404": {
+                        "description": "Contact or customer profile not found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            },
             "put": {
                 "security": [
                     {
@@ -11289,6 +11340,274 @@
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Creates a new CRM sales team within the caller's organization. The optional leader must be a contact belonging to the same organization.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CRM Teams"
+                ],
+                "summary": "Create sales team",
+                "parameters": [
+                    {
+                        "description": "Sales team payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.CreateSalesGroupRequest"
+                        }
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "organization_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Sales team created successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/handler.CreateSalesGroupResponseEnvelope"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/organizations/{organization_id}/crm/teams/{id}": {
+            "get": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Gets a single CRM sales team by id. The team must belong to the caller's organization, otherwise a 404 is returned.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CRM Teams"
+                ],
+                "summary": "Get sales team",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Sales Team ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "organization_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sales team retrieved successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/handler.GetSalesGroupResponseEnvelope"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Sales team not found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid sales team id provided",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Updates an existing CRM sales team. The team must belong to the caller's organization, otherwise a 404 is returned.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CRM Teams"
+                ],
+                "summary": "Update sales team",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Sales Team ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Sales team payload",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/handler.UpdateSalesGroupRequest"
+                        }
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "organization_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Sales team updated successfully.",
+                        "schema": {
+                            "$ref": "#/definitions/handler.UpdateSalesGroupResponseEnvelope"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Sales team not found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Validation error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "security": [
+                    {
+                        "BearerAuth": []
+                    }
+                ],
+                "description": "Deletes a CRM sales team. The team must belong to the caller's organization, otherwise a 404 is returned.",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "CRM Teams"
+                ],
+                "summary": "Delete sales team",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "Sales Team ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Organization ID",
+                        "name": "organization_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No content"
+                    },
+                    "401": {
+                        "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "404": {
+                        "description": "Sales team not found",
+                        "schema": {
+                            "$ref": "#/definitions/httpx.ErrorResponse"
+                        }
+                    },
+                    "422": {
+                        "description": "Invalid sales team id provided",
                         "schema": {
                             "$ref": "#/definitions/httpx.ErrorResponse"
                         }
@@ -52348,6 +52667,54 @@
                 }
             }
         },
+        "handler.CreateSalesGroupRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "leader_id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "organization_id": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handler.CreateSalesGroupResponse": {
+            "type": "object",
+            "properties": {
+                "team": {
+                    "$ref": "#/definitions/handler.SalesGroupResponse"
+                }
+            }
+        },
+        "handler.CreateSalesGroupResponseEnvelope": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/handler.CreateSalesGroupResponse"
+                },
+                "links": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpx.Link"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {
+                    "$ref": "#/definitions/httpx.Meta"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "handler.CreateServiceContractRequest": {
             "type": "object",
             "required": [
@@ -56034,6 +56401,29 @@
                 }
             }
         },
+        "handler.GetCustomerResponseEnvelope": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/handler.EnableCustomerResponse"
+                },
+                "links": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpx.Link"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {
+                    "$ref": "#/definitions/httpx.Meta"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
         "handler.GetDebitMemoResponse": {
             "type": "object",
             "properties": {
@@ -57375,6 +57765,37 @@
             "properties": {
                 "data": {
                     "$ref": "#/definitions/handler.GetSaleQuoteResponse"
+                },
+                "links": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpx.Link"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {
+                    "$ref": "#/definitions/httpx.Meta"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "handler.GetSalesGroupResponse": {
+            "type": "object",
+            "properties": {
+                "team": {
+                    "$ref": "#/definitions/handler.SalesGroupResponse"
+                }
+            }
+        },
+        "handler.GetSalesGroupResponseEnvelope": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/handler.GetSalesGroupResponse"
                 },
                 "links": {
                     "type": "array",
@@ -65689,6 +66110,9 @@
                 "expected_revenue": {
                     "type": "number"
                 },
+                "opportunity_id": {
+                    "type": "integer"
+                },
                 "priority": {
                     "type": "integer"
                 },
@@ -68597,6 +69021,9 @@
         "handler.SalesGroupResponse": {
             "type": "object",
             "properties": {
+                "created_at": {
+                    "type": "string"
+                },
                 "id": {
                     "type": "integer"
                 },
@@ -68608,6 +69035,9 @@
                 },
                 "organization_id": {
                     "type": "integer"
+                },
+                "updated_at": {
+                    "type": "string"
                 }
             }
         },
@@ -71067,8 +71497,23 @@
                 "active": {
                     "type": "boolean"
                 },
+                "addresses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handler.ContactAddressRequest"
+                    }
+                },
+                "bank_accounts": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/handler.ContactBankAccountRequest"
+                    }
+                },
                 "currency_code": {
                     "type": "string"
+                },
+                "customer": {
+                    "$ref": "#/definitions/handler.CustomerProfileRequest"
                 },
                 "display_name": {
                     "type": "string"
@@ -71099,6 +71544,9 @@
                 },
                 "phone": {
                     "type": "string"
+                },
+                "supplier": {
+                    "$ref": "#/definitions/handler.SupplierProfileRequest"
                 },
                 "tax_id": {
                     "type": "string"
@@ -72624,6 +73072,51 @@
             "properties": {
                 "data": {
                     "$ref": "#/definitions/handler.UpdateSaleQuoteResponse"
+                },
+                "links": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/httpx.Link"
+                    }
+                },
+                "message": {
+                    "type": "string"
+                },
+                "meta": {
+                    "$ref": "#/definitions/httpx.Meta"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "handler.UpdateSalesGroupRequest": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "leader_id": {
+                    "type": "integer"
+                },
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "handler.UpdateSalesGroupResponse": {
+            "type": "object",
+            "properties": {
+                "team": {
+                    "$ref": "#/definitions/handler.SalesGroupResponse"
+                }
+            }
+        },
+        "handler.UpdateSalesGroupResponseEnvelope": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "$ref": "#/definitions/handler.UpdateSalesGroupResponse"
                 },
                 "links": {
                     "type": "array",

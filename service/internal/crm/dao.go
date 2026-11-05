@@ -127,6 +127,24 @@ func (d crmLeadDAO) ReassignOwners(ctx context.Context, organizationID uint64, p
 	})
 }
 
+func (d crmLeadDAO) PromoteWithHistory(ctx context.Context, prospect *Prospect, entry *ProspectStageHistory) (*Prospect, error) {
+	err := d.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
+		if _, err := d.Base.WithTx(tx).Update(ctx, prospect); err != nil {
+			return err
+		}
+		if entry != nil {
+			if err := tx.WithContext(ctx).Create(entry).Error; err != nil {
+				return err
+			}
+		}
+		return nil
+	})
+	if err != nil {
+		return nil, err
+	}
+	return prospect, nil
+}
+
 func (d crmLeadDAO) Merge(ctx context.Context, sourceID, targetID uint64) error {
 	return d.db.WithContext(ctx).Transaction(func(tx *gorm.DB) error {
 		if err := tx.Exec("UPDATE prospect_activities SET lead_id = ? WHERE lead_id = ?", targetID, sourceID).Error; err != nil {

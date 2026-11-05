@@ -15,10 +15,11 @@ type PromoteLeadRequest struct {
 	StageID          uint64   `json:"stage_id" validate:"required,gt=0"`
 	SalespersonID    *uint64  `json:"salesperson_id"`
 	SalesGroupID     *uint64  `json:"sales_group_id"`
-	ExpectedRevenue  float64  `json:"expected_revenue"`
+	ExpectedRevenue  *float64 `json:"expected_revenue"`
 	Probability      *float64 `json:"probability"`
-	Priority         int16    `json:"priority"`
+	Priority         *int16   `json:"priority"`
 	ExpectedClose    *string  `json:"expected_close"`
+	OpportunityID    *uint64  `json:"opportunity_id"`
 	AllowUnqualified bool     `json:"allow_unqualified"`
 }
 
@@ -79,15 +80,27 @@ func (h ProspectHandler) Promote(c fiber.Ctx) error {
 		return httpx.CreateUnprocessableEntityErrorResponse(c, "Invalid expected close date provided.", nil)
 	}
 
+	expectedRevenue := float64(0)
+	if request.ExpectedRevenue != nil {
+		expectedRevenue = *request.ExpectedRevenue
+	}
+	priority := int16(0)
+	if request.Priority != nil {
+		priority = *request.Priority
+	}
+
 	promoted, err := h.svc.Promote(c, prospectID, crm.PromotionInput{
-		StageID:          request.StageID,
-		SalespersonID:    request.SalespersonID,
-		SalesGroupID:     request.SalesGroupID,
-		ExpectedRevenue:  request.ExpectedRevenue,
-		Probability:      request.Probability,
-		Priority:         request.Priority,
-		ExpectedClose:    expectedClose,
-		AllowUnqualified: request.AllowUnqualified,
+		StageID:            request.StageID,
+		SalespersonID:      request.SalespersonID,
+		SalesGroupID:       request.SalesGroupID,
+		ExpectedRevenue:    expectedRevenue,
+		ExpectedRevenueSet: request.ExpectedRevenue != nil,
+		Probability:        request.Probability,
+		Priority:           priority,
+		PrioritySet:        request.Priority != nil,
+		ExpectedClose:      expectedClose,
+		OpportunityID:      request.OpportunityID,
+		AllowUnqualified:   request.AllowUnqualified,
 	})
 	if err != nil {
 		return writeProspectError(c, err)

@@ -24,8 +24,8 @@ export function isClosedLead(lead: Pick<CrmLead, "closedAt" | "lostReason" | "is
   return lead.closedAt != null || lead.isWon || lead.lostReason != null;
 }
 
-export function canPromote(lead: Pick<CrmLead, "type" | "closedAt">): boolean {
-  return lead.type === "prospect" && lead.closedAt == null;
+export function canPromote(lead: Pick<CrmLead, "type" | "closedAt" | "status">): boolean {
+  return lead.type === "prospect" && lead.closedAt == null && lead.status === "qualified";
 }
 
 export function canAdvanceStage(

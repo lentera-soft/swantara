@@ -336,11 +336,3 @@ export function MultiCurrencyInput({
     </InputGroup>
   );
 }
-
-export const MultiCurrencyField = MultiCurrencyInput;
-export const CurrencyInput = MultiCurrencyInput;
-export const CurrencyAmountInput = MultiCurrencyInput;
-export const MoneyInput = MultiCurrencyInput;
-export const MultiCurrency = MultiCurrencyInput;
-
-export default MultiCurrencyInput;

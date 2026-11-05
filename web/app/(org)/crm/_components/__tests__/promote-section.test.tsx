@@ -84,6 +84,78 @@ describe("PromoteDialog", () => {
     expect(payload).toMatchObject({ stage_id: 2, probability: null, expected_close: null });
   });
 
+  it("defaults revenue and priority from the lead instead of zeroing them", async () => {
+    let payload: unknown = null;
+    server.use(
+      http.post(
+        "*/api/v1/organizations/:organizationId/crm/leads/:id/promote",
+        async ({ request }) => {
+          payload = await request.json();
+          return HttpResponse.json({ success: true, message: "OK.", data: { opportunity: {} } });
+        },
+      ),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(
+      <PromoteDialog
+        open
+        onOpenChange={() => {}}
+        orgId="1"
+        prospectId="5"
+        initial={
+          {
+            ...qualifiedLead,
+            expectedRevenue: 750,
+            priority: 2,
+          } as CrmLead
+        }
+        onPromoted={() => {}}
+      />,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Tahap" }));
+    await user.click(await screen.findByRole("option", { name: "Qualified — 30%" }));
+    await user.click(screen.getByRole("button", { name: "Promosikan" }));
+
+    await waitFor(() => expect(payload).not.toBeNull());
+    expect(payload).toMatchObject({
+      stage_id: 2,
+      expected_revenue: 750,
+      priority: 2,
+    });
+  });
+
+  it("falls back to the lead budget when expected revenue is empty", async () => {
+    let payload: unknown = null;
+    server.use(
+      http.post(
+        "*/api/v1/organizations/:organizationId/crm/leads/:id/promote",
+        async ({ request }) => {
+          payload = await request.json();
+          return HttpResponse.json({ success: true, message: "OK.", data: { opportunity: {} } });
+        },
+      ),
+    );
+    const user = userEvent.setup();
+    renderWithProviders(
+      <PromoteDialog
+        open
+        onOpenChange={() => {}}
+        orgId="1"
+        prospectId="5"
+        initial={{ ...qualifiedLead, expectedRevenue: 0, budgetAmount: 1200 } as CrmLead}
+        onPromoted={() => {}}
+      />,
+    );
+
+    await user.click(screen.getByRole("combobox", { name: "Tahap" }));
+    await user.click(await screen.findByRole("option", { name: "Qualified — 30%" }));
+    await user.click(screen.getByRole("button", { name: "Promosikan" }));
+
+    await waitFor(() => expect(payload).not.toBeNull());
+    expect(payload).toMatchObject({ expected_revenue: 1200 });
+  });
+
   it("sends probability and expected close when provided", async () => {
     let payload: unknown = null;
     server.use(

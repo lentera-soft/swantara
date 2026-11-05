@@ -23,6 +23,7 @@ import type {
   CreatePosConfigRequest,
   CreateSaleOrderRequest,
   CreateSaleQuoteRequest,
+  CreateSalesGroupRequest,
   CrmActivity,
   CrmLead,
   CrmOpportunity,
@@ -71,6 +72,7 @@ import type {
   UpdateCrmLeadRequest,
   UpdateSaleOrderRequest,
   UpdateSaleQuoteRequest,
+  UpdateSalesGroupRequest,
 } from "./types";
 import { withListMeta } from "./types";
 
@@ -661,10 +663,44 @@ export class SalesGroups {
 
   async list(organizationId: number, params?: ListQuery): Promise<{ teams: SalesGroup[] }> {
     const response = await this.axios.get<SuccessEnvelope<{ teams: SalesGroup[] }>>(
-      endpoints.crm.teams(String(organizationId)),
+      endpoints.crm.teams.list(String(organizationId)),
       { params },
     );
     return withListMeta(response.data);
+  }
+
+  async get(organizationId: number, id: number): Promise<{ team: SalesGroup }> {
+    const response = await this.axios.get<SuccessEnvelope<{ team: SalesGroup }>>(
+      endpoints.crm.teams.get(String(organizationId), String(id)),
+    );
+    return withListMeta(response.data);
+  }
+
+  async create(
+    organizationId: number,
+    request: CreateSalesGroupRequest,
+  ): Promise<{ team: SalesGroup }> {
+    const response = await this.axios.post<SuccessEnvelope<{ team: SalesGroup }>>(
+      endpoints.crm.teams.create(String(organizationId)),
+      request,
+    );
+    return withListMeta(response.data);
+  }
+
+  async update(
+    organizationId: number,
+    id: number,
+    request: UpdateSalesGroupRequest,
+  ): Promise<{ team: SalesGroup }> {
+    const response = await this.axios.put<SuccessEnvelope<{ team: SalesGroup }>>(
+      endpoints.crm.teams.update(String(organizationId), String(id)),
+      request,
+    );
+    return withListMeta(response.data);
+  }
+
+  async delete(organizationId: number, id: number): Promise<void> {
+    await this.axios.delete(endpoints.crm.teams.delete(String(organizationId), String(id)));
   }
 }
 

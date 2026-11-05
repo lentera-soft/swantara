@@ -2531,6 +2531,7 @@ export type PromoteLeadRequest = {
   probability: number | null;
   priority: number;
   expectedClose: string | null;
+  opportunityId?: number | null;
   allowUnqualified?: boolean;
 };
 
@@ -2713,9 +2714,22 @@ export type CrmStage = {
 
 export type SalesGroup = {
   id: number;
+  createdAt: Date;
+  updatedAt: Date;
   name: string;
   leaderId: number | null;
   organizationId: number | null;
+};
+
+export type CreateSalesGroupRequest = {
+  organizationId?: number | null;
+  name: string;
+  leaderId?: number | null;
+};
+
+export type UpdateSalesGroupRequest = {
+  name: string;
+  leaderId?: number | null;
 };
 
 export type SaleOrder = {

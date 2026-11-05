@@ -13,6 +13,7 @@ function lead(id: number, patch: Record<string, unknown>) {
     organization_id: 1,
     name: `Lead ${id}`,
     type: "prospect",
+    status: "qualified",
     contact_id: null,
     contact_name: "Aria Chen",
     email: "aria@example.com",
