@@ -23,25 +23,35 @@ import {
   QuestionnaireItem,
   QuestionnaireTitle,
 } from "@/components/questionnaire";
+import { useDebouncedValue } from "@/lib/hooks/use-debounced-value";
 import type { Country } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
 import type { OnboardingFormSchema } from "../_hooks/use-onboarding-form";
 
 export function CompanyInfoStep() {
-  const { control } = useFormContext<OnboardingFormSchema>();
+  const { control, setValue } = useFormContext<OnboardingFormSchema>();
   const t = useTranslations("Onboarding");
   const tx = t as unknown as (key: string) => string;
   const locale = useLocale();
   const nameId = useId();
   const countryId = useId();
+  const currencyId = useId();
   const [countrySearch, setCountrySearch] = useState("");
+  const debouncedCountrySearch = useDebouncedValue(countrySearch, 300);
 
   const countriesQuery = useQuery({
-    queryKey: ["countries", countrySearch],
+    queryKey: ["countries", debouncedCountrySearch],
     queryFn: () =>
       getSwantaraService().countries.list(
-        countrySearch ? { filter: [`name:like:${countrySearch}`], size: 100 } : { size: 100 },
+        debouncedCountrySearch
+          ? { filter: [`name:like:${debouncedCountrySearch}`], size: 100 }
+          : { size: 100 },
       ),
+  });
+
+  const currenciesQuery = useQuery({
+    queryKey: ["currencies"],
+    queryFn: () => getSwantaraService().currencies.list({ size: 100 }),
   });
 
   const localizedCountries = useMemo(() => {
@@ -53,9 +63,14 @@ export function CompanyInfoStep() {
       } catch {
         // Keep the API-provided name when localization is unavailable.
       }
-      return { code: country.code, name };
+      return { code: country.code, name, currencyCode: country.currencyCode };
     });
   }, [countriesQuery.data, locale]);
+
+  const currencies = useMemo(() => {
+    const items = currenciesQuery.data?.currencies ?? [];
+    return items.map((currency) => ({ code: currency.code, name: currency.name }));
+  }, [currenciesQuery.data]);
 
   return (
     <QuestionnaireItem name="companyInfo" required>
@@ -113,7 +128,16 @@ export function CompanyInfoStep() {
                   localizedCountries.find((country) => country.code === value)?.name ?? ""
                 }
                 value={field.value}
-                onValueChange={(value) => field.onChange(value ?? "")}
+                onValueChange={(value) => {
+                  field.onChange(value ?? "");
+                  const country = localizedCountries.find((item) => item.code === value);
+                  if (country) {
+                    setValue("currencyCode", country.currencyCode, {
+                      shouldDirty: true,
+                      shouldValidate: true,
+                    });
+                  }
+                }}
               >
                 <ComboboxInput
                   id={countryId}
@@ -140,6 +164,66 @@ export function CompanyInfoStep() {
                             <CountryFlag code={country.code} />
                             <span>{country.name}</span>
                             <span className="text-muted-foreground text-xs">{country.code}</span>
+                          </span>
+                        </ComboboxItem>
+                      );
+                    }}
+                  </ComboboxList>
+                  <ComboboxEmpty>{tx("noResults")}</ComboboxEmpty>
+                </ComboboxContent>
+              </Combobox>
+              <QuestionnaireInput
+                value={field.value}
+                readOnly
+                tabIndex={-1}
+                aria-hidden="true"
+                className="hidden"
+              />
+              <FieldFeedback
+                id={errorId}
+                visible={Boolean(fieldState.error)}
+                intent="danger"
+                role={fieldState.error ? "alert" : undefined}
+              >
+                {fieldState.error?.message}
+              </FieldFeedback>
+            </Field>
+          );
+        }}
+      />
+      <Controller
+        name="currencyCode"
+        control={control}
+        render={({ field, fieldState }) => {
+          const errorId = fieldState.error ? `${currencyId}-error` : undefined;
+          return (
+            <Field>
+              <Label htmlFor={currencyId}>{tx("currency")}</Label>
+              <Combobox
+                items={currencies.map((currency) => currency.code)}
+                itemToStringLabel={(value) => {
+                  const currency = currencies.find((item) => item.code === value);
+                  return currency ? `${currency.code} · ${currency.name}` : "";
+                }}
+                value={field.value}
+                onValueChange={(value) => field.onChange(value ?? "")}
+              >
+                <ComboboxInput
+                  id={currencyId}
+                  placeholder={tx("selectCurrency")}
+                  aria-invalid={Boolean(fieldState.error)}
+                  aria-describedby={errorId}
+                />
+                <ComboboxContent>
+                  <ComboboxList>
+                    {(code: string) => {
+                      const currency = currencies.find((item) => item.code === code);
+                      if (!currency) return null;
+                      return (
+                        <ComboboxItem key={currency.code} value={currency.code}>
+                          <span className="flex items-center gap-2">
+                            <span className="font-medium">{currency.code}</span>
+                            <span>{currency.name}</span>
                           </span>
                         </ComboboxItem>
                       );

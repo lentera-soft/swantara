@@ -14,6 +14,7 @@ async function fillCompanyInfo(form: ReturnType<typeof useOnboardingForm>["form"
   await act(async () => {
     form.setValue("name", "Acme Inc");
     form.setValue("countryCode", "ID");
+    form.setValue("currencyCode", "IDR");
   });
 }
 
@@ -68,6 +69,7 @@ describe("useOnboardingForm submission", () => {
       name: "Acme Inc",
       country_code: "ID",
       standard_code: "PSAK_EMKM",
+      base_currency: "IDR",
     });
     expect(body).not.toHaveProperty("business_size");
   });
@@ -87,6 +89,7 @@ describe("useOnboardingForm submission", () => {
     await act(async () => {
       result.current.form.setValue("name", "Acme Inc");
       result.current.form.setValue("countryCode", "US");
+      result.current.form.setValue("currencyCode", "USD");
     });
 
     await act(async () => {

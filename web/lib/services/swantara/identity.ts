@@ -285,6 +285,10 @@ export type QuickCreateOrganizationRequest = {
   name: string;
   countryCode: string;
   standardCode?: string;
+  baseCurrency?: string;
+  address?: string;
+  city?: string;
+  postalCode?: string;
 };
 
 export class Organizations {
@@ -501,6 +505,31 @@ export class Contacts {
 
   async delete(organizationId: number, id: number): Promise<void> {
     await this.axios.delete(endpoints.contacts.delete(String(organizationId), String(id)));
+  }
+
+  async uploadAvatar(
+    organizationId: number,
+    contactId: number,
+    file: File,
+  ): Promise<{ avatar: string }> {
+    const formData = new FormData();
+    formData.append("file", file);
+    const response = await this.axios.patch<SuccessEnvelope<{ avatar: string }>>(
+      endpoints.contacts.avatar(String(organizationId), String(contactId)),
+      formData,
+      { headers: { "Content-Type": "multipart/form-data" } },
+    );
+    return withListMeta(response.data);
+  }
+
+  async getCustomer(
+    organizationId: number,
+    contactId: number,
+  ): Promise<{ customer: CustomerProfile }> {
+    const response = await this.axios.get<SuccessEnvelope<{ customer: CustomerProfile }>>(
+      endpoints.contacts.customer(String(organizationId), String(contactId)),
+    );
+    return withListMeta(response.data);
   }
 
   async customer(

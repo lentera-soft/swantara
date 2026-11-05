@@ -20,11 +20,13 @@ import {
 export type OnboardingFormMessages = {
   nameRequired: string;
   countryRequired: string;
+  currencyRequired: string;
 };
 
 const onboardingFormDefaultMessages: OnboardingFormMessages = {
   nameRequired: "Company name is required",
   countryRequired: "Country is required",
+  currencyRequired: "Currency is required",
 };
 
 export function useOnboardingFormSchema(
@@ -33,6 +35,10 @@ export function useOnboardingFormSchema(
   return z.object({
     name: z.string().min(1, { message: messages.nameRequired }),
     countryCode: z.string().min(2, { message: messages.countryRequired }),
+    currencyCode: z.string().length(3, { message: messages.currencyRequired }),
+    address: z.string(),
+    city: z.string(),
+    postalCode: z.string(),
   });
 }
 
@@ -41,18 +47,27 @@ export type OnboardingFormSchema = z.infer<ReturnType<typeof useOnboardingFormSc
 const onboardingFormDefaultValues = {
   name: "",
   countryCode: "",
+  currencyCode: "",
+  address: "",
+  city: "",
+  postalCode: "",
 } as unknown as OnboardingFormSchema;
 
 const QUICK_CREATE_FIELD_MAP: Record<string, keyof OnboardingFormSchema> = {
   name: "name",
   country_code: "countryCode",
+  base_currency: "currencyCode",
+  address: "address",
+  city: "city",
+  postal_code: "postalCode",
 };
 
 const stepFields: Record<OnboardingStep, (keyof OnboardingFormSchema)[]> = {
-  companyInfo: ["name", "countryCode"],
+  companyInfo: ["name", "countryCode", "currencyCode"],
+  companyAddress: ["address", "city", "postalCode"],
 };
 
-const STEP_ORDER: OnboardingStep[] = ["companyInfo"];
+const STEP_ORDER: OnboardingStep[] = ["companyInfo", "companyAddress"];
 
 export type UseOnboardingFormParams = {
   defaultValues?: OnboardingFormSchema;
@@ -68,6 +83,7 @@ export function useOnboardingForm({
   const onboardingFormSchema = useOnboardingFormSchema({
     nameRequired: tx("companyNameRequired"),
     countryRequired: tx("countryRequired"),
+    currencyRequired: tx("currencyRequired"),
   });
   const router = useRouter();
 
@@ -95,12 +111,20 @@ export function useOnboardingForm({
   );
 
   const quickCreateMutation = useMutation({
-    mutationFn: (data: OnboardingFormSchema) =>
-      quickCreateOrganization({
+    mutationFn: (data: OnboardingFormSchema) => {
+      const address = data.address.trim();
+      const city = data.city.trim();
+      const postalCode = data.postalCode.trim();
+      return quickCreateOrganization({
         name: data.name,
         countryCode: data.countryCode,
         standardCode: resolveStandardCode(data.countryCode),
-      }),
+        baseCurrency: data.currencyCode,
+        ...(address ? { address } : {}),
+        ...(city ? { city } : {}),
+        ...(postalCode ? { postalCode } : {}),
+      });
+    },
     onSuccess: async ({ organization }) => {
       await setActiveOrg(organization.id);
       router.push("/dashboard");

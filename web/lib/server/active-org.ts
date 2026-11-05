@@ -12,7 +12,7 @@ export async function getActiveOrgId(): Promise<number | null> {
 
   const orgId = Number(raw);
 
-  if(!Number.isSafeInteger(orgId)  || orgId < 0) {
+  if (!Number.isSafeInteger(orgId) || orgId < 0) {
     return null;
   }
 

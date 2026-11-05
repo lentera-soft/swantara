@@ -1,6 +1,6 @@
 import { create } from "zustand";
 
-export type OnboardingStep = "companyInfo";
+export type OnboardingStep = "companyInfo" | "companyAddress";
 
 export type OnboardingFormStore = {
   step: OnboardingStep;
