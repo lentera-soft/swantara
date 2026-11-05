@@ -22,7 +22,7 @@ import { RecordLayout } from "@/components/record-layout";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/select";
 import { StateBadge } from "@/components/state-badge";
 import { WorkflowSteps } from "@/components/workflow-steps";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useOrgListQuery, useOrgQuery } from "@/lib/hooks/use-org-query";
 import type {
   Contact,
@@ -65,6 +65,7 @@ function getPoStatuses(label?: (state: string) => string) {
 export function PurchaseOrderDetail({ orgId, orderId }: { orgId: string; orderId: string }) {
   const t = useTranslations("Purchases");
   const tCommon = useTranslations("Common");
+  const orgCurrency = useActiveOrgCurrency();
   const [activeDialog, setActiveDialog] = useState<"receive" | "bill" | "pay" | null>(null);
 
   const orderQuery = useOrgQuery<{ order: PurchaseOrder }>(
@@ -283,19 +284,19 @@ export function PurchaseOrderDetail({ orgId, orderId }: { orgId: string; orderId
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">{t("untaxed")}</span>
                         <span className="tabular-nums">
-                          {formatMoney(order.amountUntaxed, { currency: DEFAULT_CURRENCY })}
+                          {formatMoney(order.amountUntaxed, { currency: orgCurrency })}
                         </span>
                       </div>
                       <div className="flex justify-between">
                         <span className="text-muted-foreground">{t("tax")}</span>
                         <span className="tabular-nums">
-                          {formatMoney(order.amountTax, { currency: DEFAULT_CURRENCY })}
+                          {formatMoney(order.amountTax, { currency: orgCurrency })}
                         </span>
                       </div>
                       <div className="flex justify-between ">
                         <span>{t("tableTotal")}</span>
                         <span className="tabular-nums">
-                          {formatMoney(order.amountTotal, { currency: DEFAULT_CURRENCY })}
+                          {formatMoney(order.amountTotal, { currency: orgCurrency })}
                         </span>
                       </div>
                       <div className="flex justify-between text-xs text-muted-foreground">
@@ -349,19 +350,19 @@ export function PurchaseOrderDetail({ orgId, orderId }: { orgId: string; orderId
                                 </td>
                                 <td className="py-2 text-right tabular-nums ">
                                   {formatMoney(remainingToReceive(line), {
-                                    currency: DEFAULT_CURRENCY,
+                                    currency: orgCurrency,
                                   })}
                                 </td>
                                 <td className="py-2 text-right tabular-nums ">
                                   {formatMoney(remainingToBill(line), {
-                                    currency: DEFAULT_CURRENCY,
+                                    currency: orgCurrency,
                                   })}
                                 </td>
                                 <td className="py-2 text-right tabular-nums">
-                                  {formatMoney(line.unitPrice, { currency: DEFAULT_CURRENCY })}
+                                  {formatMoney(line.unitPrice, { currency: orgCurrency })}
                                 </td>
                                 <td className="py-2 text-right tabular-nums">
-                                  {formatMoney(line.priceSubtotal, { currency: DEFAULT_CURRENCY })}
+                                  {formatMoney(line.priceSubtotal, { currency: orgCurrency })}
                                 </td>
                               </tr>
                             ))}
@@ -458,11 +459,11 @@ export function PurchaseOrderDetail({ orgId, orderId }: { orgId: string; orderId
                                   <td className="py-2">{line.itemId}</td>
                                   <td className="py-2 text-right tabular-nums">
                                     {formatMoney(line.qtyOrdered - line.qtyBilled, {
-                                      currency: DEFAULT_CURRENCY,
+                                      currency: orgCurrency,
                                     })}
                                   </td>
                                   <td className="py-2 text-right tabular-nums">
-                                    {formatMoney(line.unitPrice, { currency: DEFAULT_CURRENCY })}
+                                    {formatMoney(line.unitPrice, { currency: orgCurrency })}
                                   </td>
                                 </tr>
                               ))}
@@ -498,7 +499,7 @@ export function PurchaseOrderDetail({ orgId, orderId }: { orgId: string; orderId
                       <span>
                         {t("tableTotal")}:{" "}
                         <span className=" tabular-nums">
-                          {formatMoney(order.amountTotal, { currency: DEFAULT_CURRENCY })}
+                          {formatMoney(order.amountTotal, { currency: orgCurrency })}
                         </span>
                       </span>
                       <span className="text-muted-foreground">{t("residualHint")}</span>

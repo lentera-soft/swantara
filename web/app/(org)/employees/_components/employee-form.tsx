@@ -18,6 +18,7 @@ import { MultiCurrencyInput } from "@/components/multi-currency-input";
 import { PageHeader } from "@/components/page-header";
 import { PhoneInput } from "@/components/phone-input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/select";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useOrgListQuery, useOrgQuery } from "@/lib/hooks/use-org-query";
 import type { Department, Employee, JobPosition } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
@@ -87,6 +88,7 @@ export function EmployeeForm({
   const currencyOptions = (currenciesQuery.data?.currencies ?? []).map((currency) => currency.code);
 
   const schema = useEmployeeFormSchema();
+  const orgCurrency = useActiveOrgCurrency();
 
   const form = useForm<EmployeeFormValues>({
     resolver: zodResolver(schema),
@@ -104,7 +106,7 @@ export function EmployeeForm({
           workLocation: initial.workLocation ?? "",
           wage: "0",
           wageType: "monthly",
-          currencyCode: "IDR",
+          currencyCode: orgCurrency,
         }
       : {
           name: "",
@@ -119,7 +121,7 @@ export function EmployeeForm({
           workLocation: "",
           wage: "0",
           wageType: "monthly",
-          currencyCode: "IDR",
+          currencyCode: orgCurrency,
         },
   });
 
@@ -295,7 +297,7 @@ export function EmployeeForm({
               <MultiCurrencyInput
                 id={id}
                 currencies={currencyOptions}
-                currency={form.watch("currencyCode") || "IDR"}
+                currency={form.watch("currencyCode") || orgCurrency}
                 value={field.value === "" ? null : Number(field.value)}
                 onCurrencyChange={(code) => form.setValue("currencyCode", code)}
                 onValueChange={(value) => field.onChange(String(value ?? 0))}

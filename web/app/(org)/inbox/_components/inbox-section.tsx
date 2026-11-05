@@ -88,16 +88,6 @@ export function InboxSection({ orgId }: { orgId: string }) {
     [items, selectedId],
   );
 
-  const stats = useMemo(
-    () => ({
-      newInquiries: inquiries.filter((i) => i.status === "new").length,
-      messages: messages.length,
-      reviewed: inquiries.filter((i) => i.status === "reviewed").length,
-      archived: inquiries.filter((i) => i.status === "archived").length,
-    }),
-    [inquiries, messages],
-  );
-
   const isLoading = inquiriesQuery.isLoading || messagesQuery.isLoading;
   const isFetching = inquiriesQuery.isFetching || messagesQuery.isFetching;
   const isError = inquiriesQuery.isError && messagesQuery.isError;

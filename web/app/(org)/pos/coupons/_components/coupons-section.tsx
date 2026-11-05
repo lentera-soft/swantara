@@ -10,7 +10,7 @@ import { RowActions } from "@/app/(org)/_components/row-actions";
 import { ActiveBadge } from "@/components/active-badge";
 import { Badge } from "@/components/badge";
 import { Button } from "@/components/button";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { Coupon } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
@@ -19,6 +19,7 @@ import { CouponFormDialog } from "./coupon-form-dialog";
 
 export function CouponsSection({ orgId }: { orgId: string }) {
   const t = useTranslations("Pos");
+  const orgCurrency = useActiveOrgCurrency();
   const [dialogOpen, setDialogOpen] = useState(false);
   const [editCoupon, setEditCoupon] = useState<Coupon | null>(null);
 
@@ -48,7 +49,7 @@ export function CouponsSection({ orgId }: { orgId: string }) {
     if (coupon.discountType === "percent") {
       return `${coupon.discountValue}%`;
     }
-    return formatMoney(coupon.discountValue, { currency: DEFAULT_CURRENCY });
+    return formatMoney(coupon.discountValue, { currency: orgCurrency });
   }
 
   const columns: ColumnDef<Coupon>[] = [

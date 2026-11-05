@@ -18,7 +18,7 @@ import {
 import { Input } from "@/components/input";
 import { RecordLayout } from "@/components/record-layout";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/select";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useOrgQuery } from "@/lib/hooks/use-org-query";
 import type { AssetDepreciationLine, FixedAsset } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
@@ -35,6 +35,7 @@ import {
 export function FixedAssetDetail({ orgId, assetId }: { orgId: string; assetId: string }) {
   const t = useTranslations("FixedAssets");
   const queryClient = useQueryClient();
+  const orgCurrency = useActiveOrgCurrency();
   const typeId = useId();
   const proceedsId = useId();
   const dateId = useId();
@@ -188,7 +189,7 @@ export function FixedAssetDetail({ orgId, assetId }: { orgId: string; assetId: s
                   </CardHeader>
                   <CardContent>
                     <p className="text-2xl font-bold tabular-nums">
-                      {formatMoney(asset.purchaseValue, { currency: DEFAULT_CURRENCY })}
+                      {formatMoney(asset.purchaseValue, { currency: orgCurrency })}
                     </p>
                   </CardContent>
                 </Card>
@@ -198,11 +199,11 @@ export function FixedAssetDetail({ orgId, assetId }: { orgId: string; assetId: s
                   </CardHeader>
                   <CardContent>
                     <p className="text-2xl font-bold tabular-nums">
-                      {formatMoney(currentNbv, { currency: DEFAULT_CURRENCY })}
+                      {formatMoney(currentNbv, { currency: orgCurrency })}
                     </p>
                     <p className="text-xs text-muted-foreground">
                       {t("accumulatedDepreciation")}:{" "}
-                      {formatMoney(posted, { currency: DEFAULT_CURRENCY })}
+                      {formatMoney(posted, { currency: orgCurrency })}
                     </p>
                   </CardContent>
                 </Card>
@@ -212,7 +213,7 @@ export function FixedAssetDetail({ orgId, assetId }: { orgId: string; assetId: s
                   </CardHeader>
                   <CardContent>
                     <p className="text-2xl font-bold tabular-nums">
-                      {formatMoney(asset.salvageValue, { currency: DEFAULT_CURRENCY })}
+                      {formatMoney(asset.salvageValue, { currency: orgCurrency })}
                     </p>
                   </CardContent>
                 </Card>
@@ -262,7 +263,7 @@ export function FixedAssetDetail({ orgId, assetId }: { orgId: string; assetId: s
                     <span className="text-sm text-muted-foreground">{t("nextPeriodToPost")}</span>
                     <span className="text-sm tabular-nums">
                       {formatDate(String(nextUnposted.depreciationDate))} –{" "}
-                      {formatMoney(nextUnposted.amount, { currency: DEFAULT_CURRENCY })}
+                      {formatMoney(nextUnposted.amount, { currency: orgCurrency })}
                     </span>
                   </div>
                 ) : null}
@@ -287,13 +288,13 @@ export function FixedAssetDetail({ orgId, assetId }: { orgId: string; assetId: s
                             <td className="py-2 tabular-nums">{line.sequence}</td>
                             <td className="py-2">{formatDate(String(line.depreciationDate))}</td>
                             <td className="py-2 text-right tabular-nums">
-                              {formatMoney(line.amount, { currency: DEFAULT_CURRENCY })}
+                              {formatMoney(line.amount, { currency: orgCurrency })}
                             </td>
                             <td className="py-2 text-right tabular-nums">
-                              {formatMoney(line.accumulated, { currency: DEFAULT_CURRENCY })}
+                              {formatMoney(line.accumulated, { currency: orgCurrency })}
                             </td>
                             <td className="py-2 text-right tabular-nums">
-                              {formatMoney(line.remainingValue, { currency: DEFAULT_CURRENCY })}
+                              {formatMoney(line.remainingValue, { currency: orgCurrency })}
                             </td>
                             <td className="py-2 text-center">
                               {line.posted ? (

@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { Button } from "@/components/button";
 import { Input } from "@/components/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/select";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import type { Item, ItemVariant } from "@/lib/services/swantara";
 import { createId, formatMoney } from "@/lib/utils";
 import { resolvePricePreview } from "./sale-order-utils";
@@ -51,6 +51,7 @@ export function SaleOrderLinesEditor({
   onSelectItem,
 }: SaleOrderLinesEditorProps) {
   const t = useTranslations("Sales");
+  const orgCurrency = useActiveOrgCurrency();
   return (
     <div className="mt-6 flex flex-col gap-3 rounded-md border p-4">
       <div className="flex items-center justify-between">
@@ -95,8 +96,7 @@ export function SaleOrderLinesEditor({
                   <SelectContent>
                     {products.map((product) => (
                       <SelectItem key={product.id} value={String(product.id)}>
-                        {product.name} —{" "}
-                        {formatMoney(product.listPrice, { currency: DEFAULT_CURRENCY })}
+                        {product.name} — {formatMoney(product.listPrice, { currency: orgCurrency })}
                       </SelectItem>
                     ))}
                   </SelectContent>
@@ -132,7 +132,7 @@ export function SaleOrderLinesEditor({
                 <span className="text-xs text-muted-foreground">{t("pricePreview")}</span>
                 <span className="text-sm tabular-nums">
                   {preview
-                    ? formatMoney(preview.price, { currency: DEFAULT_CURRENCY })
+                    ? formatMoney(preview.price, { currency: orgCurrency })
                     : t("selectItemPriceBook").slice(0, 20)}
                 </span>
               </div>

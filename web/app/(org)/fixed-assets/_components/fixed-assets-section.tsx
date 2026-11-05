@@ -9,7 +9,7 @@ import { InteractiveEntityTable } from "@/app/(org)/_components/interactive-enti
 import { RowActions } from "@/app/(org)/_components/row-actions";
 import { Badge } from "@/components/badge";
 import { Button } from "@/components/button";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { FixedAsset } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
@@ -20,6 +20,7 @@ import { fixedAssetStateTone } from "./fixed-asset-utils";
 export function FixedAssetsSection({ orgId }: { orgId: string }) {
   const t = useTranslations("FixedAssets");
   const router = useRouter();
+  const orgCurrency = useActiveOrgCurrency();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const assetsQuery = useOrgListQuery<{ fixedAssets: FixedAsset[] }, Record<string, never>>(
@@ -53,7 +54,7 @@ export function FixedAssetsSection({ orgId }: { orgId: string }) {
       header: () => t("colPurchaseValue"),
       cell: ({ row }) => (
         <span className="text-sm tabular-nums">
-          {formatMoney(row.original.purchaseValue, { currency: DEFAULT_CURRENCY })}
+          {formatMoney(row.original.purchaseValue, { currency: orgCurrency })}
         </span>
       ),
     },

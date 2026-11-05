@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useReportPeriod, useTrialBalance } from "@/lib/hooks/use-report-queries";
 import { formatMoney } from "@/lib/utils";
 
@@ -12,6 +12,7 @@ type TFn = (key: string, values?: Record<string, string | number>) => string;
 
 export function TrialBalanceTable() {
   const t = (useTranslations as unknown as (ns: string) => TFn)("Reports");
+  const orgCurrency = useActiveOrgCurrency();
   const { params, enabled } = useReportPeriod();
   const { data, isLoading } = useTrialBalance(params, { enabled });
   const tb = data;
@@ -75,29 +76,29 @@ export function TrialBalanceTable() {
                   </td>
                   <td className="px-3 py-2 text-right tabular-nums">
                     {row.openingDebit
-                      ? formatMoney(row.openingDebit, { currency: DEFAULT_CURRENCY })
+                      ? formatMoney(row.openingDebit, { currency: orgCurrency })
                       : "—"}
                   </td>
                   <td className="px-3 py-2 text-right tabular-nums">
                     {row.openingCredit
-                      ? formatMoney(row.openingCredit, { currency: DEFAULT_CURRENCY })
+                      ? formatMoney(row.openingCredit, { currency: orgCurrency })
                       : "—"}
                   </td>
                   <td className="px-3 py-2 text-right tabular-nums">
                     {row.periodDebit
-                      ? formatMoney(row.periodDebit, { currency: DEFAULT_CURRENCY })
+                      ? formatMoney(row.periodDebit, { currency: orgCurrency })
                       : "—"}
                   </td>
                   <td className="px-3 py-2 text-right tabular-nums">
                     {row.periodCredit
-                      ? formatMoney(row.periodCredit, { currency: DEFAULT_CURRENCY })
+                      ? formatMoney(row.periodCredit, { currency: orgCurrency })
                       : "—"}
                   </td>
                   <td className="px-3 py-2 text-right tabular-nums ">
-                    {formatMoney(row.closingDebit, { currency: DEFAULT_CURRENCY })}
+                    {formatMoney(row.closingDebit, { currency: orgCurrency })}
                   </td>
                   <td className="px-3 py-2 text-right tabular-nums ">
-                    {formatMoney(row.closingCredit, { currency: DEFAULT_CURRENCY })}
+                    {formatMoney(row.closingCredit, { currency: orgCurrency })}
                   </td>
                 </tr>
               ))}
@@ -110,37 +111,37 @@ export function TrialBalanceTable() {
                 <td className="px-3 py-2 text-right tabular-nums">
                   {formatMoney(
                     rows.reduce((s, r) => s + r.openingDebit, 0),
-                    { currency: DEFAULT_CURRENCY },
+                    { currency: orgCurrency },
                   )}
                 </td>
                 <td className="px-3 py-2 text-right tabular-nums">
                   {formatMoney(
                     rows.reduce((s, r) => s + r.openingCredit, 0),
-                    { currency: DEFAULT_CURRENCY },
+                    { currency: orgCurrency },
                   )}
                 </td>
                 <td className="px-3 py-2 text-right tabular-nums">
                   {formatMoney(
                     rows.reduce((s, r) => s + r.periodDebit, 0),
-                    { currency: DEFAULT_CURRENCY },
+                    { currency: orgCurrency },
                   )}
                 </td>
                 <td className="px-3 py-2 text-right tabular-nums">
                   {formatMoney(
                     rows.reduce((s, r) => s + r.periodCredit, 0),
-                    { currency: DEFAULT_CURRENCY },
+                    { currency: orgCurrency },
                   )}
                 </td>
                 <td className="px-3 py-2 text-right tabular-nums">
                   {formatMoney(
                     rows.reduce((s, r) => s + r.closingDebit, 0),
-                    { currency: DEFAULT_CURRENCY },
+                    { currency: orgCurrency },
                   )}
                 </td>
                 <td className="px-3 py-2 text-right tabular-nums">
                   {formatMoney(
                     rows.reduce((s, r) => s + r.closingCredit, 0),
-                    { currency: DEFAULT_CURRENCY },
+                    { currency: orgCurrency },
                   )}
                 </td>
               </tr>

@@ -8,7 +8,7 @@ import { BackLink } from "@/components/back-link";
 import { Button } from "@/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
 import { PageHeader } from "@/components/page-header";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useInventoryValuation } from "@/lib/hooks/use-report-queries";
 import { formatMoney } from "@/lib/utils";
 import { exportCsv } from "@/lib/utils/csv";
@@ -20,6 +20,7 @@ export default function InventoryValuationPage() {
       ns: string,
     ) => (key: string, values?: Record<string, string | number>) => string
   )("Reports");
+  const orgCurrency = useActiveOrgCurrency();
   const { data, isLoading } = useInventoryValuation();
   const rows = data?.rows ?? [];
   const totalValue = inventoryTotalValue(rows);
@@ -56,7 +57,7 @@ export default function InventoryValuationPage() {
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">{t("totalValue")}</p>
             <p className="font-heading text-lg font-bold">
-              {formatMoney(totalValue, { currency: DEFAULT_CURRENCY })}
+              {formatMoney(totalValue, { currency: orgCurrency })}
             </p>
           </CardContent>
         </Card>
@@ -64,7 +65,7 @@ export default function InventoryValuationPage() {
           <CardContent className="p-4">
             <p className="text-xs text-muted-foreground">{t("totalQuantity")}</p>
             <p className="font-heading text-lg font-bold">
-              {formatMoney(totalQty, { currency: DEFAULT_CURRENCY })}
+              {formatMoney(totalQty, { currency: orgCurrency })}
             </p>
           </CardContent>
         </Card>
@@ -111,10 +112,10 @@ export default function InventoryValuationPage() {
                         </Link>
                       </td>
                       <td className="px-3 py-2 text-right tabular-nums">
-                        {formatMoney(row.quantity, { currency: DEFAULT_CURRENCY })}
+                        {formatMoney(row.quantity, { currency: orgCurrency })}
                       </td>
                       <td className="px-3 py-2 text-right tabular-nums ">
-                        {formatMoney(row.value, { currency: DEFAULT_CURRENCY })}
+                        {formatMoney(row.value, { currency: orgCurrency })}
                       </td>
                     </tr>
                   ))}
@@ -123,10 +124,10 @@ export default function InventoryValuationPage() {
                   <tr className="border-t-2 border-border ">
                     <td className="px-3 py-2">{t("colTotal")}</td>
                     <td className="px-3 py-2 text-right tabular-nums">
-                      {formatMoney(totalQty, { currency: DEFAULT_CURRENCY })}
+                      {formatMoney(totalQty, { currency: orgCurrency })}
                     </td>
                     <td className="px-3 py-2 text-right tabular-nums">
-                      {formatMoney(totalValue, { currency: DEFAULT_CURRENCY })}
+                      {formatMoney(totalValue, { currency: orgCurrency })}
                     </td>
                   </tr>
                 </tfoot>

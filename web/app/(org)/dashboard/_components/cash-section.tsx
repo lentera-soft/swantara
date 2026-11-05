@@ -5,13 +5,14 @@ import { useMemo } from "react";
 import { BarChart } from "@/components/bar-chart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/card";
 import { DonutChart } from "@/components/donut-chart";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
 import { useArApKpi, useCashKpi } from "@/lib/hooks/use-dashboard-kpis";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { formatMoney } from "@/lib/utils";
 import { KpiCard } from "./kpi-card";
 
 export function CashSection() {
   const t = useTranslations("Dashboard");
+  const orgCurrency = useActiveOrgCurrency();
   const cashKpi = useCashKpi();
   const arApKpi = useArApKpi();
   const cash = cashKpi.data;
@@ -89,19 +90,19 @@ export function CashSection() {
             className="col-span-12 md:col-span-4 rounded-xl border border-border bg-card p-4 bg-primary/[0.04] border-primary/15"
             label={t("cashPosition")}
           >
-            {cash ? formatMoney(cash.position, { currency: DEFAULT_CURRENCY }) : "—"}
+            {cash ? formatMoney(cash.position, { currency: orgCurrency }) : "—"}
           </KpiCard>
           <KpiCard
             className="col-span-6 md:col-span-4 rounded-xl border border-border bg-card p-4"
             label={t("cashBurn")}
           >
-            {cash ? formatMoney(cash.burn, { currency: DEFAULT_CURRENCY }) : "—"}
+            {cash ? formatMoney(cash.burn, { currency: orgCurrency }) : "—"}
           </KpiCard>
           <KpiCard
             className="col-span-6 md:col-span-4 rounded-xl border border-border bg-card p-4"
             label={t("cashForecast")}
           >
-            {cash ? formatMoney(cash.forecast, { currency: DEFAULT_CURRENCY }) : "—"}
+            {cash ? formatMoney(cash.forecast, { currency: orgCurrency }) : "—"}
           </KpiCard>
           <div className="col-span-6 rounded-xl border border-border p-4">
             <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
@@ -144,7 +145,7 @@ export function CashSection() {
           <BarChart
             data={cashData}
             ariaLabel={t("cashTitle")}
-            valueFormatter={(value) => formatMoney(value, { currency: DEFAULT_CURRENCY })}
+            valueFormatter={(value) => formatMoney(value, { currency: orgCurrency })}
           />
         </CardContent>
       </Card>

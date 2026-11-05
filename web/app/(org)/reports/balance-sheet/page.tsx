@@ -7,7 +7,7 @@ import { BackLink } from "@/components/back-link";
 import { Button } from "@/components/button";
 import { Card, CardContent } from "@/components/card";
 import { PageHeader } from "@/components/page-header";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useBalanceSheet } from "@/lib/hooks/use-report-queries";
 import { formatMoney } from "@/lib/utils";
 import { exportCsv } from "@/lib/utils/csv";
@@ -19,6 +19,7 @@ export default function BalanceSheetPage() {
       ns: string,
     ) => (key: string, values?: Record<string, string | number>) => string
   )("Reports");
+  const orgCurrency = useActiveOrgCurrency();
   const { data } = useBalanceSheet();
   const bs = data;
 
@@ -54,7 +55,7 @@ export default function BalanceSheetPage() {
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground">{t("totalAssets")}</p>
               <p className="font-heading text-lg font-bold">
-                {formatMoney(bs.totalAssets, { currency: DEFAULT_CURRENCY })}
+                {formatMoney(bs.totalAssets, { currency: orgCurrency })}
               </p>
             </CardContent>
           </Card>
@@ -62,7 +63,7 @@ export default function BalanceSheetPage() {
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground">{t("totalLiabilities")}</p>
               <p className="font-heading text-lg font-bold">
-                {formatMoney(bs.totalLiabilities, { currency: DEFAULT_CURRENCY })}
+                {formatMoney(bs.totalLiabilities, { currency: orgCurrency })}
               </p>
             </CardContent>
           </Card>
@@ -70,7 +71,7 @@ export default function BalanceSheetPage() {
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground">{t("totalEquity")}</p>
               <p className="font-heading text-lg font-bold">
-                {formatMoney(bs.totalEquity, { currency: DEFAULT_CURRENCY })}
+                {formatMoney(bs.totalEquity, { currency: orgCurrency })}
               </p>
             </CardContent>
           </Card>

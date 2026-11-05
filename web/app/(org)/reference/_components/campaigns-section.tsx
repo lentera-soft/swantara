@@ -18,6 +18,7 @@ import { EntityFormDialog } from "@/components/entity-form-dialog";
 import { FormField } from "@/components/form";
 import { FormSection } from "@/components/form-section";
 import { Input } from "@/components/input";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { Campaign } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
@@ -42,6 +43,7 @@ type CampaignValues = z.infer<ReturnType<typeof useCampaignSchema>>;
 
 export function CampaignsSection({ orgId }: { orgId: string }) {
   const t = useTranslations("Reference");
+  const orgCurrency = useActiveOrgCurrency();
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<Campaign | null>(null);
 
@@ -263,7 +265,7 @@ export function CampaignsSection({ orgId }: { orgId: string }) {
                   id={id}
                   value={field.value === "" ? null : Number(field.value)}
                   onValueChange={(v) => field.onChange(String(v ?? 0))}
-                  currency="IDR"
+                  currency={orgCurrency}
                 />
               )}
             </FormField>

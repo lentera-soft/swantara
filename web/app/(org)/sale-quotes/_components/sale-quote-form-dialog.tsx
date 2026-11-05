@@ -52,6 +52,7 @@ type SaleQuoteFormDialogProps = {
   onOpenChange: (open: boolean) => void;
   orgId: string;
   initialOpportunityId?: string | null;
+  initialContactId?: string | null;
   initialQuoteId?: string | null;
   onSave: (quoteId: string) => void;
 };
@@ -61,6 +62,7 @@ export function SaleQuoteFormDialog({
   onOpenChange,
   orgId,
   initialOpportunityId,
+  initialContactId,
   initialQuoteId,
   onSave,
 }: SaleQuoteFormDialogProps) {
@@ -158,7 +160,9 @@ export function SaleQuoteFormDialog({
       return;
     }
     form.reset({
-      contactId: initialOpportunity?.contactId ? String(initialOpportunity.contactId) : "",
+      contactId: initialOpportunity?.contactId
+        ? String(initialOpportunity.contactId)
+        : (initialContactId ?? ""),
       priceBookId: priceBooks[0] ? String(priceBooks[0].id) : "",
       prospectId: initialOpportunity ? String(initialOpportunity.id) : NO_OPPORTUNITY,
       quoteDate: getLocalDateString(),
@@ -168,7 +172,7 @@ export function SaleQuoteFormDialog({
       paymentTermId: "",
       note: "",
     });
-  }, [open, form, priceBooks, initialOpportunity, initialQuoteId, editingQuote]);
+  }, [open, form, priceBooks, initialOpportunity, initialContactId, initialQuoteId, editingQuote]);
 
   function selectOpportunity(opportunityId: string) {
     form.setValue("prospectId", opportunityId);

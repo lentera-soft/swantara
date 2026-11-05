@@ -28,17 +28,20 @@ export function SaleQuotesSection({ orgId }: { orgId: string }) {
   const router = useRouter();
   const searchParams = useSearchParams();
   const initialOpportunity = searchParams.get("opportunity");
-  const [dialogOpen, setDialogOpen] = useState(Boolean(initialOpportunity));
+  const initialContact = searchParams.get("contact");
+  const [dialogOpen, setDialogOpen] = useState(Boolean(initialOpportunity || initialContact));
   const [prefillOpportunity, setPrefillOpportunity] = useState<string | null>(initialOpportunity);
+  const [prefillContact, setPrefillContact] = useState<string | null>(initialContact);
   const [editingQuoteId, setEditingQuoteId] = useState<string | null>(null);
 
   useEffect(() => {
     setPrefillOpportunity(initialOpportunity);
-    if (initialOpportunity) {
+    setPrefillContact(initialContact);
+    if (initialOpportunity || initialContact) {
       setEditingQuoteId(null);
       setDialogOpen(true);
     }
-  }, [initialOpportunity]);
+  }, [initialOpportunity, initialContact]);
 
   const quotesQuery = useOrgListQuery<{ quotes: SaleQuote[] }, Record<string, never>>(
     "saleQuotes",
@@ -138,6 +141,7 @@ export function SaleQuotesSection({ orgId }: { orgId: string }) {
           onEdit={() => {
             if (row.original.state === "draft") {
               setPrefillOpportunity(null);
+              setPrefillContact(null);
               setEditingQuoteId(String(row.original.id));
               setDialogOpen(true);
               return;
@@ -198,6 +202,7 @@ export function SaleQuotesSection({ orgId }: { orgId: string }) {
             size="sm"
             onClick={() => {
               setPrefillOpportunity(null);
+              setPrefillContact(null);
               setEditingQuoteId(null);
               setDialogOpen(true);
             }}
@@ -216,6 +221,7 @@ export function SaleQuotesSection({ orgId }: { orgId: string }) {
           }}
           orgId={orgId}
           initialOpportunityId={prefillOpportunity}
+          initialContactId={prefillContact}
           initialQuoteId={editingQuoteId}
           onSave={(quoteId) => {
             setDialogOpen(false);

@@ -3,7 +3,7 @@
 import { useTranslations } from "next-intl";
 import { BarChart } from "@/components/bar-chart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/card";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useProfitAndLoss, useReportPeriod } from "@/lib/hooks/use-report-queries";
 import { formatMoney } from "@/lib/utils";
 
@@ -15,6 +15,7 @@ export function PerformanceChart() {
   )("Accounting");
   const { params, enabled } = useReportPeriod();
   const { data, isLoading } = useProfitAndLoss(params, { enabled });
+  const orgCurrency = useActiveOrgCurrency();
 
   const chartData = data
     ? [
@@ -39,7 +40,7 @@ export function PerformanceChart() {
           <BarChart
             data={chartData}
             ariaLabel={t("performanceTitle")}
-            valueFormatter={(value) => formatMoney(value, { currency: DEFAULT_CURRENCY })}
+            valueFormatter={(value) => formatMoney(value, { currency: orgCurrency })}
           />
         )}
       </CardContent>

@@ -6,13 +6,14 @@ import { BarChart } from "@/components/bar-chart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/card";
 import { DonutChart } from "@/components/donut-chart";
 import { LineChart } from "@/components/line-chart";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
 import { useLeadToCashKpi, usePipelineKpi, useSalesKpi } from "@/lib/hooks/use-dashboard-kpis";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { formatMoney } from "@/lib/utils";
 import { KpiCard } from "./kpi-card";
 
 export function SalesSection() {
   const t = useTranslations("Dashboard");
+  const orgCurrency = useActiveOrgCurrency();
   const salesKpi = useSalesKpi();
   const sales = salesKpi.data;
 
@@ -76,26 +77,26 @@ export function SalesSection() {
             className="col-span-6 rounded-xl border border-border bg-card p-4"
             label={t("bookings")}
           >
-            {sales ? formatMoney(sales.bookings, { currency: DEFAULT_CURRENCY }) : "—"}
+            {sales ? formatMoney(sales.bookings, { currency: orgCurrency }) : "—"}
           </KpiCard>
           <KpiCard
             className="col-span-6 rounded-xl border border-border bg-card p-4"
             label={t("stat_revenue")}
           >
-            {sales ? formatMoney(sales.revenue, { currency: DEFAULT_CURRENCY }) : "—"}
+            {sales ? formatMoney(sales.revenue, { currency: orgCurrency }) : "—"}
           </KpiCard>
           <KpiCard
             className="col-span-6 rounded-xl border border-border bg-card p-4"
             label={t("cogs")}
           >
-            {sales ? formatMoney(sales.cogs, { currency: DEFAULT_CURRENCY }) : "—"}
+            {sales ? formatMoney(sales.cogs, { currency: orgCurrency }) : "—"}
           </KpiCard>
           <div className="col-span-6 rounded-xl border border-border bg-card p-4">
             <p className="text-[11px] font-medium uppercase tracking-widest text-muted-foreground">
               {t("grossMargin")}
             </p>
             <p className="mt-1 font-heading text-xl font-semibold tabular-nums">
-              {sales ? formatMoney(sales.grossMargin, { currency: DEFAULT_CURRENCY }) : "—"}
+              {sales ? formatMoney(sales.grossMargin, { currency: orgCurrency }) : "—"}
             </p>
             <p className="text-xs text-muted-foreground">
               {sales ? `${(sales.grossMarginPct * 100).toFixed(1)}%` : "—"}
@@ -118,7 +119,7 @@ export function SalesSection() {
           <BarChart
             data={salesData}
             ariaLabel={t("salesTitle")}
-            valueFormatter={(value) => formatMoney(value, { currency: DEFAULT_CURRENCY })}
+            valueFormatter={(value) => formatMoney(value, { currency: orgCurrency })}
           />
         </CardContent>
       </Card>
@@ -145,7 +146,7 @@ export function SalesSection() {
           <LineChart
             data={marginFlow}
             ariaLabel={t("grossMargin")}
-            valueFormatter={(value) => formatMoney(value, { currency: DEFAULT_CURRENCY })}
+            valueFormatter={(value) => formatMoney(value, { currency: orgCurrency })}
           />
         </CardContent>
       </Card>
@@ -155,6 +156,7 @@ export function SalesSection() {
 
 export function PipelineSection() {
   const t = useTranslations("Dashboard");
+  const orgCurrency = useActiveOrgCurrency();
   const pipelineKpi = usePipelineKpi();
   const pipeline = pipelineKpi.data;
 
@@ -198,17 +200,13 @@ export function PipelineSection() {
             className="col-span-6 rounded-xl border border-border bg-card p-4 bg-primary/[0.04] border-primary/15"
             label={t("weightedPipeline")}
           >
-            {pipeline
-              ? formatMoney(pipeline.weightedPipeline, { currency: DEFAULT_CURRENCY })
-              : "—"}
+            {pipeline ? formatMoney(pipeline.weightedPipeline, { currency: orgCurrency }) : "—"}
           </KpiCard>
           <KpiCard
             className="col-span-6 rounded-xl border border-border bg-card p-4"
             label={t("expectedRevenue")}
           >
-            {pipeline
-              ? formatMoney(pipeline.totalExpectedRevenue, { currency: DEFAULT_CURRENCY })
-              : "—"}
+            {pipeline ? formatMoney(pipeline.totalExpectedRevenue, { currency: orgCurrency }) : "—"}
           </KpiCard>
           <KpiCard
             className="col-span-6 rounded-xl border border-border bg-card p-4"
@@ -233,7 +231,7 @@ export function PipelineSection() {
           <BarChart
             data={pipelineData}
             ariaLabel={t("pipelineTitle")}
-            valueFormatter={(value) => formatMoney(value, { currency: DEFAULT_CURRENCY })}
+            valueFormatter={(value) => formatMoney(value, { currency: orgCurrency })}
           />
         </CardContent>
       </Card>
@@ -257,6 +255,7 @@ export function PipelineSection() {
 
 export function LeadToCashSection() {
   const t = useTranslations("Dashboard");
+  const orgCurrency = useActiveOrgCurrency();
   const leadToCashKpi = useLeadToCashKpi();
   const data = leadToCashKpi.data;
   const funnel = data?.funnel;
@@ -318,7 +317,7 @@ export function LeadToCashSection() {
                 </p>
                 <p className="mt-1 font-heading text-xl font-semibold tabular-nums">
                   {stat.money
-                    ? formatMoney(stat.value, { currency: DEFAULT_CURRENCY })
+                    ? formatMoney(stat.value, { currency: orgCurrency })
                     : stat.value.toLocaleString()}
                 </p>
               </div>

@@ -8,7 +8,7 @@ import { Badge } from "@/components/badge";
 import { Button } from "@/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
 import { PageHeader } from "@/components/page-header";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useAgingReport } from "@/lib/hooks/use-report-queries";
 import { formatMoney } from "@/lib/utils";
 import { exportCsv } from "@/lib/utils/csv";
@@ -20,6 +20,7 @@ export default function AgingReportPage() {
       ns: string,
     ) => (key: string, values?: Record<string, string | number>) => string
   )("Reports");
+  const orgCurrency = useActiveOrgCurrency();
   const { data, isLoading } = useAgingReport();
   const rows = data?.rows ?? [];
   const grouped = groupAgingByType(rows);
@@ -55,7 +56,7 @@ export default function AgingReportPage() {
         <CardContent className="p-4">
           <p className="text-xs text-muted-foreground">{t("grandTotal")}</p>
           <p className="font-heading text-lg font-bold">
-            {formatMoney(grandTotal, { currency: DEFAULT_CURRENCY })}
+            {formatMoney(grandTotal, { currency: orgCurrency })}
           </p>
         </CardContent>
       </Card>
@@ -80,7 +81,7 @@ export default function AgingReportPage() {
                 <div className="flex items-center justify-between">
                   <CardTitle>{type}</CardTitle>
                   <Badge variant="secondary">
-                    {formatMoney(agingTotalByType(typeRows), { currency: DEFAULT_CURRENCY })}
+                    {formatMoney(agingTotalByType(typeRows), { currency: orgCurrency })}
                   </Badge>
                 </div>
               </CardHeader>
@@ -113,7 +114,7 @@ export default function AgingReportPage() {
                             </td>
                             <td className="px-3 py-2 font-mono text-xs">{row.currencyCode}</td>
                             <td className="px-3 py-2 text-right tabular-nums ">
-                              {formatMoney(row.amount, { currency: DEFAULT_CURRENCY })}
+                              {formatMoney(row.amount, { currency: orgCurrency })}
                             </td>
                           </tr>
                         ))}

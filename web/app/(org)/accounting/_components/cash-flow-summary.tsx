@@ -3,7 +3,7 @@
 import { ArrowDownRight, ArrowUpRight, PiggyBank } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/card";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { currentMonthRange, useCashFlowReport } from "@/lib/hooks/use-report-queries";
 import { formatMoney } from "@/lib/utils";
 import { cn } from "@/lib/utils/style";
@@ -28,6 +28,7 @@ function CashFlowItem({
 }) {
   const Icon = cashFlowIconMap[tone] ?? PiggyBank;
   const color = cashFlowColorMap[tone] ?? "text-foreground";
+  const orgCurrency = useActiveOrgCurrency();
   return (
     <li className="flex items-center justify-between">
       <span className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -35,7 +36,7 @@ function CashFlowItem({
         {label}
       </span>
       <span className={cn("text-sm tabular-nums", color)}>
-        {formatMoney(value, { currency: DEFAULT_CURRENCY })}
+        {formatMoney(value, { currency: orgCurrency })}
       </span>
     </li>
   );

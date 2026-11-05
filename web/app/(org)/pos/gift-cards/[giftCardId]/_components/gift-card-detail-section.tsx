@@ -9,7 +9,7 @@ import { Badge } from "@/components/badge";
 import { Button } from "@/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
 import { RecordLayout } from "@/components/record-layout";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useOrgListQuery, useOrgQuery } from "@/lib/hooks/use-org-query";
 import type { GiftCard, GiftCardTransaction } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
@@ -22,6 +22,7 @@ export function GiftCardDetail({ orgId, giftCardId }: { orgId: string; giftCardI
   const giftCardState = (state: string) =>
     (t as unknown as (k: string) => string)(`giftCardState_${state}`);
   const queryClient = useQueryClient();
+  const orgCurrency = useActiveOrgCurrency();
 
   const cardQuery = useOrgQuery<{ giftCard: GiftCard }>("giftCard", giftCardId, (organizationId) =>
     getSwantaraService().giftCards.get(organizationId, Number(giftCardId)),
@@ -109,7 +110,7 @@ export function GiftCardDetail({ orgId, giftCardId }: { orgId: string; giftCardI
       header: t("amount"),
       cell: ({ row }) => (
         <span className="text-sm tabular-nums">
-          {formatMoney(row.original.amount, { currency: DEFAULT_CURRENCY })}
+          {formatMoney(row.original.amount, { currency: orgCurrency })}
         </span>
       ),
     },
@@ -169,7 +170,7 @@ export function GiftCardDetail({ orgId, giftCardId }: { orgId: string; giftCardI
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold tabular-nums">
-                    {formatMoney(card.initialAmount, { currency: DEFAULT_CURRENCY })}
+                    {formatMoney(card.initialAmount, { currency: orgCurrency })}
                   </p>
                 </CardContent>
               </Card>
@@ -179,7 +180,7 @@ export function GiftCardDetail({ orgId, giftCardId }: { orgId: string; giftCardI
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold tabular-nums">
-                    {formatMoney(card.balance, { currency: DEFAULT_CURRENCY })}
+                    {formatMoney(card.balance, { currency: orgCurrency })}
                   </p>
                 </CardContent>
               </Card>

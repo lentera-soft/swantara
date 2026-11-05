@@ -4,7 +4,7 @@ import { useTranslations } from "next-intl";
 import { Badge } from "@/components/badge";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/table";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useReportPeriod, useTrialBalance } from "@/lib/hooks/use-report-queries";
 import { formatMoney } from "@/lib/utils";
 import { cn } from "@/lib/utils/style";
@@ -13,6 +13,7 @@ type TFn = (key: string, values?: Record<string, string | number>) => string;
 
 export function AccountsList() {
   const t = (useTranslations as unknown as (ns: string) => TFn)("Accounting");
+  const orgCurrency = useActiveOrgCurrency();
   const { params, enabled } = useReportPeriod();
   const { data, isLoading } = useTrialBalance(params, { enabled });
 
@@ -59,7 +60,7 @@ export function AccountsList() {
                       account.balance >= 0 ? "text-success" : "text-destructive",
                     )}
                   >
-                    {formatMoney(account.balance, { currency: DEFAULT_CURRENCY })}
+                    {formatMoney(account.balance, { currency: orgCurrency })}
                   </TableCell>
                 </TableRow>
               ))}

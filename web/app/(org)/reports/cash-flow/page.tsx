@@ -7,7 +7,7 @@ import { BackLink } from "@/components/back-link";
 import { Button } from "@/components/button";
 import { Card, CardContent } from "@/components/card";
 import { PageHeader } from "@/components/page-header";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { currentMonthRange, useCashFlowReport } from "@/lib/hooks/use-report-queries";
 import { formatMoney } from "@/lib/utils";
 import { exportCsv } from "@/lib/utils/csv";
@@ -19,6 +19,7 @@ export default function CashFlowPage() {
       ns: string,
     ) => (key: string, values?: Record<string, string | number>) => string
   )("Reports");
+  const orgCurrency = useActiveOrgCurrency();
   const { data, isLoading } = useCashFlowReport(currentMonthRange());
   const cf = data;
 
@@ -77,7 +78,7 @@ export default function CashFlowPage() {
                     cf.operating >= 0 ? "text-success" : "text-destructive",
                   )}
                 >
-                  {formatMoney(cf.operating, { currency: DEFAULT_CURRENCY })}
+                  {formatMoney(cf.operating, { currency: orgCurrency })}
                 </p>
               </CardContent>
             </Card>
@@ -90,7 +91,7 @@ export default function CashFlowPage() {
                     cf.investing >= 0 ? "text-success" : "text-destructive",
                   )}
                 >
-                  {formatMoney(cf.investing, { currency: DEFAULT_CURRENCY })}
+                  {formatMoney(cf.investing, { currency: orgCurrency })}
                 </p>
               </CardContent>
             </Card>
@@ -103,7 +104,7 @@ export default function CashFlowPage() {
                     cf.financing >= 0 ? "text-success" : "text-destructive",
                   )}
                 >
-                  {formatMoney(cf.financing, { currency: DEFAULT_CURRENCY })}
+                  {formatMoney(cf.financing, { currency: orgCurrency })}
                 </p>
               </CardContent>
             </Card>
@@ -119,7 +120,7 @@ export default function CashFlowPage() {
                     cf.netChange >= 0 ? "text-success" : "text-destructive",
                   )}
                 >
-                  {formatMoney(cf.netChange, { currency: DEFAULT_CURRENCY })}
+                  {formatMoney(cf.netChange, { currency: orgCurrency })}
                 </p>
               </CardContent>
             </Card>
@@ -127,7 +128,7 @@ export default function CashFlowPage() {
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground">{t("openingCash")}</p>
                 <p className="font-heading text-lg font-bold">
-                  {formatMoney(cf.openingCash, { currency: DEFAULT_CURRENCY })}
+                  {formatMoney(cf.openingCash, { currency: orgCurrency })}
                 </p>
               </CardContent>
             </Card>
@@ -135,7 +136,7 @@ export default function CashFlowPage() {
               <CardContent className="p-4">
                 <p className="text-xs text-muted-foreground">{t("closingCash")}</p>
                 <p className="font-heading text-lg font-bold">
-                  {formatMoney(cf.closingCash, { currency: DEFAULT_CURRENCY })}
+                  {formatMoney(cf.closingCash, { currency: orgCurrency })}
                 </p>
               </CardContent>
             </Card>

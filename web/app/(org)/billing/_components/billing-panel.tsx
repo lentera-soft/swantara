@@ -24,8 +24,7 @@ import { Progress, ProgressIndicator, ProgressTrack } from "@/components/progres
 import { Skeleton } from "@/components/skeleton";
 import { StatCard } from "@/components/stat-card";
 import { StateBadge } from "@/components/state-badge";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
-import { useOrganizationId } from "@/lib/hooks/use-org-context";
+import { useActiveOrgCurrency, useOrganizationId } from "@/lib/hooks/use-org-context";
 import type { GatewayInvoice } from "@/lib/services/billing-gateway";
 import {
   getBillingGateway,
@@ -42,13 +41,14 @@ const invoiceStatusTones = {
   void: "neutral",
 } as const;
 
-function money(value: number, currency?: string): string {
-  return formatMoney(value, { currency: currency ?? DEFAULT_CURRENCY });
+function money(value: number, currency: string): string {
+  return formatMoney(value, { currency });
 }
 
 export function BillingPanel() {
   const t = useTranslations("Billing");
   const organizationId = useOrganizationId();
+  const orgCurrency = useActiveOrgCurrency();
 
   const summaryQuery = useQuery({
     queryKey: ["billingGatewaySummary", organizationId],
@@ -93,12 +93,16 @@ export function BillingPanel() {
         />
         <StatCard
           label={t("statOutstanding")}
-          value={money(outstanding)}
+          value={money(outstanding, orgCurrency)}
           icon={Wallet}
           trend={t("openCount", { count: dueInvoices.length })}
           trendDirection={outstanding > 0 ? "down" : "up"}
         />
-        <StatCard label={t("statPaidYear")} value={money(paidThisYear(invoices))} icon={Check} />
+        <StatCard
+          label={t("statPaidYear")}
+          value={money(paidThisYear(invoices), orgCurrency)}
+          icon={Check}
+        />
         <StatCard label={t("statPlan")} value={plan?.name ?? "—"} icon={Sparkles} />
       </MetricGrid>
 
@@ -203,7 +207,7 @@ export function BillingPanel() {
               </CardHeader>
               <CardContent className="flex flex-col gap-3">
                 <p className="font-heading text-2xl font-semibold tabular-nums">
-                  {money(outstanding)}
+                  {money(outstanding, orgCurrency)}
                 </p>
                 <p className="text-sm text-muted-foreground">
                   {t("openCount", { count: dueInvoices.length })}

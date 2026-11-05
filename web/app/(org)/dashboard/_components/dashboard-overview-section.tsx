@@ -9,9 +9,9 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { DonutChart } from "@/components/donut-chart";
 import { Separator } from "@/components/separator";
 import { StatCard } from "@/components/stat-card";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
 import { useFinanceKpi, useProcurementKpi } from "@/lib/hooks/use-dashboard-kpis";
 import { useMeOrganizationsQuery, useMeQuery } from "@/lib/hooks/use-me-query";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import { usePermissions } from "@/lib/hooks/use-permissions";
 import type { Contact, Employee } from "@/lib/services/swantara";
@@ -32,6 +32,7 @@ function useDashboardStats(): DashboardStat[] {
   const { has } = usePermissions();
   const isRestoring = useIsRestoring();
   const t = useTranslations("Dashboard");
+  const orgCurrency = useActiveOrgCurrency();
   const financeKpi = useFinanceKpi();
   const procurementKpi = useProcurementKpi();
   const contactsQuery = useOrgListQuery<{ contacts: Contact[] }, Record<string, never>, number>(
@@ -55,7 +56,7 @@ function useDashboardStats(): DashboardStat[] {
   const stats: DashboardStat[] = [
     {
       key: "revenue",
-      value: isRestoring ? "—" : formatMoney(finance?.revenue ?? 0, { currency: DEFAULT_CURRENCY }),
+      value: isRestoring ? "—" : formatMoney(finance?.revenue ?? 0, { currency: orgCurrency }),
       trend: isRestoring
         ? "—"
         : finance?.netMarginPct
@@ -94,6 +95,7 @@ function useDashboardStats(): DashboardStat[] {
 
 export function DashboardOverview({ orgId }: { orgId: string }) {
   const t = useTranslations("Dashboard");
+  const orgCurrency = useActiveOrgCurrency();
   const statLabel = (key: string) => (t as unknown as (k: string) => string)(`stat_${key}`);
   const { data: me } = useMeQuery();
   const { data: orgList } = useMeOrganizationsQuery();
@@ -177,7 +179,7 @@ export function DashboardOverview({ orgId }: { orgId: string }) {
             <BarChart
               data={financeData}
               ariaLabel={t("revenueSummaryTitle")}
-              valueFormatter={(value) => formatMoney(value, { currency: DEFAULT_CURRENCY })}
+              valueFormatter={(value) => formatMoney(value, { currency: orgCurrency })}
             />
           </CardContent>
         </Card>
@@ -190,7 +192,7 @@ export function DashboardOverview({ orgId }: { orgId: string }) {
             <DonutChart
               data={marginComposition}
               ariaLabel={t("revenueSummaryTitle")}
-              valueFormatter={(value) => formatMoney(value, { currency: DEFAULT_CURRENCY })}
+              valueFormatter={(value) => formatMoney(value, { currency: orgCurrency })}
               centerLabel={t("stat_revenue")}
             />
           </CardContent>

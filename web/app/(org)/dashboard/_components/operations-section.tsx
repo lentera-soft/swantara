@@ -6,13 +6,14 @@ import { BarChart } from "@/components/bar-chart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/card";
 import { DonutChart } from "@/components/donut-chart";
 import { LineChart } from "@/components/line-chart";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
 import { usePayrollKpi, useProjectKpi, useSubscriptionKpi } from "@/lib/hooks/use-dashboard-kpis";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { formatMoney } from "@/lib/utils";
 import { KpiCard } from "./kpi-card";
 
 export function PayrollSection() {
   const t = useTranslations("Dashboard");
+  const orgCurrency = useActiveOrgCurrency();
   const payrollKpi = usePayrollKpi();
   const payroll = payrollKpi.data;
 
@@ -60,7 +61,7 @@ export function PayrollSection() {
               {t("grossCost")}
             </p>
             <p className="mt-2 font-heading text-2xl font-semibold tracking-tight tabular-nums">
-              {payroll ? formatMoney(payroll.grossCost, { currency: DEFAULT_CURRENCY }) : "—"}
+              {payroll ? formatMoney(payroll.grossCost, { currency: orgCurrency }) : "—"}
             </p>
           </div>
           <div className="col-span-12 sm:col-span-6 rounded-xl border border-border bg-card p-5">
@@ -68,7 +69,7 @@ export function PayrollSection() {
               {t("netCost")}
             </p>
             <p className="mt-2 font-heading text-2xl font-semibold tracking-tight tabular-nums">
-              {payroll ? formatMoney(payroll.netCost, { currency: DEFAULT_CURRENCY }) : "—"}
+              {payroll ? formatMoney(payroll.netCost, { currency: orgCurrency }) : "—"}
             </p>
           </div>
         </CardContent>
@@ -83,7 +84,7 @@ export function PayrollSection() {
             <BarChart
               data={payrollData}
               ariaLabel={t("payrollTitle")}
-              valueFormatter={(value) => formatMoney(value, { currency: DEFAULT_CURRENCY })}
+              valueFormatter={(value) => formatMoney(value, { currency: orgCurrency })}
             />
           </CardContent>
         </Card>
@@ -96,7 +97,7 @@ export function PayrollSection() {
             <DonutChart
               data={payrollComposition}
               ariaLabel={t("payrollTitle")}
-              valueFormatter={(value) => formatMoney(value, { currency: DEFAULT_CURRENCY })}
+              valueFormatter={(value) => formatMoney(value, { currency: orgCurrency })}
               centerLabel={t("grossCost")}
             />
           </CardContent>
@@ -108,6 +109,7 @@ export function PayrollSection() {
 
 export function ProjectSection() {
   const t = useTranslations("Dashboard");
+  const orgCurrency = useActiveOrgCurrency();
   const projectKpi = useProjectKpi();
   const project = projectKpi.data;
 
@@ -179,19 +181,19 @@ export function ProjectSection() {
             className="col-span-12 lg:col-span-4 rounded-xl border border-border bg-card p-5 bg-primary/[0.04] border-primary/15"
             label={t("billed")}
           >
-            {project ? formatMoney(project.totalBilled, { currency: DEFAULT_CURRENCY }) : "—"}
+            {project ? formatMoney(project.totalBilled, { currency: orgCurrency }) : "—"}
           </KpiCard>
           <KpiCard
             className="col-span-6 rounded-xl border border-border bg-card p-5"
             label={t("margin")}
           >
-            {project ? formatMoney(project.totalMargin, { currency: DEFAULT_CURRENCY }) : "—"}
+            {project ? formatMoney(project.totalMargin, { currency: orgCurrency }) : "—"}
           </KpiCard>
           <KpiCard
             className="col-span-6 rounded-xl border border-border bg-card p-5"
             label={t("stat_expenses")}
           >
-            {project ? formatMoney(project.totalCost, { currency: DEFAULT_CURRENCY }) : "—"}
+            {project ? formatMoney(project.totalCost, { currency: orgCurrency }) : "—"}
           </KpiCard>
         </CardContent>
       </Card>
@@ -204,7 +206,7 @@ export function ProjectSection() {
           <BarChart
             data={projectData}
             ariaLabel={t("opsProjectsTitle")}
-            valueFormatter={(value) => formatMoney(value, { currency: DEFAULT_CURRENCY })}
+            valueFormatter={(value) => formatMoney(value, { currency: orgCurrency })}
           />
         </CardContent>
       </Card>
@@ -218,7 +220,7 @@ export function ProjectSection() {
             <DonutChart
               data={projectComposition}
               ariaLabel={t("billed")}
-              valueFormatter={(value) => formatMoney(value, { currency: DEFAULT_CURRENCY })}
+              valueFormatter={(value) => formatMoney(value, { currency: orgCurrency })}
               centerLabel={t("billed")}
             />
           </CardContent>
@@ -244,6 +246,7 @@ export function ProjectSection() {
 
 export function SubscriptionSection() {
   const t = useTranslations("Dashboard");
+  const orgCurrency = useActiveOrgCurrency();
   const subscriptionKpi = useSubscriptionKpi();
   const sub = subscriptionKpi.data;
 
@@ -305,13 +308,13 @@ export function SubscriptionSection() {
             className="col-span-6 lg:col-span-3 rounded-xl border border-border bg-card p-5"
             label={"MRR"}
           >
-            {sub ? formatMoney(sub.mrr, { currency: DEFAULT_CURRENCY }) : "—"}
+            {sub ? formatMoney(sub.mrr, { currency: orgCurrency }) : "—"}
           </KpiCard>
           <KpiCard
             className="col-span-6 lg:col-span-3 rounded-xl border border-border bg-card p-5"
             label={"ARR"}
           >
-            {sub ? formatMoney(sub.arr, { currency: DEFAULT_CURRENCY }) : "—"}
+            {sub ? formatMoney(sub.arr, { currency: orgCurrency }) : "—"}
           </KpiCard>
           <KpiCard
             className="col-span-6 lg:col-span-3 rounded-xl border border-border bg-card p-5"
@@ -323,7 +326,7 @@ export function SubscriptionSection() {
             className="col-span-6 lg:col-span-3 rounded-xl border border-border bg-card p-5"
             label={"LTV"}
           >
-            {sub ? formatMoney(sub.ltv, { currency: DEFAULT_CURRENCY }) : "—"}
+            {sub ? formatMoney(sub.ltv, { currency: orgCurrency }) : "—"}
           </KpiCard>
           <KpiCard
             className="col-span-12 rounded-xl border border-amber-500/20 bg-amber-500/10 p-5"
@@ -342,7 +345,7 @@ export function SubscriptionSection() {
           <BarChart
             data={subscriptionData}
             ariaLabel={t("opsSubscriptionsTitle")}
-            valueFormatter={(value) => formatMoney(value, { currency: DEFAULT_CURRENCY })}
+            valueFormatter={(value) => formatMoney(value, { currency: orgCurrency })}
           />
         </CardContent>
       </Card>
@@ -370,7 +373,7 @@ export function SubscriptionSection() {
             <LineChart
               data={recurringFlow}
               ariaLabel={"MRR"}
-              valueFormatter={(value) => formatMoney(value, { currency: DEFAULT_CURRENCY })}
+              valueFormatter={(value) => formatMoney(value, { currency: orgCurrency })}
             />
           </CardContent>
         </Card>

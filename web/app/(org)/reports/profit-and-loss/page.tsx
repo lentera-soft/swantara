@@ -7,7 +7,7 @@ import { BackLink } from "@/components/back-link";
 import { Button } from "@/components/button";
 import { Card, CardContent } from "@/components/card";
 import { PageHeader } from "@/components/page-header";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useProfitAndLoss, useReportPeriod } from "@/lib/hooks/use-report-queries";
 import { formatMoney } from "@/lib/utils";
 import { exportCsv } from "@/lib/utils/csv";
@@ -20,6 +20,7 @@ export default function ProfitAndLossPage() {
       ns: string,
     ) => (key: string, values?: Record<string, string | number>) => string
   )("Reports");
+  const orgCurrency = useActiveOrgCurrency();
   const { params, enabled } = useReportPeriod();
   const { data } = useProfitAndLoss(params, { enabled });
   const pl = data;
@@ -57,7 +58,7 @@ export default function ProfitAndLossPage() {
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground">{t("revenue")}</p>
               <p className="font-heading text-lg font-bold text-success">
-                {formatMoney(pl.revenue, { currency: DEFAULT_CURRENCY })}
+                {formatMoney(pl.revenue, { currency: orgCurrency })}
               </p>
             </CardContent>
           </Card>
@@ -65,7 +66,7 @@ export default function ProfitAndLossPage() {
             <CardContent className="p-4">
               <p className="text-xs text-muted-foreground">{t("grossProfit")}</p>
               <p className="font-heading text-lg font-bold">
-                {formatMoney(pl.grossProfit, { currency: DEFAULT_CURRENCY })}
+                {formatMoney(pl.grossProfit, { currency: orgCurrency })}
               </p>
             </CardContent>
           </Card>
@@ -78,7 +79,7 @@ export default function ProfitAndLossPage() {
                   pl.netIncome >= 0 ? "text-success" : "text-destructive",
                 )}
               >
-                {formatMoney(pl.netIncome, { currency: DEFAULT_CURRENCY })}
+                {formatMoney(pl.netIncome, { currency: orgCurrency })}
               </p>
             </CardContent>
           </Card>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useProfitAndLoss, useReportPeriod } from "@/lib/hooks/use-report-queries";
 import { formatMoney } from "@/lib/utils";
 import { plGroupByType } from "@/lib/utils/report-utils";
@@ -13,6 +13,7 @@ type TFn = (key: string, values?: Record<string, string | number>) => string;
 
 export function ProfitAndLossRows() {
   const t = (useTranslations as unknown as (ns: string) => TFn)("Reports");
+  const orgCurrency = useActiveOrgCurrency();
   const { params, enabled } = useReportPeriod();
   const { data, isLoading } = useProfitAndLoss(params, { enabled });
   const pl = data;
@@ -74,7 +75,7 @@ export function ProfitAndLossRows() {
                       </td>
                       <td className="px-3 py-2">{row.name}</td>
                       <td className="px-3 py-2 text-right tabular-nums ">
-                        {formatMoney(row.amount, { currency: DEFAULT_CURRENCY })}
+                        {formatMoney(row.amount, { currency: orgCurrency })}
                       </td>
                     </tr>
                   ))}

@@ -5,7 +5,7 @@ import { useTranslations } from "next-intl";
 import { InteractiveEntityTable } from "@/app/(org)/_components/interactive-entity-table";
 import { Badge } from "@/components/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { CommissionEntry } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
@@ -13,6 +13,7 @@ import { formatMoney } from "@/lib/utils";
 
 export function CommissionEntriesSection({ orgId: _orgId }: { orgId: string }) {
   const t = useTranslations("Commissions");
+  const orgCurrency = useActiveOrgCurrency();
   const query = useOrgListQuery<{ commissionEntries: CommissionEntry[] }, Record<string, never>>(
     "commissionEntries",
     (organizationId) => getSwantaraService().commissionEntries.list(organizationId),
@@ -49,7 +50,7 @@ export function CommissionEntriesSection({ orgId: _orgId }: { orgId: string }) {
       header: t("tableBase"),
       cell: ({ row }) => (
         <span className="text-sm tabular-nums">
-          {formatMoney(row.original.baseAmount, { currency: DEFAULT_CURRENCY })}
+          {formatMoney(row.original.baseAmount, { currency: orgCurrency })}
         </span>
       ),
     },
@@ -58,7 +59,7 @@ export function CommissionEntriesSection({ orgId: _orgId }: { orgId: string }) {
       header: t("tableCommission"),
       cell: ({ row }) => (
         <span className="text-sm tabular-nums">
-          {formatMoney(row.original.commissionAmount, { currency: DEFAULT_CURRENCY })}
+          {formatMoney(row.original.commissionAmount, { currency: orgCurrency })}
         </span>
       ),
     },
@@ -111,7 +112,7 @@ export function CommissionEntriesSection({ orgId: _orgId }: { orgId: string }) {
           </CardHeader>
           <CardContent>
             <p className="text-2xl font-bold tabular-nums">
-              {formatMoney(totalCommission, { currency: DEFAULT_CURRENCY })}
+              {formatMoney(totalCommission, { currency: orgCurrency })}
             </p>
           </CardContent>
         </Card>

@@ -8,6 +8,7 @@ import { z } from "zod";
 import { EntityFormDialog } from "@/components/entity-form-dialog";
 import { FormField } from "@/components/form";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/select";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { Currency, TaxPeriod } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
@@ -35,6 +36,7 @@ export function ConsolidationRunDialog({
 }) {
   const t = useTranslations("Consolidation");
   const tCommon = useTranslations("Common");
+  const orgCurrency = useActiveOrgCurrency();
   const schema = useSchema();
 
   const periodsQuery = useOrgListQuery<{ taxPeriods: TaxPeriod[] }, Record<string, never>>(
@@ -48,7 +50,7 @@ export function ConsolidationRunDialog({
 
   const form = useForm<Values>({
     resolver: zodResolver(schema),
-    defaultValues: { periodId: "", reportingCurrency: "IDR" },
+    defaultValues: { periodId: "", reportingCurrency: orgCurrency },
   });
 
   const mutation = useMutation({

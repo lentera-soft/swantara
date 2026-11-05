@@ -10,7 +10,7 @@ import { RowActions } from "@/app/(org)/_components/row-actions";
 import { Badge } from "@/components/badge";
 import { Button } from "@/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { Subscription, SubscriptionMetrics } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
@@ -22,6 +22,7 @@ export function SubscriptionsSection({ orgId }: { orgId: string }) {
   const t = useTranslations("Subscriptions");
   const subState = (state: string) => (t as unknown as (k: string) => string)(`state_${state}`);
   const router = useRouter();
+  const orgCurrency = useActiveOrgCurrency();
   const [dialogOpen, setDialogOpen] = useState(false);
 
   const subsQuery = useOrgListQuery<{ subscriptions: Subscription[] }, Record<string, never>>(
@@ -61,7 +62,7 @@ export function SubscriptionsSection({ orgId }: { orgId: string }) {
       header: "MRR",
       cell: ({ row }) => (
         <span className="text-sm tabular-nums">
-          {formatMoney(row.original.mrr, { currency: DEFAULT_CURRENCY })}
+          {formatMoney(row.original.mrr, { currency: orgCurrency })}
         </span>
       ),
     },
@@ -130,7 +131,7 @@ export function SubscriptionsSection({ orgId }: { orgId: string }) {
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold tabular-nums">
-                {formatMoney(metrics.mrr, { currency: DEFAULT_CURRENCY })}
+                {formatMoney(metrics.mrr, { currency: orgCurrency })}
               </p>
             </CardContent>
           </Card>
@@ -140,7 +141,7 @@ export function SubscriptionsSection({ orgId }: { orgId: string }) {
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold tabular-nums">
-                {formatMoney(metrics.arr, { currency: DEFAULT_CURRENCY })}
+                {formatMoney(metrics.arr, { currency: orgCurrency })}
               </p>
             </CardContent>
           </Card>
@@ -168,7 +169,7 @@ export function SubscriptionsSection({ orgId }: { orgId: string }) {
             </CardHeader>
             <CardContent>
               <p className="text-2xl font-bold tabular-nums">
-                {formatMoney(metrics.ltv, { currency: DEFAULT_CURRENCY })}
+                {formatMoney(metrics.ltv, { currency: orgCurrency })}
               </p>
             </CardContent>
           </Card>

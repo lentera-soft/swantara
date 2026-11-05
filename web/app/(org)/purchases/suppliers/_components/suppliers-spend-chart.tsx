@@ -3,7 +3,7 @@
 import { useLocale, useTranslations } from "next-intl";
 import { BarChart } from "@/components/bar-chart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/card";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useOrgListQuery } from "@/lib/hooks/use-org-query";
 import type { ListQuery, PurchaseOrder } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
@@ -38,6 +38,7 @@ function buildSpendSeries(orders: PurchaseOrder[], locale: string, now = new Dat
 export function SuppliersSpendChart() {
   const t = useTranslations("Purchases");
   const locale = useLocale();
+  const orgCurrency = useActiveOrgCurrency();
   const ordersQuery = useOrgListQuery<{ orders: PurchaseOrder[] }, ListQuery>(
     "supplierSpendOrders",
     (organizationId, params) => getSwantaraService().purchaseOrders.list(organizationId, params),
@@ -56,7 +57,7 @@ export function SuppliersSpendChart() {
         <BarChart
           data={data}
           ariaLabel={t("spendByMonth")}
-          valueFormatter={(value) => formatMoney(value, { currency: DEFAULT_CURRENCY })}
+          valueFormatter={(value) => formatMoney(value, { currency: orgCurrency })}
         />
       </CardContent>
     </Card>

@@ -4,7 +4,7 @@ import Link from "next/link";
 import { useTranslations } from "next-intl";
 import { Badge } from "@/components/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useBalanceSheet } from "@/lib/hooks/use-report-queries";
 import type { BalanceSheetAccount } from "@/lib/services/swantara";
 import { formatMoney } from "@/lib/utils";
@@ -15,6 +15,7 @@ type TFn = (key: string, values?: Record<string, string | number>) => string;
 
 export function BalanceSheetSections() {
   const t = (useTranslations as unknown as (ns: string) => TFn)("Reports");
+  const orgCurrency = useActiveOrgCurrency();
   const { data, isLoading } = useBalanceSheet();
   const bs = data;
   const sections = bs
@@ -82,7 +83,7 @@ export function BalanceSheetSections() {
                         <Badge variant="outline">{row.accountType}</Badge>
                       </td>
                       <td className="px-3 py-2 text-right tabular-nums ">
-                        {formatMoney(row.balance, { currency: DEFAULT_CURRENCY })}
+                        {formatMoney(row.balance, { currency: orgCurrency })}
                       </td>
                     </tr>
                   ))}

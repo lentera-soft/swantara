@@ -7,7 +7,7 @@ import { Badge } from "@/components/badge";
 import { Button } from "@/components/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/card";
 import { RecordLayout } from "@/components/record-layout";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useOrgQuery } from "@/lib/hooks/use-org-query";
 import type { Subscription } from "@/lib/services/swantara";
 import { getSwantaraService } from "@/lib/services/swantara";
@@ -34,6 +34,7 @@ export function SubscriptionDetail({
   const actionLabel = (action: string) =>
     (t as unknown as (k: string) => string)(`action_${action}`);
   const queryClient = useQueryClient();
+  const orgCurrency = useActiveOrgCurrency();
 
   const subQuery = useOrgQuery<Subscription>("subscription", subscriptionId, (organizationId) =>
     getSwantaraService().subscriptions.get(organizationId, Number(subscriptionId)),
@@ -159,7 +160,7 @@ export function SubscriptionDetail({
                 </CardHeader>
                 <CardContent>
                   <p className="text-2xl font-bold tabular-nums">
-                    {formatMoney(sub.mrr, { currency: DEFAULT_CURRENCY })}
+                    {formatMoney(sub.mrr, { currency: orgCurrency })}
                   </p>
                 </CardContent>
               </Card>
@@ -240,11 +241,11 @@ export function SubscriptionDetail({
                             <td className="py-2">#{line.itemId}</td>
                             <td className="py-2 text-right tabular-nums">{line.qty}</td>
                             <td className="py-2 text-right tabular-nums">
-                              {formatMoney(line.unitPrice, { currency: DEFAULT_CURRENCY })}
+                              {formatMoney(line.unitPrice, { currency: orgCurrency })}
                             </td>
                             <td className="py-2 text-right tabular-nums">{line.discountPct}%</td>
                             <td className="py-2 text-right tabular-nums">
-                              {formatMoney(subtotal, { currency: DEFAULT_CURRENCY })}
+                              {formatMoney(subtotal, { currency: orgCurrency })}
                             </td>
                           </tr>
                         );

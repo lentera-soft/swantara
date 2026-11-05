@@ -29,7 +29,7 @@ import { Progress } from "@/components/progress";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/select";
 import { Switch } from "@/components/switch";
 import { Textarea } from "@/components/textarea";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { useOrgListQuery, useOrgQuery } from "@/lib/hooks/use-org-query";
 import type {
   Campaign,
@@ -155,6 +155,7 @@ export function LeadForm({
   const isOpportunity = effectiveType === "opportunity";
   const t = useTranslations("Crm");
   const tCommon = useTranslations("Common");
+  const orgCurrency = useActiveOrgCurrency();
   const router = useRouter();
   const queryClient = useQueryClient();
 
@@ -206,7 +207,7 @@ export function LeadForm({
         priority: String(initial.priority),
         salespersonId: initial.salespersonId != null ? String(initial.salespersonId) : "",
         salesGroupId: initial.salesGroupId != null ? String(initial.salesGroupId) : "",
-        currencyCode: DEFAULT_CURRENCY,
+        currencyCode: orgCurrency,
         source: initial.source ?? "",
         medium: initial.medium ?? "",
         campaign: initial.campaign ?? "",
@@ -248,7 +249,7 @@ export function LeadForm({
         priority: "0",
         salespersonId: "",
         salesGroupId: "",
-        currencyCode: DEFAULT_CURRENCY,
+        currencyCode: orgCurrency,
         source: "",
         medium: "",
         campaign: "",
@@ -626,7 +627,7 @@ export function LeadForm({
                 id={id}
                 value={field.value === "" ? null : Number(field.value)}
                 onValueChange={(v) => field.onChange(v == null ? "" : String(v))}
-                currency={form.watch("currencyCode") || DEFAULT_CURRENCY}
+                currency={form.watch("currencyCode") || orgCurrency}
               />
             )}
           </FormField>
@@ -728,7 +729,7 @@ export function LeadForm({
                 id={id}
                 value={field.value === "" ? null : Number(field.value)}
                 onValueChange={(v) => field.onChange(String(v ?? 0))}
-                currency={form.watch("currencyCode") || DEFAULT_CURRENCY}
+                currency={form.watch("currencyCode") || orgCurrency}
               />
             )}
           </FormField>

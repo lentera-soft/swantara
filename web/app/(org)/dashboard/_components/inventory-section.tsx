@@ -6,13 +6,14 @@ import { BarChart } from "@/components/bar-chart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/card";
 import { DonutChart } from "@/components/donut-chart";
 import { LineChart } from "@/components/line-chart";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
 import { useInventoryKpi, useInventoryRatioKpi } from "@/lib/hooks/use-dashboard-kpis";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { formatMoney, formatNumber } from "@/lib/utils";
 import { KpiCard } from "./kpi-card";
 
 export function InventoryOverview() {
   const t = useTranslations("Dashboard");
+  const orgCurrency = useActiveOrgCurrency();
   const inventoryKpi = useInventoryKpi();
   const inv = inventoryKpi.data;
 
@@ -56,7 +57,7 @@ export function InventoryOverview() {
             className="col-span-12 rounded-xl border border-border bg-card p-4 bg-primary/[0.04] border-primary/15"
             label={t("onHandValue")}
           >
-            {inv ? formatMoney(inv.onHandValue, { currency: DEFAULT_CURRENCY }) : "—"}
+            {inv ? formatMoney(inv.onHandValue, { currency: orgCurrency }) : "—"}
           </KpiCard>
           <KpiCard
             className="col-span-6 rounded-xl border border-border bg-card p-4"

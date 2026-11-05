@@ -5,13 +5,14 @@ import { useMemo } from "react";
 import { BarChart } from "@/components/bar-chart";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/card";
 import { DonutChart } from "@/components/donut-chart";
-import { DEFAULT_CURRENCY } from "@/lib/constants/currency";
 import { useFinanceKpi } from "@/lib/hooks/use-dashboard-kpis";
+import { useActiveOrgCurrency } from "@/lib/hooks/use-org-context";
 import { formatMoney } from "@/lib/utils";
 import { KpiCard } from "./kpi-card";
 
 export function FinanceOverview() {
   const t = useTranslations("Dashboard");
+  const orgCurrency = useActiveOrgCurrency();
   const financeKpi = useFinanceKpi();
   const kpi = financeKpi.data;
 
@@ -70,7 +71,7 @@ export function FinanceOverview() {
           <BarChart
             data={financeData}
             ariaLabel={t("financeTitle")}
-            valueFormatter={(value) => formatMoney(value, { currency: DEFAULT_CURRENCY })}
+            valueFormatter={(value) => formatMoney(value, { currency: orgCurrency })}
           />
         </CardContent>
       </Card>
@@ -83,7 +84,7 @@ export function FinanceOverview() {
           <DonutChart
             data={compositionData}
             ariaLabel={t("financeTitle")}
-            valueFormatter={(value) => formatMoney(value, { currency: DEFAULT_CURRENCY })}
+            valueFormatter={(value) => formatMoney(value, { currency: orgCurrency })}
             centerLabel={t("stat_revenue")}
           />
         </CardContent>
@@ -93,19 +94,19 @@ export function FinanceOverview() {
           className="col-span-6 lg:col-span-4 rounded-xl border border-border bg-card p-4"
           label={t("stat_revenue")}
         >
-          {kpi ? formatMoney(kpi.revenue, { currency: DEFAULT_CURRENCY }) : "—"}
+          {kpi ? formatMoney(kpi.revenue, { currency: orgCurrency }) : "—"}
         </KpiCard>
         <KpiCard
           className="col-span-6 lg:col-span-4 rounded-xl border border-border bg-card p-4"
           label={t("stat_expenses")}
         >
-          {kpi ? formatMoney(kpi.expenses, { currency: DEFAULT_CURRENCY }) : "—"}
+          {kpi ? formatMoney(kpi.expenses, { currency: orgCurrency }) : "—"}
         </KpiCard>
         <KpiCard
           className="col-span-6 lg:col-span-4 rounded-xl border border-border bg-card p-4 bg-primary/[0.04] border-primary/15"
           label={t("stat_ebitda")}
         >
-          {kpi ? formatMoney(kpi.ebitda, { currency: DEFAULT_CURRENCY }) : "—"}
+          {kpi ? formatMoney(kpi.ebitda, { currency: orgCurrency }) : "—"}
         </KpiCard>
         <KpiCard
           className="col-span-6 lg:col-span-4 rounded-xl border border-border bg-card p-4"
